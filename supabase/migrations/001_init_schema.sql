@@ -230,8 +230,24 @@ CREATE TABLE IF NOT EXISTS public.auditoria_log (
 CREATE INDEX IF NOT EXISTS idx_auditoria_usuario ON public.auditoria_log (usuario_id);
 CREATE INDEX IF NOT EXISTS idx_auditoria_entidade ON public.auditoria_log (entidade, entidade_id);
 
+-- 12. TABELA: processos_acessos_concedidos (Delegação e Concessão Pontual pelo Administrador)
+CREATE TABLE IF NOT EXISTS public.processos_acessos_concedidos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    processo_id UUID NOT NULL REFERENCES public.processos(id) ON DELETE CASCADE,
+    usuario_id UUID NOT NULL REFERENCES public.perfis_usuarios(id) ON DELETE CASCADE,
+    concedido_por_id UUID REFERENCES public.perfis_usuarios(id),
+    motivo TEXT NOT NULL,
+    data_inicio TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
+    data_fim TIMESTAMPTZ NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_acessos_usuario ON public.processos_acessos_concedidos (usuario_id, ativo);
+CREATE INDEX IF NOT EXISTS idx_acessos_processo ON public.processos_acessos_concedidos (processo_id);
+
 -- ==============================================================================
--- 12. FUNÇÕES AUXILIARES E TRIGGERS
+-- 13. FUNÇÕES AUXILIARES E TRIGGERS
 -- ==============================================================================
 
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
@@ -320,6 +336,7 @@ ALTER TABLE public.notificacoes_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sessoes_coletor ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notas_internas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.auditoria_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.processos_acessos_concedidos ENABLE ROW LEVEL SECURITY;
 
 -- 13.1 Políticas para unidades_organizacionais
 CREATE POLICY "Leitura de unidades por usuários autenticados"
@@ -354,12 +371,20 @@ USING (
     EXISTS (SELECT 1 FROM public.get_user_context() ctx WHERE ctx.role = 'ADMIN')
 );
 
--- 13.3 Políticas para processos (RBAC + Herança Completa no Organograma)
+-- 13.3 Políticas para processos (RBAC + Herança Completa no Organograma + Acessos Concedidos)
 CREATE POLICY "Visualização de processos por hierarquia e unidade"
 ON public.processos FOR SELECT
 TO authenticated
 USING (
+    -- Permissão de Acesso Pontual Concedido pelo Administrador
     EXISTS (
+        SELECT 1 FROM public.processos_acessos_concedidos pac
+        WHERE pac.processo_id = public.processos.id
+          AND pac.usuario_id = auth.uid()
+          AND pac.ativo = TRUE
+          AND (pac.data_fim IS NULL OR pac.data_fim >= timezone('utc', now()))
+    )
+    OR EXISTS (
         SELECT 1 FROM public.get_user_context() ctx
         JOIN public.unidades_organizacionais u_origem ON u_origem.id = public.processos.unidade_origem_id
         WHERE
@@ -412,6 +437,19 @@ TO authenticated
 USING (
     EXISTS (SELECT 1 FROM public.get_user_context() ctx WHERE ctx.role = 'ADMIN')
 );
+
+-- Políticas para processos_acessos_concedidos
+CREATE POLICY "Admin gerencia concessoes pontuais"
+ON public.processos_acessos_concedidos FOR ALL
+TO authenticated
+USING (
+    EXISTS (SELECT 1 FROM public.get_user_context() ctx WHERE ctx.role = 'ADMIN')
+);
+
+CREATE POLICY "Usuario consulta suas proprias concessoes"
+ON public.processos_acessos_concedidos FOR SELECT
+TO authenticated
+USING (usuario_id = auth.uid());
 
 -- 13.4 Políticas para historico_tramitacoes (Herda permissão de processos)
 CREATE POLICY "Visualizar tramitações de processos permitidos"

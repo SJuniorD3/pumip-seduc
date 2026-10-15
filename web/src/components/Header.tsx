@@ -8,24 +8,20 @@ interface HeaderProps {
   lastSyncSEI?: string;
   lastSyncStartGov?: string;
   lastSyncPNCP?: string;
-  activeRole?: string;
-  activeUnit?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   lastSyncSEI = 'Hoje às 14:00',
   lastSyncStartGov = 'Hoje às 13:45',
   lastSyncPNCP = 'Hoje às 12:30',
-  activeRole = 'SUPERVISOR',
-  activeUnit = 'SUDES / STI'
 }) => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo e Identidade Visual SEDUC-MA */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center text-white font-bold text-xl shadow-md">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:bg-blue-800 transition">
               P
             </div>
             <div>
@@ -34,15 +30,12 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full border border-blue-200">
                   SEDUC-MA
                 </span>
-                <span className="text-xs bg-emerald-100 text-emerald-800 font-medium px-2 py-0.5 rounded-full border border-emerald-200">
-                  Hierarquia v2.1
-                </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">
                 Plataforma Unificada de Monitoramento e Inteligência Processual
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* Indicadores de Frescor das Fontes (RF02) */}
           <div className="hidden md:flex items-center space-x-4 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs">
@@ -65,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Notificações e Perfil do Usuário com Cargo Estruturado */}
+          {/* Notificações e Identificação Limpa do Usuário */}
           <div className="flex items-center space-x-3">
             <Link 
               href="/alertas" 
@@ -83,9 +76,9 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="hidden lg:block text-left text-xs">
                 <p className="font-semibold text-slate-800 leading-tight">Sérvulo Junior</p>
                 <div className="flex items-center gap-1 text-slate-500 text-[10px]">
-                  <span className="font-bold text-blue-700">{activeRole}</span>
+                  <span className="font-semibold text-blue-700">SUDES</span>
                   <span>&bull;</span>
-                  <span className="truncate max-w-[150px]">{activeUnit}</span>
+                  <span>SEDUC-MA</span>
                 </div>
               </div>
             </div>
