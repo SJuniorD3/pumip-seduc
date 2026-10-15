@@ -1,7 +1,8 @@
 -- ==============================================================================
 -- PUMIP-SEDUC: Plataforma Unificada de Monitoramento e Inteligência Processual
--- Migração 001: Esquema Inicial, Organograma Hierárquico, RLS e Auditoria
--- Versão de Engenharia: v2.0 (Zero-Cost Supabase Stack + LGPD + LAI)
+-- Migração 001: Esquema Oficial do Organograma SEDUC-MA, Hierarquia de Cargos, RLS e Auditoria
+-- Versão de Engenharia: v2.1 (Conforme Organograma SEDUC Oficial de 22/06/2026)
+-- Hierarquia: SECRETARIO > SUBSECRETARIO > SECRETARIO_ADJUNTO > SUPERINTENDENTE > SUPERVISOR > ASSESSOR / TECNICO
 -- ==============================================================================
 
 -- 1. EXTENSÕES DO POSTGRESQL
@@ -12,8 +13,13 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 DO $$ BEGIN
     CREATE TYPE public.tipo_unidade AS ENUM (
         'SECRETARIA',
+        'SUBSECRETARIA',
+        'SECRETARIA_ADJUNTA',
         'SUPERINTENDENCIA',
         'SUPERVISAO',
+        'ASSESSORIA',
+        'COMISSAO',
+        'REGIONAL',
         'SETOR'
     );
 EXCEPTION WHEN duplicate_object THEN null; END $$;
@@ -21,9 +27,14 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN
     CREATE TYPE public.user_role AS ENUM (
         'ADMIN',
+        'SECRETARIO',
+        'SUBSECRETARIO',
+        'SECRETARIO_ADJUNTO',
         'SUPERINTENDENTE',
         'SUPERVISOR',
-        'TECNICO'
+        'ASSESSOR',
+        'TECNICO',
+        'AUDITOR'
     );
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
@@ -64,14 +75,15 @@ DO $$ BEGIN
     );
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- 3. TABELA: unidades_organizacionais (Organograma com Caminho Hierárquico)
+-- 3. TABELA: unidades_organizacionais (Organograma Estrutural com Caminho Hierárquico)
 CREATE TABLE IF NOT EXISTS public.unidades_organizacionais (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nome TEXT NOT NULL,
     sigla TEXT NOT NULL UNIQUE,
     tipo public.tipo_unidade NOT NULL,
     parent_id UUID REFERENCES public.unidades_organizacionais(id) ON DELETE RESTRICT,
-    caminho_hierarquico TEXT NOT NULL, -- Ex: SEDUC.SUPTI.SUPDEV para buscas rápidas com LIKE
+    caminho_hierarquico TEXT NOT NULL, -- Ex: SEDUC.SAAD.STI.SUDES para buscas rápidas com LIKE
+    titular_nome TEXT NULL,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
@@ -80,14 +92,14 @@ CREATE TABLE IF NOT EXISTS public.unidades_organizacionais (
 CREATE INDEX IF NOT EXISTS idx_unidades_caminho ON public.unidades_organizacionais (caminho_hierarquico text_pattern_ops);
 CREATE INDEX IF NOT EXISTS idx_unidades_parent ON public.unidades_organizacionais (parent_id);
 
--- 4. TABELA: perfis_usuarios (Vinculada ao Supabase Auth)
+-- 4. TABELA: perfis_usuarios (Vinculada ao Supabase Auth com Cargos Estruturados)
 CREATE TABLE IF NOT EXISTS public.perfis_usuarios (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     nome TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     role public.user_role NOT NULL DEFAULT 'TECNICO',
     unidade_id UUID NOT NULL REFERENCES public.unidades_organizacionais(id) ON DELETE RESTRICT,
-    cargo TEXT,
+    cargo_titulo TEXT, -- Ex: "Supervisor de Desenvolvimento de Sistemas", "Assessor Jurídico", "Técnico"
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
@@ -132,7 +144,7 @@ CREATE TABLE IF NOT EXISTS public.historico_tramitacoes (
     unidade_setor TEXT NOT NULL,
     descricao_andamento TEXT NOT NULL,
     documento_anexado TEXT NULL,
-    tipo_documento TEXT NULL, -- Ex: 'Parecer Jurídico', 'Termo de Referência', 'Nota de Empenho'
+    tipo_documento TEXT NULL, -- Ex: 'Parecer Jurídico', 'Termo de Referência', 'DFD'
     resumo_ia TEXT NULL,
     hash_evento TEXT NOT NULL, -- SHA256 para idempotência estrita
     metadados JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -150,7 +162,7 @@ CREATE TABLE IF NOT EXISTS public.alertas_configurados (
     processo_id UUID NULL REFERENCES public.processos(id) ON DELETE CASCADE,
     unidade_id UUID NULL REFERENCES public.unidades_organizacionais(id) ON DELETE CASCADE,
     tipo public.tipo_gatilho_alerta NOT NULL,
-    parametros JSONB NOT NULL DEFAULT '{}'::jsonb, -- Ex: {"sla_dias": 5, "termos": ["Parecer", "Rejeitado"]}
+    parametros JSONB NOT NULL DEFAULT '{}'::jsonb,
     notificar_email BOOLEAN NOT NULL DEFAULT TRUE,
     notificar_sistema BOOLEAN NOT NULL DEFAULT TRUE,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
@@ -207,7 +219,7 @@ CREATE INDEX IF NOT EXISTS idx_notas_processo ON public.notas_internas (processo
 CREATE TABLE IF NOT EXISTS public.auditoria_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     usuario_id UUID REFERENCES public.perfis_usuarios(id) ON DELETE SET NULL,
-    acao TEXT NOT NULL, -- CONSULTA, EXPORTACAO, VINCULO, EDICAO
+    acao TEXT NOT NULL,
     entidade TEXT NOT NULL,
     entidade_id TEXT NOT NULL,
     ip_origem TEXT NULL,
@@ -222,7 +234,6 @@ CREATE INDEX IF NOT EXISTS idx_auditoria_entidade ON public.auditoria_log (entid
 -- 12. FUNÇÕES AUXILIARES E TRIGGERS
 -- ==============================================================================
 
--- Atualização automática de updated_at
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -297,6 +308,7 @@ $$;
 
 -- ==============================================================================
 -- 13. POLÍTICAS DE ROW LEVEL SECURITY (RLS) - CONTROLE DE ACESSO HIERÁRQUICO
+-- Hierarquia: SECRETARIO > SUBSECRETARIO > SECRETARIO_ADJUNTO > SUPERINTENDENTE > SUPERVISOR > ASSESSOR / TECNICO
 -- ==============================================================================
 
 ALTER TABLE public.unidades_organizacionais ENABLE ROW LEVEL SECURITY;
@@ -342,7 +354,7 @@ USING (
     EXISTS (SELECT 1 FROM public.get_user_context() ctx WHERE ctx.role = 'ADMIN')
 );
 
--- 13.3 Políticas para processos (RBAC + Herança no Organograma)
+-- 13.3 Políticas para processos (RBAC + Herança Completa no Organograma)
 CREATE POLICY "Visualização de processos por hierarquia e unidade"
 ON public.processos FOR SELECT
 TO authenticated
@@ -351,9 +363,17 @@ USING (
         SELECT 1 FROM public.get_user_context() ctx
         JOIN public.unidades_organizacionais u_origem ON u_origem.id = public.processos.unidade_origem_id
         WHERE
-            -- 1. ADMIN ou ALTA GESTÃO: Visão global da Secretaria
-            ctx.role = 'ADMIN'
-            -- 2. SUPERINTENDENTE: Vê sua Superintendência e todas as Supervisões subordinadas por herança de prefixo
+            -- 1. ADMIN, AUDITOR, SECRETÁRIO DE ESTADO e SUBSECRETÁRIO: Visão global de toda a SEDUC
+            ctx.role IN ('ADMIN', 'AUDITOR', 'SECRETARIO', 'SUBSECRETARIO')
+            -- 2. SECRETÁRIO ADJUNTO: Vê toda a Secretaria Adjunta e todas as Superintendências, Supervisões e Setores subordinados
+            OR (
+                ctx.role = 'SECRETARIO_ADJUNTO'
+                AND (
+                    u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '%'
+                    OR processos.unidade_origem_id = ctx.unidade_id
+                )
+            )
+            -- 3. SUPERINTENDENTE: Vê sua Superintendência e todas as Supervisões subordinadas por herança de prefixo
             OR (
                 ctx.role = 'SUPERINTENDENTE'
                 AND (
@@ -361,7 +381,7 @@ USING (
                     OR processos.unidade_origem_id = ctx.unidade_id
                 )
             )
-            -- 3. SUPERVISOR: Vê processos originados em sua Supervisão
+            -- 4. SUPERVISOR: Vê processos originados na sua Supervisão ou setores subordinados
             OR (
                 ctx.role = 'SUPERVISOR'
                 AND (
@@ -369,7 +389,16 @@ USING (
                     OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '%'
                 )
             )
-            -- 4. TÉCNICO: Vê processos de sua unidade
+            -- 5. ASSESSOR: Vê processos de sua Assessoria/Setor ou que atualmente tramitam por ela
+            OR (
+                ctx.role = 'ASSESSOR'
+                AND (
+                    processos.unidade_origem_id = ctx.unidade_id
+                    OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '%'
+                    OR processos.unidade_atual_sei = (SELECT sigla FROM public.unidades_organizacionais WHERE id = ctx.unidade_id)
+                )
+            )
+            -- 6. TÉCNICO: Vê processos da sua unidade direta de lotação
             OR (
                 ctx.role = 'TECNICO'
                 AND processos.unidade_origem_id = ctx.unidade_id
@@ -395,8 +424,7 @@ USING (
     )
 );
 
--- 13.5 Políticas para sessoes_coletor (RESTRIÇÃO ESTRITA - NENHUM ACESSO DIRETO POR AUTHENTICATED)
--- Permite acesso apenas via Service Role (Worker)
+-- 13.5 Políticas para sessoes_coletor (RESTRIÇÃO ESTRITA - Apenas Service Role do Worker)
 CREATE POLICY "Apenas Service Role lê sessões do coletor"
 ON public.sessoes_coletor FOR ALL
 TO service_role
@@ -406,17 +434,6 @@ WITH CHECK (TRUE);
 -- 13.6 Políticas para alertas e notificações
 CREATE POLICY "Usuário gerencia seus próprios alertas"
 ON public.alertas_configurados FOR ALL
-TO authenticated
-USING (usuario_id = auth.uid())
-WITH CHECK (usuario_id = auth.uid());
-
-CREATE POLICY "Usuário consulta e marca suas notificações"
-ON public.notificacoes_log FOR SELECT
-TO authenticated
-USING (usuario_id = auth.uid());
-
-CREATE POLICY "Usuário atualiza leitura de suas notificações"
-ON public.notificacoes_log FOR UPDATE
 TO authenticated
 USING (usuario_id = auth.uid())
 WITH CHECK (usuario_id = auth.uid());
@@ -443,7 +460,7 @@ WITH CHECK (
     )
 );
 
--- 13.8 Políticas para auditoria_log (Apenas Inserção e Leitura por Admin/Auditor)
+-- 13.8 Políticas para auditoria_log
 CREATE POLICY "Admin consulta auditoria"
 ON public.auditoria_log FOR SELECT
 TO authenticated
@@ -457,31 +474,68 @@ TO authenticated
 WITH CHECK (usuario_id = auth.uid() OR usuario_id IS NULL);
 
 -- ==============================================================================
--- 14. SEED DATA - ORGANOGRAMA SEDUC-MA E PROCESSOS PILOTO
+-- 14. SEED DATA OFICIAL - ORGANOGRAMA SEDUC-MA (22/06/2026)
 -- ==============================================================================
 
--- Inserção da Árvore Hierárquica do Organograma SEDUC-MA
-INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico)
+-- 1. Nível Central (Secretaria e Subsecretaria)
+INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico, titular_nome)
 VALUES
-    ('00000000-0000-0000-0000-000000000001', 'Secretaria de Estado da Educação do Maranhão', 'SEDUC', 'SECRETARIA', NULL, 'SEDUC')
+    ('00000000-0000-0000-0000-000000000001', 'Secretaria de Estado da Educação do Maranhão', 'SEDUC', 'SECRETARIA', NULL, 'SEDUC', 'Jandira Dias Araújo Silva'),
+    ('00000000-0000-0000-0000-000000000002', 'Subsecretaria de Educação', 'SUBSEDUC', 'SUBSECRETARIA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SUBSEDUC', 'José Antônio Barros Heluy'),
+    ('00000000-0000-0000-0000-000000000003', 'Chefia de Gabinete', 'GAB', 'SETOR', '00000000-0000-0000-0000-000000000001', 'SEDUC.GAB', 'Aleya de Cassia Pereira Pires Pantoja'),
+    ('00000000-0000-0000-0000-000000000004', 'Assessoria Jurídica', 'ASJUR', 'ASSESSORIA', '00000000-0000-0000-0000-000000000001', 'SEDUC.ASJUR', 'Valter Pereira Veras Neto'),
+    ('00000000-0000-0000-0000-000000000005', 'Assessoria de Comunicação', 'ASCOM', 'ASSESSORIA', '00000000-0000-0000-0000-000000000001', 'SEDUC.ASCOM', 'Igor Vinicius Gomes Linhares'),
+    ('00000000-0000-0000-0000-000000000006', 'Assessoria de Planejamento e Ações Estratégicas', 'ASPLAN', 'ASSESSORIA', '00000000-0000-0000-0000-000000000001', 'SEDUC.ASPLAN', 'Fabiane Cristine Froz Sousa'),
+    ('00000000-0000-0000-0000-000000000007', 'Ouvidoria', 'E-OUV', 'SETOR', '00000000-0000-0000-0000-000000000001', 'SEDUC.E-OUV', 'Samira Simas de S. Lobão'),
+    ('00000000-0000-0000-0000-000000000008', 'Fundo Estadual de Educação', 'FEE', 'SETOR', '00000000-0000-0000-0000-000000000001', 'SEDUC.FEE', 'José Adriano C. de S. Campelo'),
+    ('00000000-0000-0000-0000-000000000009', 'Comissão Setorial de Licitação', 'CSL', 'COMISSAO', '00000000-0000-0000-0000-000000000001', 'SEDUC.CSL', 'Igor Manuel Sousa Rocha'),
+    ('00000000-0000-0000-0000-000000000010', 'Comissão Permanente de Tomada de Contas Especial', 'CPTCE', 'COMISSAO', '00000000-0000-0000-0000-000000000001', 'SEDUC.CPTCE', 'Antonia do Espírito Santo da Silva Hortegal'),
+    ('00000000-0000-0000-0000-000000000011', 'Comissão de Processo Administrativo e Disciplinar', 'CPAD', 'COMISSAO', '00000000-0000-0000-0000-000000000001', 'SEDUC.CPAD', 'Dilson Dias Sá')
 ON CONFLICT (sigla) DO NOTHING;
 
-INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico)
+-- 2. Secretarias Adjuntas
+INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico, titular_nome)
 VALUES
-    ('00000000-0000-0000-0000-000000000002', 'Superintendência de Tecnologia da Informação', 'SUPTI', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SUPTI'),
-    ('00000000-0000-0000-0000-000000000003', 'Superintendência de Administração', 'SUPADM', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SUPADM'),
-    ('00000000-0000-0000-0000-000000000004', 'Superintendência de Engenharia e Infraestrutura Escolar', 'SUPENG', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SUPENG')
+    ('00000000-0000-0000-0000-000000000020', 'Secretaria Adjunta de Orçamento, Finanças e Contabilidade', 'SAOFC', 'SECRETARIA_ADJUNTA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SAOFC', 'Igor de Souza Carneiro da Costa'),
+    ('00000000-0000-0000-0000-000000000021', 'Secretaria Adjunta de Administração', 'SAAD', 'SECRETARIA_ADJUNTA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SAAD', 'Luzivete Botelho da Silva Rodrigues'),
+    ('00000000-0000-0000-0000-000000000022', 'Secretaria Adjunta de Gestão de Pessoas', 'SAGEP', 'SECRETARIA_ADJUNTA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SAGEP', 'Vitor Pflueger Pereira dos Santos'),
+    ('00000000-0000-0000-0000-000000000023', 'Secretaria Adjunta de Gestão da Rede do Ensino e da Aprendizagem', 'SAGEA', 'SECRETARIA_ADJUNTA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SAGEA', 'Francisco de Assis Costa Filho'),
+    ('00000000-0000-0000-0000-000000000024', 'Secretaria Adjunta de Educação Profissional e Inclusão Social', 'SAEP', 'SECRETARIA_ADJUNTA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SAEP', 'Sonia Maria da Silva Maciela'),
+    ('00000000-0000-0000-0000-000000000025', 'Secretaria Adjunta de Educação dos Povos Indígenas', 'SAPI', 'SECRETARIA_ADJUNTA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SAPI', 'Cintia Maria Santana da Silva'),
+    ('00000000-0000-0000-0000-000000000026', 'Secretaria Adjunta da Região dos Cocais', 'SARCOC', 'SECRETARIA_ADJUNTA', '00000000-0000-0000-0000-000000000001', 'SEDUC.SARCOC', 'Suely Almeida Mendes')
 ON CONFLICT (sigla) DO NOTHING;
 
-INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico)
+-- 3. Superintendências de SAAD (Administração)
+INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico, titular_nome)
 VALUES
-    ('00000000-0000-0000-0000-000000000005', 'Supervisão de Desenvolvimento e Sistemas', 'SUPDEV', 'SUPERVISAO', '00000000-0000-0000-0000-000000000002', 'SEDUC.SUPTI.SUPDEV'),
-    ('00000000-0000-0000-0000-000000000006', 'Supervisão de Infraestrutura e Redes', 'SUPINFRA', 'SUPERVISAO', '00000000-0000-0000-0000-000000000002', 'SEDUC.SUPTI.SUPINFRA'),
-    ('00000000-0000-0000-0000-000000000007', 'Comissão Setorial de Licitação', 'CSL', 'SETOR', '00000000-0000-0000-0000-000000000003', 'SEDUC.SUPADM.CSL'),
-    ('00000000-0000-0000-0000-000000000008', 'Assessoria Jurídica da SEDUC', 'ASJUR', 'SETOR', '00000000-0000-0000-0000-000000000001', 'SEDUC.ASJUR')
+    ('00000000-0000-0000-0000-000000000030', 'Superintendência de Tecnologia da Informação', 'STI', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000021', 'SEDUC.SAAD.STI', 'Roberto Max Louzeiro Pimentel'),
+    ('00000000-0000-0000-0000-000000000031', 'Superintendência de Infraestrutura', 'SUINFRA', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000021', 'SEDUC.SAAD.SUINFRA', 'Núbia Cristina Furtado Theodoro'),
+    ('00000000-0000-0000-0000-000000000032', 'Superintendência de Suprimentos', 'SUPRI', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000021', 'SEDUC.SAAD.SUPRI', 'Jaqueline Jansen Pereira'),
+    ('00000000-0000-0000-0000-000000000033', 'Superintendência de Logística', 'SUPERLOG', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000021', 'SEDUC.SAAD.SUPERLOG', 'Carlos Eduardo da Costa Santos')
 ON CONFLICT (sigla) DO NOTHING;
 
--- Inserção de Processos de Demonstração / Piloto
+-- 4. Supervisões da STI (Tecnologia da Informação)
+INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico, titular_nome)
+VALUES
+    ('00000000-0000-0000-0000-000000000040', 'Supervisão de Desenvolvimento e Manutenção de Sistemas', 'SUDES', 'SUPERVISAO', '00000000-0000-0000-0000-000000000030', 'SEDUC.SAAD.STI.SUDES', 'Sérvulo José Freire Junior'),
+    ('00000000-0000-0000-0000-000000000041', 'Supervisão de Redes', 'SUPREDES', 'SUPERVISAO', '00000000-0000-0000-0000-000000000030', 'SEDUC.SAAD.STI.SUPREDES', 'Marcos Camilo Freitas'),
+    ('00000000-0000-0000-0000-000000000042', 'Supervisão de Gerenciamento de Chamados', 'SUGEC', 'SUPERVISAO', '00000000-0000-0000-0000-000000000030', 'SEDUC.SAAD.STI.SUGEC', 'Daniela Etsuko Miwa Ramos'),
+    ('00000000-0000-0000-0000-000000000043', 'Supervisão de Manutenção de Equipamentos e Softwares', 'SUMES', 'SUPERVISAO', '00000000-0000-0000-0000-000000000030', 'SEDUC.SAAD.STI.SUMES', 'Equipe Técnica STI')
+ON CONFLICT (sigla) DO NOTHING;
+
+-- 5. Superintendências e Supervisões de SAOFC (Orçamento e Finanças)
+INSERT INTO public.unidades_organizacionais (id, nome, sigla, tipo, parent_id, caminho_hierarquico, titular_nome)
+VALUES
+    ('00000000-0000-0000-0000-000000000050', 'Superintendência de Orçamento e Finanças', 'SUPORFI', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000020', 'SEDUC.SAOFC.SUPORFI', 'Silviana Maria Athan Fernandes'),
+    ('00000000-0000-0000-0000-000000000051', 'Supervisão de Orçamento', 'SUORC', 'SUPERVISAO', '00000000-0000-0000-0000-000000000050', 'SEDUC.SAOFC.SUPORFI.SUORC', 'Edleusa Gomes Santos Martins'),
+    ('00000000-0000-0000-0000-000000000052', 'Supervisão Financeira', 'SUFIN', 'SUPERVISAO', '00000000-0000-0000-0000-000000000050', 'SEDUC.SAOFC.SUPORFI.SUFIN', 'Equipe SUFIN'),
+    ('00000000-0000-0000-0000-000000000053', 'Supervisão Contábil', 'SUCONT', 'SUPERVISAO', '00000000-0000-0000-0000-000000000050', 'SEDUC.SAOFC.SUPORFI.SUCONT', 'Equipe SUCONT'),
+    ('00000000-0000-0000-0000-000000000054', 'Superintendência de Contratos, Convênios e Prestação de Contas', 'SUPECON', 'SUPERINTENDENCIA', '00000000-0000-0000-0000-000000000020', 'SEDUC.SAOFC.SUPECON', 'Camila Pimentel Fernandes Andrade'),
+    ('00000000-0000-0000-0000-000000000055', 'Supervisão de Contratos e Convênios', 'SUCONV', 'SUPERVISAO', '00000000-0000-0000-0000-000000000054', 'SEDUC.SAOFC.SUPECON.SUCONV', 'Michele Oliveira Pacheco'),
+    ('00000000-0000-0000-0000-000000000056', 'Supervisão de Prestação de Contas', 'SUPC', 'SUPERVISAO', '00000000-0000-0000-0000-000000000054', 'SEDUC.SAOFC.SUPECON.SUPC', 'Júlio Vinícius Montelo Correa')
+ON CONFLICT (sigla) DO NOTHING;
+
+-- Inserção de Processos de Demonstração
 INSERT INTO public.processos (
     id,
     protocolo_sei,
@@ -504,7 +558,7 @@ INSERT INTO public.processos (
     'STARTGOV-2026/0892',
     '12345678000199-1-000045/2026',
     'Aquisição de Switches e Equipamentos de Conectividade para Unidades Escolares da Rede Estadual',
-    '00000000-0000-0000-0000-000000000005', -- SUPDEV / SUPTI
+    '00000000-0000-0000-0000-000000000040', -- SUDES / STI / SAAD / SEDUC
     'CSL',
     'Fase de Lances / Pregão Eletrônico',
     'FASE_EXTERNA_LICITACAO',
@@ -520,7 +574,7 @@ INSERT INTO public.processos (
     'STARTGOV-2026/1045',
     NULL,
     'Contratação de Serviços Especializados de Nuvem Governamental e Banco de Dados Supabase/PostgreSQL',
-    '00000000-0000-0000-0000-000000000005', -- SUPDEV / SUPTI
+    '00000000-0000-0000-0000-000000000040', -- SUDES / STI / SAAD / SEDUC
     'ASJUR',
     'Parecer Jurídico Conclusivo do Art. 53',
     'ANALISE_JURIDICA',
@@ -536,8 +590,8 @@ INSERT INTO public.processos (
     NULL,
     NULL,
     'Elaboração de ETP e Termo de Referência para Reforma das Escolas DIGNAS do Polo Munin',
-    '00000000-0000-0000-0000-000000000004', -- SUPENG
-    'SUPENG',
+    '00000000-0000-0000-0000-000000000031', -- SUINFRA / SAAD / SEDUC
+    'SUINFRA',
     NULL,
     'FASE_INTERNA_SEI',
     'MORNO',
@@ -548,7 +602,7 @@ INSERT INTO public.processos (
 )
 ON CONFLICT (protocolo_sei) DO NOTHING;
 
--- Inserção de Histórico de Tramitações (Eventos da Linha do Tempo Híbrida)
+-- Inserção de Histórico de Tramitações
 INSERT INTO public.historico_tramitacoes (
     processo_id,
     origem_sistema,
@@ -564,22 +618,22 @@ INSERT INTO public.historico_tramitacoes (
     '10000000-0000-0000-0000-000000000001',
     'SEI',
     timezone('utc', now() - interval '20 days'),
-    'SUPDEV',
-    'Autuação do processo administrativo e emissão do DFD nº 12/2026',
-    'DFD-2026-SUPDEV.pdf',
-    'Documento de Formalização de Demanda',
-    'Abertura formal da demanda com justificativa técnica para aquisição de infraestrutura de switches.',
+    'SUDES',
+    'Autuação do processo administrativo e emissão do DFD nº 12/2026 por Sérvulo José Freire Junior',
+    'DFD-2026-SUDES.pdf',
+    'Documento de Formalização da Demanda (DFD)',
+    'Abertura formal da demanda com justificativa técnica para aquisição de infraestrutura de conectividade escolar.',
     'hash_evt_01'
 ),
 (
     '10000000-0000-0000-0000-000000000001',
     'SEI',
     timezone('utc', now() - interval '14 days'),
-    'SUPTI',
-    'Aprovação do Estudo Técnico Preliminar (ETP) e Termo de Referência',
+    'STI',
+    'Aprovação do Estudo Técnico Preliminar (ETP) e Termo de Referência pela Superintendência de TI',
     'TR-Switches-vFinal.pdf',
     'Termo de Referência',
-    'Especificação técnica aprovada para 120 switches gerenciáveis L2/L3.',
+    'Especificação técnica aprovada por Roberto Max Louzeiro Pimentel para 120 switches gerenciáveis.',
     'hash_evt_02'
 ),
 (
@@ -590,7 +644,7 @@ INSERT INTO public.historico_tramitacoes (
     'Importação da demanda no StartGov com geração do certame PE nº 042/2026',
     'Edital-PE-042-2026.pdf',
     'Edital de Licitação',
-    'Processo publicado no StartGov vinculado ao SEI-021001/004521/2026 com lances agendados.',
+    'Processo publicado no StartGov vinculado ao SEI-021001/004521/2026 por Igor Manuel Sousa Rocha.',
     'hash_evt_03'
 ),
 (
@@ -601,7 +655,7 @@ INSERT INTO public.historico_tramitacoes (
     'Publicação automática do Edital no Portal Nacional de Contratações Públicas',
     NULL,
     'Publicação Legal Art. 54',
-    'Edital em conformidade com art. 54 da Lei 14.133/2021 no PNCP.',
+    'Edital em conformidade com art. 54 da Lei 14.133/2021 no PNCP sob CNPJ da SEDUC.',
     'hash_evt_04'
 ),
 (
@@ -612,7 +666,7 @@ INSERT INTO public.historico_tramitacoes (
     'Sessão pública aberta para disputa de lances entre fornecedores credenciados',
     'Ata-Lances-Inicial.pdf',
     'Ata de Abertura',
-    'Recebidas 8 propostas válidas. Etapa de lances em andamento com melhor proposta em análise.',
+    'Recebidas 8 propostas válidas. Etapa de lances em andamento na CSL.',
     'hash_evt_05'
 )
 ON CONFLICT (processo_id, hash_evento) DO NOTHING;

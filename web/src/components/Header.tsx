@@ -2,18 +2,22 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Bell, RefreshCw, CheckCircle2, ShieldCheck, Database } from 'lucide-react';
+import { Bell, ShieldCheck, UserCheck } from 'lucide-react';
 
 interface HeaderProps {
   lastSyncSEI?: string;
   lastSyncStartGov?: string;
   lastSyncPNCP?: string;
+  activeRole?: string;
+  activeUnit?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   lastSyncSEI = 'Hoje às 14:00',
   lastSyncStartGov = 'Hoje às 13:45',
   lastSyncPNCP = 'Hoje às 12:30',
+  activeRole = 'SUPERVISOR',
+  activeUnit = 'SUDES / STI'
 }) => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
@@ -31,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
                   SEDUC-MA
                 </span>
                 <span className="text-xs bg-emerald-100 text-emerald-800 font-medium px-2 py-0.5 rounded-full border border-emerald-200">
-                  Zero-Cost Stack
+                  Hierarquia v2.1
                 </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">
@@ -61,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Notificações e Perfil do Usuário */}
+          {/* Notificações e Perfil do Usuário com Cargo Estruturado */}
           <div className="flex items-center space-x-3">
             <Link 
               href="/alertas" 
@@ -72,13 +76,17 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
             </Link>
 
-            <div className="border-l border-slate-200 pl-3 flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 text-white font-medium flex items-center justify-center text-xs shadow-inner">
+            <div className="border-l border-slate-200 pl-3 flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-900 text-white font-medium flex items-center justify-center text-xs shadow-inner">
                 SJ
               </div>
               <div className="hidden lg:block text-left text-xs">
-                <p className="font-semibold text-slate-800 leading-tight">Servulo Junior</p>
-                <p className="text-slate-500 text-[10px]">Superintendência de TI (SUPTI)</p>
+                <p className="font-semibold text-slate-800 leading-tight">Sérvulo Junior</p>
+                <div className="flex items-center gap-1 text-slate-500 text-[10px]">
+                  <span className="font-bold text-blue-700">{activeRole}</span>
+                  <span>&bull;</span>
+                  <span className="truncate max-w-[150px]">{activeUnit}</span>
+                </div>
               </div>
             </div>
           </div>

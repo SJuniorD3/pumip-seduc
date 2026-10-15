@@ -1,5 +1,25 @@
-export type TipoUnidade = 'SECRETARIA' | 'SUPERINTENDENCIA' | 'SUPERVISAO' | 'SETOR';
-export type UserRole = 'ADMIN' | 'SUPERINTENDENTE' | 'SUPERVISOR' | 'TECNICO';
+export type TipoUnidade = 
+  | 'SECRETARIA'
+  | 'SUBSECRETARIA'
+  | 'SECRETARIA_ADJUNTA'
+  | 'SUPERINTENDENCIA'
+  | 'SUPERVISAO'
+  | 'ASSESSORIA'
+  | 'COMISSAO'
+  | 'REGIONAL'
+  | 'SETOR';
+
+export type UserRole = 
+  | 'ADMIN'
+  | 'SECRETARIO'
+  | 'SUBSECRETARIO'
+  | 'SECRETARIO_ADJUNTO'
+  | 'SUPERINTENDENTE'
+  | 'SUPERVISOR'
+  | 'ASSESSOR'
+  | 'TECNICO'
+  | 'AUDITOR';
+
 export type ProcessoPrioridade = 'QUENTE' | 'MORNO' | 'FRIO';
 export type OrigemSistema = 'SEI' | 'STARTGOV' | 'PNCP';
 export type StatusEtapaProcessual = 
@@ -17,6 +37,7 @@ export interface UnidadeOrganizacional {
   tipo: TipoUnidade;
   parent_id?: string | null;
   caminho_hierarquico: string;
+  titular_nome?: string | null;
 }
 
 export interface PerfilUsuario {
@@ -25,7 +46,7 @@ export interface PerfilUsuario {
   email: string;
   role: UserRole;
   unidade_id: string;
-  cargo?: string;
+  cargo_titulo?: string;
   unidade?: UnidadeOrganizacional;
 }
 
