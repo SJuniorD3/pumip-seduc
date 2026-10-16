@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { mockProcessos, mockTramitacoes } from '../../../lib/mockData';
@@ -15,7 +15,13 @@ import {
   FileText, 
   ShieldAlert, 
   Send,
-  MessageSquare
+  MessageSquare,
+  Star,
+  Share2,
+  Check,
+  Compass,
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function ProcessoDetalhePage() {
@@ -25,6 +31,83 @@ export default function ProcessoDetalhePage() {
   // Busca o processo correspondente
   const processo = mockProcessos.find((p) => p.id === processoId) || mockProcessos[0];
   const eventos = mockTramitacoes[processo.id] || mockTramitacoes[mockProcessos[0].id] || [];
+
+  const [favorito, setFavorito] = useState(false);
+  const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
+
+  // Verifica se está nos favoritos
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('pumip_favoritos');
+      if (saved) {
+        const favs: string[] = JSON.parse(saved);
+        setFavorito(favs.includes(processo.id));
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar favoritos:', e);
+    }
+  }, [processo.id]);
+
+  const toggleFavorito = () => {
+    try {
+      const saved = localStorage.getItem('pumip_favoritos');
+      let favs: string[] = saved ? JSON.parse(saved) : [];
+      if (favs.includes(processo.id)) {
+        favs = favs.filter((id) => id !== processo.id);
+        setFavorito(false);
+      } else {
+        favs.push(processo.id);
+        setFavorito(true);
+      }
+      localStorage.setItem('pumip_favoritos', JSON.stringify(favs));
+    } catch (e) {
+      console.warn('Erro ao salvar favorito:', e);
+    }
+  };
+
+  const handleCopyWhatsApp = () => {
+    const texto = `📌 *Processo SEI:* ${processo.protocolo_sei}
+🏢 *Objeto:* ${processo.objeto}
+📍 *Localização Atual:* ${processo.unidade_atual_sei} (${processo.dias_parado_na_unidade} dias na unidade)
+🎯 *Próximo Passo Esperado:* ${processo.proximo_passo_esperado || 'Tramitação setorial de rotina'}
+🛒 *StartGov:* ${processo.protocolo_startgov || 'Aguardando vinculação'}
+🔗 *Acompanhar no PUMIP:* http://localhost:3000/processos/${processo.id}`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(texto).then(() => {
+        setCopiedWhatsApp(true);
+        setTimeout(() => setCopiedWhatsApp(false), 2500);
+      });
+    }
+  };
+
+  // Semáforo de Inércia (3 Níveis)
+  const getSemaforo = (dias: number) => {
+    if (dias >= 7) {
+      return {
+        dot: 'bg-red-500 animate-pulse',
+        text: 'text-red-700',
+        bg: 'bg-red-50 border-red-200',
+        label: 'Gargalo Crítico (7+ dias sem tramitação)'
+      };
+    }
+    if (dias >= 4) {
+      return {
+        dot: 'bg-amber-500',
+        text: 'text-amber-700',
+        bg: 'bg-amber-50 border-amber-200',
+        label: 'Atenção (4 a 6 dias na unidade)'
+      };
+    }
+    return {
+      dot: 'bg-emerald-500',
+      text: 'text-emerald-700',
+      bg: 'bg-emerald-50 border-emerald-200',
+      label: 'Regular (0 a 3 dias)'
+    };
+  };
+
+  const semaforo = getSemaforo(processo.dias_parado_na_unidade);
 
   // Estado para novas notas internas (RF15)
   const [notas, setNotas] = useState([
@@ -57,8 +140,8 @@ export default function ProcessoDetalhePage() {
 
   return (
     <div className="space-y-6">
-      {/* Navegação de Retorno */}
-      <div className="flex items-center justify-between">
+      {/* Navegação de Retorno e Ações Principais */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <Link
           href="/"
           className="flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-blue-600 transition"
@@ -67,7 +150,44 @@ export default function ProcessoDetalhePage() {
           <span>Voltar ao Painel Executivo</span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Botão Fixar na Minha Mesa */}
+          <button
+            onClick={toggleFavorito}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition ${
+              favorito
+                ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
+            }`}
+            title={favorito ? 'Fixado na sua mesa' : 'Fixar na minha mesa'}
+          >
+            <Star className={`w-4 h-4 ${favorito ? 'text-amber-500 fill-amber-400' : 'text-slate-400'}`} />
+            <span>{favorito ? 'Fixado na Mesa' : 'Fixar na Minha Mesa'}</span>
+          </button>
+
+          {/* Botão Copiar para WhatsApp */}
+          <button
+            onClick={handleCopyWhatsApp}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition ${
+              copiedWhatsApp
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-sm'
+            }`}
+            title="Copiar resumo rápido pronto para WhatsApp ou Despacho"
+          >
+            {copiedWhatsApp ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>Copiado com Sucesso!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-4 h-4" />
+                <span>Copiar p/ WhatsApp</span>
+              </>
+            )}
+          </button>
+
           <SyncButton
             processoId={processo.id}
             ultimaVerificacao={processo.ultima_verificacao_em}
@@ -83,6 +203,12 @@ export default function ProcessoDetalhePage() {
               <span className="text-base font-mono font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200">
                 {processo.protocolo_sei}
               </span>
+              {processo.tem_novidade_hoje && (
+                <span className="text-xs font-bold text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                  <Sparkles className="w-3 h-3 text-blue-600" />
+                  Movimentado Hoje
+                </span>
+              )}
               {processo.protocolo_startgov ? (
                 <span className="text-sm font-mono font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 flex items-center gap-1">
                   <span>StartGov: {processo.protocolo_startgov}</span>
@@ -105,26 +231,32 @@ export default function ProcessoDetalhePage() {
             </h1>
           </div>
 
+          {/* Indicadores de Tempo Parado e Setor Atual com Semáforo */}
           <div className="flex items-center gap-3 self-start">
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block">
-                Tempo Parado
+            <div className={`rounded-lg p-3 text-center border ${semaforo.bg}`}>
+              <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${semaforo.dot}`}></span>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-600">
+                  Tempo Parado
+                </span>
+              </div>
+              <span className={`text-xl font-bold ${semaforo.text}`}>
+                {processo.dias_parado_na_unidade} {processo.dias_parado_na_unidade === 1 ? 'dia' : 'dias'}
               </span>
-              <span
-                className={`text-xl font-bold ${
-                  processo.dias_parado_na_unidade >= 5 ? 'text-red-600' : 'text-slate-800'
-                }`}
-              >
-                {processo.dias_parado_na_unidade} dias
+              <span className="text-[9px] block text-slate-500 mt-0.5">
+                {semaforo.label}
               </span>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center min-w-[120px]">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block mb-0.5">
                 Setor Atual
               </span>
               <span className="text-sm font-bold text-blue-800">
                 {processo.unidade_atual_sei}
+              </span>
+              <span className="text-[9px] block text-slate-400 mt-0.5">
+                No SEI GOVMA
               </span>
             </div>
           </div>
@@ -155,7 +287,41 @@ export default function ProcessoDetalhePage() {
         </div>
       </div>
 
-      {/* Metrô Processual Unificado */}
+      {/* Card Destaque: Próximo Passo Esperado */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50/70 border border-blue-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-lg bg-blue-600 text-white shadow-sm shrink-0 mt-0.5 sm:mt-0">
+            <Compass className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">
+                Próximo Passo Esperado
+              </span>
+              <span className="text-[10px] bg-blue-200 text-blue-800 px-2 py-0.2 rounded-full font-semibold">
+                Guia Operacional
+              </span>
+            </div>
+            <p className="text-sm font-bold text-slate-900 mt-0.5">
+              {processo.proximo_passo_esperado || 'Tramitação setorial regular'}
+            </p>
+            <p className="text-xs text-slate-600 mt-1">
+              Setor responsável atual: <strong className="text-blue-800">{processo.unidade_atual_sei}</strong>. 
+              {processo.dias_parado_na_unidade >= 5 && ' Cobrança de despacho recomendada devido à inércia.'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={handleCopyWhatsApp}
+          className="self-end sm:self-center shrink-0 bg-white hover:bg-blue-50 text-blue-700 border border-blue-300 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+        >
+          <Share2 className="w-3.5 h-3.5 text-blue-600" />
+          <span>Notificar Responsável</span>
+        </button>
+      </div>
+
+      {/* Metrô Processual Unificado com Filtro de Marcos Críticos */}
       <MetroTimeline
         eventos={eventos}
         protocoloSei={processo.protocolo_sei}
@@ -212,7 +378,7 @@ export default function ProcessoDetalhePage() {
           />
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
           >
             <Send className="w-3.5 h-3.5" />
             <span>Registrar</span>

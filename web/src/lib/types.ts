@@ -64,6 +64,8 @@ export interface Processo {
   prioridade: ProcessoPrioridade;
   dias_parado_na_unidade: number;
   hash_ultimo_estado?: string | null;
+  proximo_passo_esperado?: string | null;
+  tem_novidade_hoje?: boolean;
   ultima_movimentacao_em: string;
   ultima_verificacao_em?: string | null;
   proxima_verificacao_em: string;

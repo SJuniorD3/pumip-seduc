@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { KPICards } from '../components/KPICards';
 import { ProcessTable } from '../components/ProcessTable';
+import { FeedNovidades } from '../components/FeedNovidades';
 import { mockProcessos } from '../lib/mockData';
 import { Processo } from '../lib/types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -88,6 +89,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Feed de Novidades das Últimas 24 Horas */}
+      <FeedNovidades />
+
       {/* Cards de Métricas Principais (KPIs) */}
       <KPICards processos={processos} />
 
@@ -103,7 +107,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <span className="text-xs text-slate-500">
-            Atualização periódica automatizada
+            Atualização periódica automatizada (Delta Hashing)
           </span>
         </div>
         <ProcessTable processos={processos} />

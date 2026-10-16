@@ -9,7 +9,11 @@ import {
   Clock, 
   CheckCircle, 
   Trash2, 
-  AlertTriangle 
+  AlertTriangle,
+  Zap,
+  Repeat,
+  Compass,
+  Check
 } from 'lucide-react';
 
 interface AlertaItem {
@@ -90,21 +94,92 @@ export default function AlertasPage() {
         <div className="flex items-center gap-2 mb-1">
           <BellRing className="w-5 h-5 text-blue-600" />
           <h1 className="text-xl font-bold text-slate-900">
-            Central de Alertas e Gatilhos Transacionais
+            Central de Alertas e Notificações Inteligentes
           </h1>
         </div>
         <p className="text-xs text-slate-500">
-          Configure gatilhos automatizados para receber e-mails via Resend API quando ocorrerem eventos críticos, 
-          estouro de prazos da Lei 14.133/2021 ou inércia de tramitação.
+          Monitoramento em tempo real com disparo de notificações por e-mail (Resend API) para eventos críticos, 
+          inércia processual e prazos legais da Lei nº 14.133/2021.
         </p>
       </div>
 
+      {/* Seção de Gatilhos Inteligentes Pré-definidos (Zero-Configuração) */}
+      <div className="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl p-6 shadow-md space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-amber-400" />
+            <h2 className="text-base font-bold">
+              Gatilhos Automáticos do Sistema (Zero-Configuração Ativos)
+            </h2>
+          </div>
+          <span className="text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 self-start sm:self-auto">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            Proteção Ativa 24/7
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
+          O PUMIP-SEDUC já vem equipado com 3 motores inteligentes de vigilância processual que operam 
+          automaticamente sem necessidade de nenhuma configuração manual:
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+          {/* Card 1 */}
+          <div className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse"></span>
+              <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
+                Ativo
+              </span>
+            </div>
+            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>Gargalo Crítico (&ge; 7 dias)</span>
+            </h3>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Detecta processos sem nenhuma movimentação há mais de 7 dias úteis em qualquer setor, acionando o semáforo vermelho pulsante.
+            </p>
+          </div>
+
+          {/* Card 2 */}
+          <div className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2">
+            <div className="flex items-center justify-between">
+              <Repeat className="w-4 h-4 text-amber-400" />
+              <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
+                Ativo
+              </span>
+            </div>
+            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>Retorno de Diligência</span>
+            </h3>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Alerta imediato quando um processo retorna da Assessoria Jurídica (AJU) ou Comissões (CSL) solicitando saneamento ou adequação.
+            </p>
+          </div>
+
+          {/* Card 3 */}
+          <div className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2">
+            <div className="flex items-center justify-between">
+              <Compass className="w-4 h-4 text-cyan-400" />
+              <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
+                Ativo
+              </span>
+            </div>
+            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>Saída e Despacho Recente</span>
+            </h3>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Registra no Feed de Novidades das 24h e notifica os interessados sempre que um processo avança para a próxima etapa na cadeia.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Formulário de Criação de Regra */}
+        {/* Formulário de Criação de Regra Personalizada */}
         <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
           <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
             <Plus className="w-4 h-4 text-blue-600" />
-            <span>Nova Regra de Alerta</span>
+            <span>Criar Regra Personalizada</span>
           </h2>
 
           <form onSubmit={handleCriarAlerta} className="space-y-3 text-xs">
@@ -193,7 +268,7 @@ export default function AlertasPage() {
         {/* Lista de Alertas Ativos */}
         <div className="lg:col-span-2 space-y-3">
           <h2 className="text-sm font-bold text-slate-900 flex items-center justify-between">
-            <span>Regras Cadastradas na sua Carteira ({alertas.length})</span>
+            <span>Regras Personalizadas ({alertas.length})</span>
             <span className="text-xs font-normal text-slate-500">
               Resumo Diário consolidado às 08:00 (RF07)
             </span>

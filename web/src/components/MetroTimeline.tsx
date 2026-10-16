@@ -17,7 +17,10 @@ import {
   ThumbsDown,
   Printer,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Filter,
+  Milestone,
+  ListFilter
 } from 'lucide-react';
 
 interface MetroTimelineProps {
@@ -32,6 +35,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
   protocoloStartGov
 }) => {
   const [resumosIncorretos, setResumosIncorretos] = useState<Record<string, boolean>>({});
+  const [visaoFiltro, setVisaoFiltro] = useState<'CRITICOS' | 'TODOS'>('CRITICOS');
 
   const handleMarcarIncorreto = (eventoId: string) => {
     setResumosIncorretos((prev) => ({
@@ -48,10 +52,41 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
     );
   }
 
-  // Ordena cronologicamente (mais recente primeiro ou do início ao fim)
+  // Ordena cronologicamente do início ao fim
   const eventosOrdenados = [...eventos].sort(
     (a, b) => new Date(a.data_hora_evento).getTime() - new Date(b.data_hora_evento).getTime()
   );
+
+  // Critério de identificação de Marcos Críticos (filtra ruído administrativo)
+  const isMarcoCritico = (evt: HistoricoTramitacao) => {
+    if (evt.resumo_ia) return true;
+    if (evt.origem_sistema !== 'SEI') return true; // Eventos do StartGov e PNCP são marcos externos chave
+    const tipo = (evt.tipo_documento || '').toUpperCase();
+    if (['PARECER', 'EDITAL', 'PORTARIA', 'TERMO_REFERENCIA', 'CONTRATO', 'HOMOLOGACAO', 'AUTORIZACAO', 'DESPACHO_DECISORIO'].includes(tipo)) {
+      return true;
+    }
+    const desc = evt.descricao_andamento.toLowerCase();
+    return (
+      desc.includes('parecer') ||
+      desc.includes('termo de referência') ||
+      desc.includes('edital') ||
+      desc.includes('homolog') ||
+      desc.includes('publica') ||
+      desc.includes('assina') ||
+      desc.includes('empenho') ||
+      desc.includes('diligência') ||
+      desc.includes('devolv') ||
+      desc.includes('aprova') ||
+      desc.includes('concl') ||
+      desc.includes('adjudica')
+    );
+  };
+
+  const marcosCriticosCount = eventosOrdenados.filter(isMarcoCritico).length;
+
+  const eventosExibidos = visaoFiltro === 'CRITICOS' && marcosCriticosCount > 0
+    ? eventosOrdenados.filter(isMarcoCritico)
+    : eventosOrdenados;
 
   const getSystemTheme = (origem: OrigemSistema) => {
     switch (origem) {
@@ -94,62 +129,110 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
       {/* Cabeçalho da Linha do Tempo */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-slate-200 gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-5 border-b border-slate-200 gap-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span>Metrô Processual Unificado</span>
-            <span className="text-xs font-normal text-slate-500">
-              (Linha do Tempo Híbrida SEI + StartGov)
+          <div className="flex items-center gap-2">
+            <Milestone className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-bold text-slate-900">
+              Metrô Processual Unificado
+            </h2>
+            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
+              Híbrido SEI + StartGov
             </span>
-          </h2>
-          <div className="flex items-center gap-3 mt-1 text-xs text-slate-600">
-            <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-700">
-              {protocoloSei}
+          </div>
+          <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-600">
+            <span className="font-mono bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded font-bold">
+              SEI: {protocoloSei}
             </span>
             {protocoloStartGov && (
               <>
                 <span className="text-slate-400">&harr;</span>
-                <span className="font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">
-                  {protocoloStartGov}
+                <span className="font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-bold">
+                  StartGov: {protocoloStartGov}
                 </span>
               </>
             )}
           </div>
         </div>
 
-        {/* Legenda dos Sistemas e Ação de Impressão */}
-        <div className="flex flex-wrap items-center gap-3 text-xs">
+        {/* Controles: Filtro de Marcos Críticos vs Completa + Impressão */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Seletor de visualização */}
+          <div className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 flex items-center text-xs">
+            <button
+              onClick={() => setVisaoFiltro('CRITICOS')}
+              className={`px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition ${
+                visaoFiltro === 'CRITICOS'
+                  ? 'bg-white text-blue-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Milestone className="w-3.5 h-3.5 text-blue-600" />
+              <span>Marcos Críticos</span>
+              <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                {marcosCriticosCount}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setVisaoFiltro('TODOS')}
+              className={`px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition ${
+                visaoFiltro === 'TODOS'
+                  ? 'bg-white text-blue-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <ListFilter className="w-3.5 h-3.5 text-slate-600" />
+              <span>Visão Completa</span>
+              <span className="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                {eventosOrdenados.length}
+              </span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => triggerPrintPDF(`Linha_do_Tempo_${protocoloSei}`)}
+            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+            title="Imprimir ou Salvar Linha do Tempo em PDF"
+          >
+            <Printer className="w-3.5 h-3.5 text-slate-600" />
+            <span>Imprimir PDF</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Legenda de Sistemas e Informação do Filtro Ativo */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs bg-slate-50/70 p-3 rounded-lg border border-slate-200 gap-2">
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="text-slate-500 font-semibold">Fontes Integradas:</span>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
             <span className="text-slate-700 font-medium">SEI (Azul)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-            <span className="text-slate-700 font-medium">StartGov (Verde)</span>
+            <span className="text-slate-700 font-medium">StartGov Compras (Verde)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <span className="text-slate-700 font-medium">PNCP (Âmbar)</span>
+            <span className="text-slate-700 font-medium">PNCP Federal (Âmbar)</span>
           </div>
+        </div>
 
-          <button
-            onClick={() => triggerPrintPDF(`Linha_do_Tempo_${protocoloSei}`)}
-            className="ml-auto bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 transition"
-            title="Imprimir ou Salvar Linha do Tempo em PDF"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Imprimir PDF</span>
-          </button>
+        <div className="text-[11px] text-slate-500 italic">
+          {visaoFiltro === 'CRITICOS'
+            ? `Exibindo ${eventosExibidos.length} marcos decisórios (despachos de mero expediente ocultados).`
+            : `Exibindo histórico completo de ${eventosExibidos.length} movimentações.`}
         </div>
       </div>
 
       {/* Traçado da Linha do Tempo */}
       <div className="relative pl-6 sm:pl-8 space-y-8 before:absolute before:left-3 sm:before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
-        {eventosOrdenados.map((evt, index) => {
+        {eventosExibidos.map((evt, index) => {
           const theme = getSystemTheme(evt.origem_sistema);
-          const isLatest = index === eventosOrdenados.length - 1;
+          const isCritico = isMarcoCritico(evt);
           const isIncorreto = resumosIncorretos[evt.id || String(index)];
 
           return (
@@ -177,16 +260,23 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
                       <Building2 className="w-3.5 h-3.5 text-slate-500" />
                       {evt.unidade_setor}
                     </span>
+
+                    {isCritico && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                        <Milestone className="w-3 h-3 text-amber-600" />
+                        Marco Decisório
+                      </span>
+                    )}
                   </div>
 
-                  <span className="text-xs text-slate-500 flex items-center gap-1">
+                  <span className="text-xs text-slate-500 flex items-center gap-1 font-mono">
                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
                     {formatDate(evt.data_hora_evento)}
                   </span>
                 </div>
 
                 {/* Descrição do Andamento */}
-                <p className="text-sm font-medium text-slate-900 mb-2">
+                <p className="text-sm font-semibold text-slate-900 mb-2">
                   {evt.descricao_andamento}
                 </p>
 
