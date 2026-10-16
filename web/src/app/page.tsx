@@ -8,6 +8,7 @@ import { mockProcessos } from '../lib/mockData';
 import { Processo } from '../lib/types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useAuth } from '../lib/authContext';
+import { filterProcessosByRLS } from '../lib/rlsFilter';
 import { 
   FileText, 
   Kanban, 
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const [processos, setProcessos] = useState<Processo[]>(mockProcessos);
   const [loading, setLoading] = useState<boolean>(false);
   const [kpiFilter, setKpiFilter] = useState<KPIFilterType>('TODOS');
+  const processosVisiveis = filterProcessosByRLS(processos, user);
 
   useEffect(() => {
     async function loadData() {
@@ -104,7 +106,7 @@ export default function DashboardPage() {
           </span>
         </div>
         <KPICards 
-          processos={processos} 
+          processos={processosVisiveis} 
           activeFilter={kpiFilter}
           onSelectFilter={setKpiFilter}
         />
@@ -118,16 +120,16 @@ export default function DashboardPage() {
               Processos da Carteira
             </h2>
             <span className="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full border border-slate-200">
-              {processos.length} monitorados
+              {processosVisiveis.length} autorizados pelo RLS ({user.role})
             </span>
           </div>
           <span className="text-xs text-slate-500 hidden sm:inline">
-            Atualização periódica automatizada (Delta Hashing)
+            Regra de Não Ampliação de Acesso Ativa
           </span>
         </div>
 
         <ProcessTable 
-          processos={processos} 
+          processos={processosVisiveis} 
           kpiFilter={kpiFilter}
           onClearKpiFilter={() => setKpiFilter('TODOS')}
         />

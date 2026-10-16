@@ -7,6 +7,7 @@ import { mockProcessos, mockTramitacoes } from '../../../lib/mockData';
 import { MetroTimeline } from '../../../components/MetroTimeline';
 import { SyncButton } from '../../../components/SyncButton';
 import { Breadcrumb } from '../../../components/Breadcrumb';
+import { useAuth } from '../../../lib/authContext';
 import { 
   ArrowLeft, 
   Building, 
@@ -15,41 +16,76 @@ import {
   ExternalLink, 
   FileText, 
   ShieldAlert, 
-  Send,
-  MessageSquare,
-  Star,
-  Share2,
-  Check,
-  Compass,
-  Sparkles,
-  AlertTriangle
+  Send, 
+  MessageSquare, 
+  Star, 
+  Share2, 
+  Check, 
+  Compass, 
+  Sparkles, 
+  AlertTriangle,
+  SearchX
 } from 'lucide-react';
 
 export default function ProcessoDetalhePage() {
   const params = useParams();
   const processoId = params.id as string;
+  const { user } = useAuth();
 
-  // Busca o processo correspondente
-  const processo = mockProcessos.find((p) => p.id === processoId) || mockProcessos[0];
-  const eventos = mockTramitacoes[processo.id] || mockTramitacoes[mockProcessos[0].id] || [];
+  // Busca o processo correspondente pelo ID
+  const processo = mockProcessos.find((p) => p.id === processoId);
+  const eventos = processo ? (mockTramitacoes[processo.id] || []) : [];
 
   const [favorito, setFavorito] = useState(false);
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
 
-  // Verifica se está nos favoritos
+  // Notas internas com persistência local (RF15)
+  const [notas, setNotas] = useState<Array<{
+    id: string;
+    autor: string;
+    data: string;
+    conteudo: string;
+    versao: number;
+  }>>([]);
+  const [novaNota, setNovaNota] = useState('');
+
+  // Carrega favoritos e notas persistidas no navegador
   useEffect(() => {
+    if (!processo) return;
+
     try {
-      const saved = localStorage.getItem('pumip_favoritos');
-      if (saved) {
-        const favs: string[] = JSON.parse(saved);
+      // 1. Favoritos
+      const savedFavs = localStorage.getItem('pumip_favoritos');
+      if (savedFavs) {
+        const favs: string[] = JSON.parse(savedFavs);
         setFavorito(favs.includes(processo.id));
       }
+
+      // 2. Notas Internas
+      const savedNotas = localStorage.getItem(`pumip_notas_${processo.id}`);
+      if (savedNotas) {
+        setNotas(JSON.parse(savedNotas));
+      } else {
+        // Inicializa com a nota padrão histórica
+        const defaultNotes = [
+          {
+            id: 'nota-1',
+            autor: 'Sérvulo Junior (SUDES)',
+            data: '14/10/2026 às 16:30',
+            conteudo: 'Aprovada minuta técnica do Termo de Referência com a equipe de redes. Aguardando envio formal à CSL.',
+            versao: 1
+          }
+        ];
+        setNotas(defaultNotes);
+        localStorage.setItem(`pumip_notas_${processo.id}`, JSON.stringify(defaultNotes));
+      }
     } catch (e) {
-      console.warn('Erro ao carregar favoritos:', e);
+      console.warn('Erro ao carregar dados locais:', e);
     }
-  }, [processo.id]);
+  }, [processo]);
 
   const toggleFavorito = () => {
+    if (!processo) return;
     try {
       const saved = localStorage.getItem('pumip_favoritos');
       let favs: string[] = saved ? JSON.parse(saved) : [];
@@ -67,6 +103,7 @@ export default function ProcessoDetalhePage() {
   };
 
   const handleCopyWhatsApp = () => {
+    if (!processo) return;
     const texto = `📌 *Processo SEI:* ${processo.protocolo_sei}
 🏢 *Objeto:* ${processo.objeto}
 📍 *Localização Atual:* ${processo.unidade_atual_sei} (${processo.dias_parado_na_unidade} dias na unidade)
@@ -79,6 +116,28 @@ export default function ProcessoDetalhePage() {
         setCopiedWhatsApp(true);
         setTimeout(() => setCopiedWhatsApp(false), 2500);
       });
+    }
+  };
+
+  const handleAddNota = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!novaNota.trim() || !processo) return;
+
+    const nova = {
+      id: `nota-${Date.now()}`,
+      autor: `${user.nome} (${user.unidade_sigla})`,
+      data: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      conteudo: novaNota.trim(),
+      versao: 1
+    };
+
+    const atualizadas = [...notas, nova];
+    setNotas(atualizadas);
+    setNovaNota('');
+    try {
+      localStorage.setItem(`pumip_notas_${processo.id}`, JSON.stringify(atualizadas));
+    } catch (err) {
+      console.warn('Erro ao persistir nota:', err);
     }
   };
 
@@ -108,36 +167,57 @@ export default function ProcessoDetalhePage() {
     };
   };
 
+  // ESTADO 404: Se o processo não existe
+  if (!processo) {
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto py-10">
+        <Breadcrumb
+          items={[
+            { label: 'Processos Monitorados', href: '/processos' },
+            { label: 'Processo não encontrado', isCurrent: true }
+          ]}
+        />
+
+        <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-xl text-center space-y-5">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mx-auto shadow-sm">
+            <SearchX className="w-8 h-8" />
+          </div>
+
+          <div>
+            <span className="text-xs bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full border border-amber-200 uppercase tracking-wider">
+              Erro 404 &bull; Não Localizado
+            </span>
+
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-3">
+              Processo Não Encontrado na Carteira
+            </h1>
+
+            <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto mt-2 leading-relaxed">
+              O protocolo ou identificador informado (<strong className="font-mono text-slate-800">{processoId}</strong>) não consta na base ativa ou seu perfil atual (<strong className="text-blue-800">{user.role} - {user.unidade_sigla}</strong>) não possui permissão de acesso RLS.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link
+              href="/processos"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Ver Lista de Processos Autorizados</span>
+            </Link>
+            <Link
+              href="/"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-xs transition"
+            >
+              <span>Voltar ao Painel Executivo</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const semaforo = getSemaforo(processo.dias_parado_na_unidade);
-
-  // Estado para novas notas internas (RF15)
-  const [notas, setNotas] = useState([
-    {
-      id: 'nota-1',
-      autor: 'Servulo Junior (SUPTI)',
-      data: '14/10/2026 às 16:30',
-      conteudo: 'Aprovada minuta técnica do Termo de Referência com a equipe de redes. Aguardando envio formal à CSL.',
-      versao: 1
-    }
-  ]);
-  const [novaNota, setNovaNota] = useState('');
-
-  const handleAddNota = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!novaNota.trim()) return;
-
-    setNotas([
-      ...notas,
-      {
-        id: `nota-${Date.now()}`,
-        autor: 'Servulo Junior (SUPTI)',
-        data: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        conteudo: novaNota.trim(),
-        versao: 1
-      }
-    ]);
-    setNovaNota('');
-  };
 
   return (
     <div className="space-y-5">
@@ -337,7 +417,7 @@ export default function ProcessoDetalhePage() {
         protocoloStartGov={processo.protocolo_startgov}
       />
 
-      {/* Notas Internas de Acompanhamento (RF15 - Conforme LAI) */}
+      {/* Notas Internas de Acompanhamento (RF15 - Conforme LAI com Persistência) */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2">
@@ -346,8 +426,8 @@ export default function ProcessoDetalhePage() {
               Notas Internas de Acompanhamento Setorial (RF15)
             </h2>
           </div>
-          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
-            {notas.length} notas
+          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono font-bold">
+            {notas.length} notas registradas
           </span>
         </div>
 
@@ -363,15 +443,15 @@ export default function ProcessoDetalhePage() {
           </div>
         </div>
 
-        {/* Lista de Notas */}
+        {/* Lista de Notas Persistidas */}
         <div className="space-y-3">
           {notas.map((n) => (
-            <div key={n.id} className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
-              <div className="flex items-center justify-between text-slate-500 mb-1">
-                <span className="font-semibold text-slate-700">{n.autor}</span>
-                <span>{n.data}</span>
+            <div key={n.id} className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1">
+              <div className="flex items-center justify-between text-slate-500">
+                <span className="font-bold text-slate-800">{n.autor}</span>
+                <span className="font-mono text-[11px]">{n.data}</span>
               </div>
-              <p className="text-slate-800 font-medium">{n.conteudo}</p>
+              <p className="text-slate-800 font-medium leading-relaxed">{n.conteudo}</p>
             </div>
           ))}
         </div>
@@ -382,7 +462,7 @@ export default function ProcessoDetalhePage() {
             type="text"
             value={novaNota}
             onChange={(e) => setNovaNota(e.target.value)}
-            placeholder="Adicionar nota interna de acompanhamento (ex: agendada reunião com fornecedor)..."
+            placeholder={`Adicionar nota como ${user.nome} (ex: agendada reunião com fornecedor)...`}
             className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           />
           <button

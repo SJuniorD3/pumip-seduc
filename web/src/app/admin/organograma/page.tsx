@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Breadcrumb } from '../../../components/Breadcrumb';
+import { AdminGuard } from '../../../components/AdminGuard';
 import { mockUnidades } from '../../../lib/mockData';
 import { UnidadeOrganizacional, TipoUnidade } from '../../../lib/types';
 import { 
@@ -92,14 +93,15 @@ export default function AdminOrganogramaPage() {
   };
 
   return (
-    <div className="space-y-5 max-w-6xl">
-      {/* Trilha de Navegação */}
-      <Breadcrumb
-        items={[
-          { label: 'Administração', href: '/admin/organograma' },
-          { label: 'Organograma Setorial', isCurrent: true }
-        ]}
-      />
+    <AdminGuard moduloNome="Organograma Setorial">
+      <div className="space-y-5 max-w-6xl">
+        {/* Trilha de Navegação */}
+        <Breadcrumb
+          items={[
+            { label: 'Administração', href: '/admin/organograma' },
+            { label: 'Organograma Setorial', isCurrent: true }
+          ]}
+        />
 
       {/* Cabeçalho Administrativo */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
@@ -360,5 +362,6 @@ export default function AdminOrganogramaPage() {
         </div>
       )}
     </div>
+    </AdminGuard>
   );
 }

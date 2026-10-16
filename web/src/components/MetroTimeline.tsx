@@ -20,7 +20,10 @@ import {
   AlertCircle,
   Filter,
   Milestone,
-  ListFilter
+  ListFilter,
+  X,
+  Send,
+  HelpCircle
 } from 'lucide-react';
 
 interface MetroTimelineProps {
@@ -34,14 +37,38 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
   protocoloSei,
   protocoloStartGov
 }) => {
-  const [resumosIncorretos, setResumosIncorretos] = useState<Record<string, boolean>>({});
+  const [resumosIncorretos, setResumosIncorretos] = useState<Record<string, { tipo: string; observacao?: string }>>({});
   const [visaoFiltro, setVisaoFiltro] = useState<'CRITICOS' | 'TODOS'>('CRITICOS');
+  
+  // Modal de Auditoria de IA (RF20)
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [targetEventoId, setTargetEventoId] = useState<string | null>(null);
+  const [tipoDivergencia, setTipoDivergencia] = useState('ALUCINACAO');
+  const [observacaoTexto, setObservacaoTexto] = useState('');
+  const [sucessoFeedback, setSucessoFeedback] = useState(false);
 
-  const handleMarcarIncorreto = (eventoId: string) => {
+  const handleOpenFeedback = (eventoId: string) => {
+    setTargetEventoId(eventoId);
+    setTipoDivergencia('ALUCINACAO');
+    setObservacaoTexto('');
+    setFeedbackModalOpen(true);
+  };
+
+  const handleConfirmarFeedback = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetEventoId) return;
+
     setResumosIncorretos((prev) => ({
       ...prev,
-      [eventoId]: true
+      [targetEventoId]: {
+        tipo: tipoDivergencia,
+        observacao: observacaoTexto.trim()
+      }
     }));
+
+    setFeedbackModalOpen(false);
+    setSucessoFeedback(true);
+    setTimeout(() => setSucessoFeedback(false), 3500);
   };
 
   if (!eventos || eventos.length === 0) {
@@ -130,6 +157,14 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
 
   return (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
+      {/* Toast de Confirmação de Auditoria de IA */}
+      {sucessoFeedback && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in duration-150">
+          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>Apontamento de auditoria registrado com sucesso para retreinamento da IA local (RF20).</span>
+        </div>
+      )}
+
       {/* Cabeçalho da Linha do Tempo */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-5 border-b border-slate-200 gap-4">
         <div>
@@ -233,7 +268,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
         {eventosExibidos.map((evt, index) => {
           const theme = getSystemTheme(evt.origem_sistema);
           const isCritico = isMarcoCritico(evt);
-          const isIncorreto = resumosIncorretos[evt.id || String(index)];
+          const feedback = resumosIncorretos[evt.id || String(index)];
 
           return (
             <div key={evt.id || index} className="relative group">
@@ -303,12 +338,12 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
                         <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                         <span>Resumo Automático do Despacho (IA Local Estadual - vLLM/Ollama)</span>
                       </div>
-                      <span className="text-[10px] text-blue-700 bg-blue-100/70 px-1.5 py-0.2 rounded border border-blue-200">
+                      <span className="text-[10px] text-blue-700 bg-blue-100/70 px-1.5 py-0.2 rounded border border-blue-200 font-semibold">
                         Informativo
                       </span>
                     </div>
 
-                    <p className="text-xs text-blue-950/90 leading-relaxed">
+                    <p className="text-xs text-blue-950/90 leading-relaxed font-medium">
                       {evt.resumo_ia}
                     </p>
 
@@ -317,19 +352,20 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
                         Não substitui a leitura da íntegra do documento oficial para fins decisórios.
                       </span>
 
-                      {isIncorreto ? (
+                      {feedback ? (
                         <span className="text-amber-800 font-semibold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                          <AlertCircle className="w-3 h-3 text-amber-600" />
-                          Marcado como incorreto para revisão
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Divergência Registrada: {feedback.tipo}</span>
                         </span>
                       ) : (
                         <button
-                          onClick={() => handleMarcarIncorreto(evt.id || String(index))}
+                          type="button"
+                          onClick={() => handleOpenFeedback(evt.id || String(index))}
                           className="text-slate-500 hover:text-red-700 flex items-center gap-1 font-medium transition"
                           title="Sinalizar que este resumo contém imprecisão ou alucinação"
                         >
-                          <ThumbsDown className="w-3 h-3" />
-                          <span>Marcar resumo como incorreto</span>
+                          <ThumbsDown className="w-3.5 h-3.5" />
+                          <span>Apontar divergência / erro no resumo (RF20)</span>
                         </button>
                       )}
                     </div>
@@ -340,6 +376,106 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
           );
         })}
       </div>
+
+      {/* Modal de Auditoria de Resumo de IA (RF20) */}
+      {feedbackModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative">
+            <button
+              onClick={() => setFeedbackModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2 mb-2 text-blue-700">
+              <Sparkles className="w-5 h-5 text-blue-600" />
+              <h3 className="font-bold text-base text-slate-900">
+                Auditoria de Resumo da IA (RF20)
+              </h3>
+            </div>
+
+            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+              Ajude a aprimorar o modelo estadual apontando qual divergência foi identificada neste despacho processual:
+            </p>
+
+            <form onSubmit={handleConfirmarFeedback} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1.5">
+                  Tipo de Divergência:
+                </label>
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="tipoDiv"
+                      value="ALUCINACAO"
+                      checked={tipoDivergencia === 'ALUCINACAO'}
+                      onChange={(e) => setTipoDivergencia(e.target.value)}
+                      className="text-blue-600"
+                    />
+                    <span className="font-semibold text-slate-800">Alucinação / Informação não constante no documento</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="tipoDiv"
+                      value="SETOR_INCORRETO"
+                      checked={tipoDivergencia === 'SETOR_INCORRETO'}
+                      onChange={(e) => setTipoDivergencia(e.target.value)}
+                      className="text-blue-600"
+                    />
+                    <span className="font-semibold text-slate-800">Setor de destino ou remetente identificado incorretamente</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="tipoDiv"
+                      value="PRAZO_VALOR"
+                      checked={tipoDivergencia === 'PRAZO_VALOR'}
+                      onChange={(e) => setTipoDivergencia(e.target.value)}
+                      className="text-blue-600"
+                    />
+                    <span className="font-semibold text-slate-800">Inversão de prazo, valor monetário ou data legal</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">
+                  Observação Adicional (Opcional):
+                </label>
+                <textarea
+                  rows={3}
+                  value={observacaoTexto}
+                  onChange={(e) => setObservacaoTexto(e.target.value)}
+                  placeholder="Descreva brevemente o trecho ou informação correta..."
+                  className="w-full p-2.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setFeedbackModalOpen(false)}
+                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition flex items-center gap-1.5 shadow-sm"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Registrar Apontamento</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

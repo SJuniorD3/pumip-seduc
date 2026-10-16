@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Breadcrumb } from '../../../components/Breadcrumb';
+import { AdminGuard } from '../../../components/AdminGuard';
 import { mockProcessos, mockUnidades } from '../../../lib/mockData';
 import { UserRole } from '../../../lib/types';
 import { 
@@ -170,14 +171,15 @@ export default function AdminUsuariosPage() {
   };
 
   return (
-    <div className="space-y-5 max-w-6xl">
-      {/* Trilha de Navegação */}
-      <Breadcrumb
-        items={[
-          { label: 'Administração', href: '/admin/organograma' },
-          { label: 'Perfis & Acessos Pontuais', isCurrent: true }
-        ]}
-      />
+    <AdminGuard moduloNome="Perfis de Acesso & Concessões">
+      <div className="space-y-5 max-w-6xl">
+        {/* Trilha de Navegação */}
+        <Breadcrumb
+          items={[
+            { label: 'Administração', href: '/admin/organograma' },
+            { label: 'Perfis & Acessos Pontuais', isCurrent: true }
+          ]}
+        />
 
       {/* Cabeçalho */}
       <div className="pb-4 border-b border-slate-200">
@@ -456,5 +458,6 @@ export default function AdminUsuariosPage() {
         </div>
       )}
     </div>
+    </AdminGuard>
   );
 }
