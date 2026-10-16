@@ -4,7 +4,19 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Processo } from '../lib/types';
 import { SyncButton } from './SyncButton';
-import { Search, Filter, ExternalLink, Clock, Building, ArrowRight } from 'lucide-react';
+import { exportToExcel, exportToCSV, triggerPrintPDF } from '../lib/exportUtils';
+import { 
+  Search, 
+  Filter, 
+  ExternalLink, 
+  Clock, 
+  Building, 
+  ArrowRight,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Printer
+} from 'lucide-react';
 
 interface ProcessTableProps {
   processos: Processo[];
@@ -26,6 +38,31 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ processos }) => {
 
     return matchesSearch && matchesPrioridade;
   });
+
+  const handleExportCSV = () => {
+    exportToCSV('processos_seduc_export', filtered, [
+      { header: 'Protocolo SEI', key: 'protocolo_sei' },
+      { header: 'StartGov', key: (p) => p.protocolo_startgov || 'N/A' },
+      { header: 'Objeto', key: 'objeto' },
+      { header: 'Unidade Atual', key: 'unidade_atual_sei' },
+      { header: 'Etapa', key: 'status_etapa' },
+      { header: 'Prioridade', key: 'prioridade' },
+      { header: 'Dias Parado', key: 'dias_parado_na_unidade' }
+    ]);
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel('processos_seduc_export', 'Processos SEDUC', filtered, [
+      { header: 'Protocolo SEI', key: 'protocolo_sei' },
+      { header: 'Identificador StartGov', key: (p) => p.protocolo_startgov || 'Não vinculado' },
+      { header: 'Objeto da Demanda', key: 'objeto' },
+      { header: 'Unidade Atual no SEI', key: 'unidade_atual_sei' },
+      { header: 'Etapa Processual', key: 'status_etapa' },
+      { header: 'Faixa de Prioridade', key: 'prioridade' },
+      { header: 'Dias Parado na Unidade', key: 'dias_parado_na_unidade' },
+      { header: 'Última Movimentação', key: (p) => new Date(p.ultima_movimentacao_em).toLocaleDateString('pt-BR') }
+    ]);
+  };
 
   const getPriorityBadge = (prio: string) => {
     switch (prio) {
@@ -59,9 +96,9 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ processos }) => {
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Barra de Filtros e Busca */}
-      <div className="p-4 border-b border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-80">
+      {/* Barra de Filtros, Busca e Exportação */}
+      <div className="p-4 border-b border-slate-200 bg-slate-50/60 flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -72,19 +109,46 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ processos }) => {
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-slate-500" />
-          <span className="text-xs text-slate-600 font-medium">Prioridade:</span>
-          <select
-            value={filterPrioridade}
-            onChange={(e) => setFilterPrioridade(e.target.value)}
-            className="text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="TODAS">Todas as Faixas</option>
-            <option value="QUENTE">Quente (&le; 15d / Crítico)</option>
-            <option value="MORNO">Morno (15-60d)</option>
-            <option value="FRIO">Frio (&gt; 60d / Concluído)</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+          <div className="flex items-center gap-1.5">
+            <Filter className="w-4 h-4 text-slate-500" />
+            <select
+              value={filterPrioridade}
+              onChange={(e) => setFilterPrioridade(e.target.value)}
+              className="text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="TODAS">Todas as Faixas</option>
+              <option value="QUENTE">Quente (&le; 15d / Crítico)</option>
+              <option value="MORNO">Morno (15-60d)</option>
+              <option value="FRIO">Frio (&gt; 60d / Concluído)</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1 pl-2 border-l border-slate-200">
+            <button
+              onClick={handleExportExcel}
+              className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition"
+              title="Exportar para Excel (XLSX/XML)"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Excel</span>
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition"
+              title="Exportar para CSV (UTF-8)"
+            >
+              <Download className="w-3.5 h-3.5 text-blue-600" />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={() => triggerPrintPDF('Processos SEDUC-MA')}
+              className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition"
+              title="Imprimir ou Salvar em PDF"
+            >
+              <Printer className="w-3.5 h-3.5 text-slate-600" />
+            </button>
+          </div>
         </div>
       </div>
 
