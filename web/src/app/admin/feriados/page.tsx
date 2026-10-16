@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Breadcrumb } from '../../../components/Breadcrumb';
 import { 
   getFeriadosAno, 
   getFeriadosPersonalizados, 
@@ -105,7 +106,15 @@ export default function AdminFeriadosPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-5 max-w-6xl">
+      {/* Trilha de Navegação */}
+      <Breadcrumb
+        items={[
+          { label: 'Administração', href: '/admin/organograma' },
+          { label: 'Feriados & Prazos Legais (RF04)', isCurrent: true }
+        ]}
+      />
+
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
         <div>

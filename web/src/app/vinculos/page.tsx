@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Breadcrumb } from '../../components/Breadcrumb';
 import { mockProcessos } from '../../lib/mockData';
 import { 
   GitMerge, 
@@ -142,7 +143,14 @@ export default function VinculosPage() {
   const confirmados = sugestoes.filter((s) => s.status === 'CONFIRMADO');
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-5 max-w-6xl">
+      {/* Trilha de Navegação */}
+      <Breadcrumb
+        items={[
+          { label: 'Vínculos SEI ↔ StartGov (RF16)', isCurrent: true }
+        ]}
+      />
+
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
         <div>

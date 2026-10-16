@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { KPICards } from '../components/KPICards';
+import { KPICards, KPIFilterType } from '../components/KPICards';
 import { ProcessTable } from '../components/ProcessTable';
 import { FeedNovidades } from '../components/FeedNovidades';
 import { mockProcessos } from '../lib/mockData';
@@ -11,10 +11,7 @@ import {
   FileText, 
   Kanban, 
   Bell, 
-  ExternalLink,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
+  ShieldCheck, 
   UserCheck
 } from 'lucide-react';
 import Link from 'next/link';
@@ -22,6 +19,7 @@ import Link from 'next/link';
 export default function DashboardPage() {
   const [processos, setProcessos] = useState<Processo[]>(mockProcessos);
   const [loading, setLoading] = useState<boolean>(false);
+  const [kpiFilter, setKpiFilter] = useState<KPIFilterType>('TODOS');
 
   useEffect(() => {
     async function loadData() {
@@ -46,11 +44,11 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Banner Executivo Limpo e Direto */}
-      <div className="bg-gradient-to-r from-blue-900 via-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-blue-900 via-slate-900 to-slate-800 rounded-2xl p-4 sm:p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="text-xs bg-blue-500/20 text-blue-200 border border-blue-400/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5">
               <UserCheck className="w-3.5 h-3.5 text-blue-300" />
               <span>Sérvulo José Freire Junior &bull; SUDES (SEDUC-MA)</span>
@@ -61,7 +59,7 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
             Painel Executivo de Acompanhamento Processual
           </h1>
 
@@ -71,29 +69,44 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Link
             href="/kanban"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow-sm"
+            className="flex items-center gap-1.5 sm:gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl transition shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           >
             <Kanban className="w-4 h-4" />
             <span>Quadro Kanban</span>
           </Link>
           <Link
             href="/alertas"
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition"
+            className="flex items-center gap-1.5 sm:gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             <Bell className="w-4 h-4" />
-            <span>Central de Alertas</span>
+            <span className="hidden sm:inline">Central de Alertas</span>
+            <span className="sm:hidden">Alertas</span>
           </Link>
         </div>
       </div>
 
-      {/* Feed de Novidades das Últimas 24 Horas */}
+      {/* Feed de Novidades das Últimas 24 Horas com Modo Recolhível */}
       <FeedNovidades />
 
-      {/* Cards de Métricas Principais (KPIs) */}
-      <KPICards processos={processos} />
+      {/* Cards de Métricas Principais (KPIs) com Drilldown Interativo ao Clique */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Painel de Controle em Tempo Real
+          </h2>
+          <span className="text-[11px] text-slate-400 italic hidden sm:inline">
+            Dica: clique em um card para filtrar a tabela automaticamente
+          </span>
+        </div>
+        <KPICards 
+          processos={processos} 
+          activeFilter={kpiFilter}
+          onSelectFilter={setKpiFilter}
+        />
+      </div>
 
       {/* Tabela de Processos Monitorados */}
       <div>
@@ -106,11 +119,16 @@ export default function DashboardPage() {
               {processos.length} monitorados
             </span>
           </div>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 hidden sm:inline">
             Atualização periódica automatizada (Delta Hashing)
           </span>
         </div>
-        <ProcessTable processos={processos} />
+
+        <ProcessTable 
+          processos={processos} 
+          kpiFilter={kpiFilter}
+          onClearKpiFilter={() => setKpiFilter('TODOS')}
+        />
       </div>
     </div>
   );

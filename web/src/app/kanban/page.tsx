@@ -2,15 +2,23 @@
 
 import React, { useState } from 'react';
 import { KanbanBoard } from '../../components/KanbanBoard';
+import { Breadcrumb } from '../../components/Breadcrumb';
 import { mockProcessos } from '../../lib/mockData';
 import { Processo } from '../../lib/types';
-import { KanbanSquare, Filter, RefreshCw } from 'lucide-react';
+import { KanbanSquare } from 'lucide-react';
 
 export default function KanbanPage() {
   const [processos] = useState<Processo[]>(mockProcessos);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Trilha de Navegação */}
+      <Breadcrumb
+        items={[
+          { label: 'Quadro Kanban Setorial (RF17)', isCurrent: true }
+        ]}
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">

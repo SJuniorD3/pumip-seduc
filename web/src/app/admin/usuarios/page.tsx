@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Breadcrumb } from '../../../components/Breadcrumb';
 import { mockProcessos, mockUnidades } from '../../../lib/mockData';
 import { UserRole } from '../../../lib/types';
 import { 
@@ -169,7 +170,15 @@ export default function AdminUsuariosPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-5 max-w-6xl">
+      {/* Trilha de Navegação */}
+      <Breadcrumb
+        items={[
+          { label: 'Administração', href: '/admin/organograma' },
+          { label: 'Perfis & Acessos Pontuais', isCurrent: true }
+        ]}
+      />
+
       {/* Cabeçalho */}
       <div className="pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2 mb-1">

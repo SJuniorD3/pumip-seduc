@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { mockProcessos, mockTramitacoes } from '../../../lib/mockData';
 import { MetroTimeline } from '../../../components/MetroTimeline';
 import { SyncButton } from '../../../components/SyncButton';
+import { Breadcrumb } from '../../../components/Breadcrumb';
 import { 
   ArrowLeft, 
   Building, 
@@ -139,7 +140,15 @@ export default function ProcessoDetalhePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Trilha de Navegação (Breadcrumb) */}
+      <Breadcrumb
+        items={[
+          { label: 'Processos Monitorados', href: '/processos' },
+          { label: processo.protocolo_sei, isCurrent: true }
+        ]}
+      />
+
       {/* Navegação de Retorno e Ações Principais */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <Link

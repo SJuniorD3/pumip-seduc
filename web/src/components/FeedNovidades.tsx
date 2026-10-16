@@ -1,15 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
   Zap, 
   ArrowRight, 
   Clock, 
-  Building, 
-  CheckCircle2, 
-  ExternalLink,
-  Sparkles
+  ChevronDown, 
+  ChevronUp,
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 
 interface MovimentacaoRecente {
@@ -23,6 +23,8 @@ interface MovimentacaoRecente {
 }
 
 export const FeedNovidades: React.FC = () => {
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+
   const novidades: MovimentacaoRecente[] = [
     {
       processoId: '10000000-0000-0000-0000-000000000001',
@@ -45,74 +47,115 @@ export const FeedNovidades: React.FC = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50/70 border border-blue-200/80 rounded-2xl p-4 shadow-sm mb-6">
-      <div className="flex items-center justify-between mb-3 pb-2 border-b border-blue-200/60">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-blue-600 text-white rounded-lg shadow-sm">
+    <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200/90 rounded-2xl p-3.5 sm:p-4 shadow-sm mb-6 transition-all">
+      {/* Cabeçalho do Feed com Toggle de Recolhimento */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 bg-blue-600 text-white rounded-lg shadow-sm shrink-0">
             <Zap className="w-4 h-4 fill-white" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <span>Novidades Recentes na Carteira</span>
-              <span className="text-[10px] bg-blue-200 text-blue-900 font-bold px-2 py-0.2 rounded-full">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xs sm:text-sm font-bold text-slate-900">
+                Novidades Recentes na Carteira
+              </h2>
+              <span className="text-[10px] bg-blue-100 text-blue-900 font-bold px-2 py-0.2 rounded-full border border-blue-200">
                 Últimas 24h
               </span>
-            </h2>
-            <p className="text-[11px] text-slate-500">
-              Processos que sofreram andamento recente sem você precisar consultar o SEI ou StartGov.
-            </p>
+            </div>
+            {isExpanded && (
+              <p className="text-[11px] text-slate-600 hidden sm:block">
+                Processos que sofreram andamento recente sem você precisar consultar o SEI ou StartGov.
+              </p>
+            )}
           </div>
         </div>
 
-        <span className="text-xs text-blue-700 font-semibold hidden sm:block">
-          {novidades.length} movimentações detectadas
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-blue-800 font-semibold hidden md:inline">
+            {novidades.length} movimentações detectadas
+          </span>
+
+          {/* Botão Minimizar / Expandir */}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-white hover:bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg transition shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            title={isExpanded ? 'Recolher feed de novidades' : 'Expandir feed de novidades'}
+          >
+            <span>{isExpanded ? 'Recolher' : 'Expandir'}</span>
+            {isExpanded ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {novidades.map((item) => (
-          <div
-            key={item.processoId}
-            className="bg-white rounded-xl p-3 border border-blue-200/80 shadow-sm hover:shadow-md transition flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="font-mono text-xs font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                  {item.protocoloSei}
-                </span>
+      {/* Conteúdo Expandido com os Cards */}
+      {isExpanded ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 pt-3 border-t border-blue-200/60 animate-in fade-in duration-200">
+          {novidades.map((item) => (
+            <div
+              key={item.processoId}
+              className="bg-white rounded-xl p-3 border border-blue-200/80 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-mono text-xs font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                    {item.protocoloSei}
+                  </span>
 
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span>{item.hora}</span>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{item.hora}</span>
+                  </div>
                 </div>
+
+                <p className="text-xs font-bold text-slate-900 line-clamp-1 mb-1">
+                  {item.objeto}
+                </p>
+
+                <p className="text-[11px] text-slate-700 line-clamp-2 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100 mb-2 font-medium">
+                  {item.descricaoMovimentacao}
+                </p>
               </div>
 
-              <p className="text-xs font-bold text-slate-800 line-clamp-1 mb-1">
-                {item.objeto}
-              </p>
+              <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
+                <span className="inline-flex items-center gap-1 font-semibold text-slate-700">
+                  <span className="text-slate-500 font-normal">Destino:</span>
+                  <span className="bg-slate-100 px-1.5 py-0.2 rounded font-bold text-slate-800 border border-slate-200">
+                    {item.unidadeDestino}
+                  </span>
+                </span>
 
-              <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100 mb-2">
-                {item.descricaoMovimentacao}
-              </p>
+                <Link
+                  href={`/processos/${item.processoId}`}
+                  className="font-semibold text-blue-700 hover:text-blue-900 flex items-center gap-1 hover:underline"
+                >
+                  <span>Abrir no Metrô</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
             </div>
-
-            <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
-              <span className="inline-flex items-center gap-1 font-semibold text-slate-700">
-                <Building className="w-3.5 h-3.5 text-blue-600" />
-                <span>Destino: <strong>{item.unidadeDestino}</strong></span>
-              </span>
-
-              <Link
-                href={`/processos/${item.processoId}`}
-                className="text-blue-600 hover:text-blue-800 font-bold inline-flex items-center gap-0.5 group"
-              >
-                <span>Ver no Metrô</span>
-                <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* Versão Ticker Compacta (1 linha) quando recolhido */
+        <div className="mt-2 text-xs text-slate-600 flex items-center gap-2 bg-white/70 px-3 py-1.5 rounded-lg border border-blue-200/50">
+          <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          <span className="truncate">
+            <strong>Destaques:</strong> Switches com sessão de lances no StartGov e Nuvem com distribuição na ASJUR.
+          </span>
+          <button
+            onClick={() => setIsExpanded(true)}
+            className="text-blue-700 font-semibold hover:underline ml-auto shrink-0 text-[11px]"
+          >
+            Ver detalhes
+          </button>
+        </div>
+      )}
     </div>
   );
 };

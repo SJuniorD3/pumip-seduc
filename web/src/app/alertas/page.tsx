@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Breadcrumb } from '../../components/Breadcrumb';
 import { 
   BellRing, 
   Plus, 
@@ -88,7 +89,14 @@ export default function AlertasPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-5 max-w-5xl">
+      {/* Trilha de Navegação */}
+      <Breadcrumb
+        items={[
+          { label: 'Central de Alertas e Notificações', isCurrent: true }
+        ]}
+      />
+
       {/* Cabeçalho */}
       <div className="pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2 mb-1">

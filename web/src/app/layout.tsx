@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Header } from '../components/Header';
-import { Sidebar } from '../components/Sidebar';
+import { ClientShell } from '../components/ClientShell';
 
 export const metadata: Metadata = {
   title: 'PUMIP | Plataforma Unificada de Monitoramento Processual - SEDUC-MA',
@@ -15,14 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen bg-slate-50 flex flex-col">
-        <Header />
-        <div className="flex flex-1">
-          <Sidebar />
-          <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-            {children}
-          </main>
-        </div>
+      <body className="min-h-screen bg-slate-50">
+        <ClientShell>
+          {children}
+        </ClientShell>
       </body>
     </html>
   );
