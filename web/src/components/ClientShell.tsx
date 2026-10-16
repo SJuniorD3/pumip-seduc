@@ -1,11 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { AuthProvider } from '../lib/authContext';
 
-export const ClientShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // A página de login é exibida em tela cheia sem Header ou Sidebar
+  const isLoginPage = pathname === '/login';
+
+  if (isLoginPage) {
+    return <main className="min-h-screen bg-slate-900">{children}</main>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased text-slate-900 selection:bg-blue-100 selection:text-blue-900">
@@ -23,5 +33,13 @@ export const ClientShell: React.FC<{ children: React.ReactNode }> = ({ children 
         </main>
       </div>
     </div>
+  );
+};
+
+export const ClientShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <AuthProvider>
+      <ShellContent>{children}</ShellContent>
+    </AuthProvider>
   );
 };

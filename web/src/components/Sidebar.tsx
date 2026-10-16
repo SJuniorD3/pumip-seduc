@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '../lib/authContext';
 import { 
   LayoutDashboard, 
   KanbanSquare, 
@@ -15,7 +16,9 @@ import {
   ClipboardList,
   BarChart3,
   Calendar,
-  X
+  X,
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +28,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMobile }) => {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { label: 'Visão Geral', href: '/', icon: LayoutDashboard },
@@ -50,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
 
   const sidebarContent = (
     <div className="flex flex-col justify-between h-full">
-      <div className="p-3.5 space-y-5 overflow-y-auto">
+      <div className="p-3.5 space-y-4 overflow-y-auto">
         {/* Cabeçalho do Drawer no Mobile com Botão Fechar */}
         <div className="flex items-center justify-between lg:hidden pb-3 border-b border-slate-800">
           <div className="flex items-center space-x-2">
@@ -65,6 +69,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
             aria-label="Fechar menu"
           >
             <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Card do Usuário Logado na Sidebar */}
+        <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              {user.avatar_iniciais || 'SJ'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate leading-tight">
+                {user.nome}
+              </p>
+              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                {user.unidade_sigla} &bull; {user.role}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              handleLinkClick();
+              logout();
+            }}
+            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700/60 rounded-lg transition shrink-0"
+            title="Sair da conta"
+            aria-label="Sair"
+          >
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -102,8 +135,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
             <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
               Administração
             </p>
-            <span className="text-[9px] bg-red-950 text-red-300 border border-red-800 px-1 py-0.2 rounded font-bold">
-              ADMIN
+            <span className={`text-[9px] px-1 py-0.2 rounded font-bold border ${
+              user.isAdmin 
+                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                : 'bg-red-950 text-red-300 border border-red-800'
+            }`}>
+              {user.isAdmin ? 'ADMIN ATIVO' : 'ADMIN'}
             </span>
           </div>
           <nav className="space-y-1">
@@ -183,14 +220,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
       {/* 2. Versão Mobile/Tablet (Off-canvas Drawer deslizante com Backdrop) */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop semitransparente com blur */}
           <div 
             className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
             onClick={onCloseMobile}
             aria-hidden="true"
           />
 
-          {/* Gaveta lateral deslizante */}
           <aside className="fixed inset-y-0 left-0 w-72 bg-slate-900 text-slate-300 shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-200 border-r border-slate-800">
             {sidebarContent}
           </aside>

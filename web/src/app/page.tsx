@@ -7,6 +7,7 @@ import { FeedNovidades } from '../components/FeedNovidades';
 import { mockProcessos } from '../lib/mockData';
 import { Processo } from '../lib/types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { useAuth } from '../lib/authContext';
 import { 
   FileText, 
   Kanban, 
@@ -17,6 +18,7 @@ import {
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [processos, setProcessos] = useState<Processo[]>(mockProcessos);
   const [loading, setLoading] = useState<boolean>(false);
   const [kpiFilter, setKpiFilter] = useState<KPIFilterType>('TODOS');
@@ -51,11 +53,11 @@ export default function DashboardPage() {
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="text-xs bg-blue-500/20 text-blue-200 border border-blue-400/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1.5">
               <UserCheck className="w-3.5 h-3.5 text-blue-300" />
-              <span>Sérvulo José Freire Junior &bull; SUDES (SEDUC-MA)</span>
+              <span>{user.nome} &bull; {user.unidade_sigla} (SEDUC-MA)</span>
             </span>
             <span className="text-xs bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              Acesso Autorizado
+              Acesso Autorizado ({user.role})
             </span>
           </div>
 

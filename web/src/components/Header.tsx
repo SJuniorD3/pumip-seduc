@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bell, Search, Command, Menu, X, ShieldCheck } from 'lucide-react';
+import { Bell, Search, Command, Menu, X, ShieldCheck, LogOut, User } from 'lucide-react';
 import { CommandPalette } from './CommandPalette';
+import { useAuth } from '../lib/authContext';
 
 interface HeaderProps {
   lastSyncSEI?: string;
@@ -21,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   isMobileMenuOpen = false,
 }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   // Listener global de teclado para Cmd+K / Ctrl+K
   useEffect(() => {
@@ -109,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Direita: Busca Mobile + Notificações e Identificação do Usuário */}
+            {/* Direita: Busca Mobile + Notificações e Identificação Dinâmica do Usuário */}
             <div className="flex items-center space-x-1 sm:space-x-3">
               {/* Botão de Busca Mobile (Ícone) */}
               <button
@@ -132,18 +134,43 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
               </Link>
 
+              {/* Perfil do Usuário Autenticado */}
               <div className="border-l border-slate-200 pl-2 sm:pl-3 flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-900 text-white font-medium flex items-center justify-center text-xs shadow-inner">
-                  SJ
+                <div 
+                  className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-900 text-white font-bold flex items-center justify-center text-xs shadow-inner"
+                  title={`${user.nome} (${user.cargo_titulo})`}
+                >
+                  {user.avatar_iniciais || 'SJ'}
                 </div>
+
                 <div className="hidden lg:block text-left text-xs">
-                  <p className="font-semibold text-slate-800 leading-tight">Sérvulo Junior</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-slate-800 leading-tight max-w-[120px] truncate">
+                      {user.nome.split(' ')[0]} {user.nome.split(' ').slice(-1)[0]}
+                    </p>
+                    {user.isAdmin && (
+                      <span className="text-[9px] bg-red-100 text-red-800 border border-red-200 px-1 py-0.2 rounded font-bold">
+                        ADMIN
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 text-slate-500 text-[10px]">
-                    <span className="font-semibold text-blue-700">SUDES</span>
+                    <span className="font-semibold text-blue-700">{user.unidade_sigla}</span>
                     <span>&bull;</span>
                     <span>SEDUC-MA</span>
                   </div>
                 </div>
+
+                {/* Botão de Logout / Trocar Usuário */}
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  title="Sair do sistema ou trocar de perfil"
+                  aria-label="Sair do sistema"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
