@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 describe('Acessibilidade Digital, e-MAG e Validação de Rotas (WCAG 2.1 AA)', () => {
-  test('Integridade Estrutural: Todas as 14 rotas do PUMIP devem possuir page.tsx existente', () => {
+  test('Integridade Estrutural: Todas as 15 rotas do PUMIP devem possuir page.tsx existente', () => {
     const rotasObrigatorias = [
       'src/app/page.tsx',
       'src/app/login/page.tsx',
@@ -18,6 +18,7 @@ describe('Acessibilidade Digital, e-MAG e Validação de Rotas (WCAG 2.1 AA)', (
       'src/app/admin/organograma/page.tsx',
       'src/app/admin/usuarios/page.tsx',
       'src/app/admin/feriados/page.tsx',
+      'src/app/admin/integracoes/page.tsx',
       'src/app/layout.tsx',
       'src/app/not-found.tsx'
     ];

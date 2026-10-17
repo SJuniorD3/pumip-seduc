@@ -18,7 +18,8 @@ import {
   Calendar,
   X,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  KeyRound
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -44,6 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
     { label: 'Organograma Setorial', href: '/admin/organograma', icon: Network },
     { label: 'Perfis & Acessos', href: '/admin/usuarios', icon: Users },
     { label: 'Feriados & Prazos', href: '/admin/feriados', icon: Calendar },
+    { label: 'Credenciais & APIs', href: '/admin/integracoes', icon: KeyRound },
   ];
 
   const handleLinkClick = () => {
