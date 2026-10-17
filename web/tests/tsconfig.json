@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "outDir": "./dist"
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/lib/diasUteis.ts",
+    "../src/lib/rlsFilter.ts",
+    "../src/lib/authUsers.ts",
+    "../src/lib/mockData.ts",
+    "../src/lib/types.ts"
+  ]
+}

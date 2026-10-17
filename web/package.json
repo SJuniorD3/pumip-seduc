@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "tsc -p tests/tsconfig.json && node --test tests/dist/tests/*.test.js"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",

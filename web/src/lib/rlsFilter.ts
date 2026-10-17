@@ -1,5 +1,5 @@
 import { Processo } from './types';
-import { AuthUser } from './authContext';
+import { AuthUser } from './authUsers';
 
 /**
  * PUMIP-SEDUC: Emulação da Regra de Row Level Security (RLS) Hierárquico da SEDUC-MA
@@ -12,8 +12,13 @@ import { AuthUser } from './authContext';
  * 4. ASSESSOR (ex: ASJUR/CSL): Vê processos que atualmente tramitam pelo seu setor ou com concessão pontual (RF02).
  * 5. TÉCNICO: Vê apenas processos diretos de sua unidade.
  */
-export function filterProcessosByRLS(processos: Processo[], user: AuthUser): Processo[] {
-  if (!user || user.isAdmin || user.role === 'SECRETARIO' || user.role === 'SUBSECRETARIO') {
+export function filterProcessosByRLS(processos: Processo[], user?: AuthUser | null): Processo[] {
+  if (!user) {
+    // Princípio do Menor Privilégio (Zero-Trust): usuário não autenticado não acessa nenhum processo
+    return [];
+  }
+
+  if (user.isAdmin || user.role === 'SECRETARIO' || user.role === 'SUBSECRETARIO') {
     // 100% de visibilidade para Gabinete e Administrador
     return processos;
   }
