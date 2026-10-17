@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { KPICards, KPIFilterType } from '../components/KPICards';
 import { ProcessTable } from '../components/ProcessTable';
 import { FeedNovidades } from '../components/FeedNovidades';
+import { SectorHierarchyDashboard } from '../components/SectorHierarchyDashboard';
 import { mockProcessos } from '../lib/mockData';
 import { Processo } from '../lib/types';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -14,7 +15,8 @@ import {
   Kanban, 
   Bell, 
   ShieldCheck, 
-  UserCheck
+  UserCheck,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,7 +25,14 @@ export default function DashboardPage() {
   const [processos, setProcessos] = useState<Processo[]>(mockProcessos);
   const [loading, setLoading] = useState<boolean>(false);
   const [kpiFilter, setKpiFilter] = useState<KPIFilterType>('TODOS');
+  const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const processosVisiveis = filterProcessosByRLS(processos, user);
+
+  // Filtra processos para a tabela quando um setor for selecionado no gráfico hierárquico
+  const processosTabela = useMemo(() => {
+    if (!selectedSector) return processosVisiveis;
+    return processosVisiveis.filter(p => p.unidade_atual_sei === selectedSector);
+  }, [processosVisiveis, selectedSector]);
 
   useEffect(() => {
     async function loadData() {
@@ -112,16 +121,36 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Dashboard Analítico com Filtro de Árvore Hierárquica e Gráficos de Setores */}
+      <SectorHierarchyDashboard 
+        processos={processosVisiveis}
+        selectedSector={selectedSector}
+        onSelectSector={setSelectedSector}
+      />
+
       {/* Tabela de Processos Monitorados */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-base font-bold text-slate-900">
               Processos da Carteira
             </h2>
             <span className="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full border border-slate-200">
-              {processosVisiveis.length} autorizados pelo RLS ({user.role})
+              {processosTabela.length} autorizados pelo RLS ({user.role})
             </span>
+            {selectedSector && (
+              <span className="text-xs bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1.5 shadow-2xs">
+                <span>Filtrando por setor: {selectedSector}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSector(null)}
+                  className="hover:bg-blue-200 rounded-full p-0.5"
+                  title="Remover filtro de setor"
+                >
+                  <X className="w-3 h-3 text-blue-700" />
+                </button>
+              </span>
+            )}
           </div>
           <span className="text-xs text-slate-500 hidden sm:inline">
             Regra de Não Ampliação de Acesso Ativa
@@ -129,7 +158,7 @@ export default function DashboardPage() {
         </div>
 
         <ProcessTable 
-          processos={processosVisiveis} 
+          processos={processosTabela} 
           kpiFilter={kpiFilter}
           onClearKpiFilter={() => setKpiFilter('TODOS')}
         />
