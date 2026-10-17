@@ -326,50 +326,74 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
           </button>
 
           {sectionFontesOpen && (
-            <div className={`space-y-1 ${isCollapsed ? 'flex flex-col items-center py-1' : 'px-2 text-xs'}`}>
+            <div className={`space-y-1.5 ${isCollapsed ? 'flex flex-col items-center py-1' : 'px-1 text-xs'}`}>
+              {/* SEI! GOVMA */}
               <div 
-                className={`flex items-center text-slate-300 bg-slate-800/60 rounded ${
-                  isCollapsed ? 'p-1.5 justify-center' : 'justify-between p-1.5'
+                className={`flex items-center text-slate-300 bg-slate-800/70 hover:bg-slate-800 rounded-lg transition border border-slate-700/50 ${
+                  isCollapsed ? 'p-2 justify-center' : 'justify-between p-2'
                 }`}
-                title="SEI! GOVMA: Consulta ativa"
+                title="SEI! GOVMA • Última sincronização: Hoje às 14:00 (Consulta ativa)"
               >
-                <span className="flex items-center space-x-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                  {!isCollapsed && <span className="text-[11px]">SEI! GOVMA</span>}
-                </span>
-                {!isCollapsed && (
-                  <span className="text-[9px] bg-blue-900/60 text-blue-200 px-1.5 py-0.2 rounded font-medium">Ativo</span>
-                )}
+                <div className="flex items-center space-x-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0"></span>
+                  {!isCollapsed && (
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-slate-200">SEI! GOVMA</span>
+                        <span className="text-[9px] bg-blue-900/60 text-blue-300 px-1.5 py-0.2 rounded font-medium border border-blue-700/50">
+                          Consulta
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-mono">Hoje às 14:00</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* StartGov */}
               <div 
-                className={`flex items-center text-slate-300 bg-slate-800/60 rounded ${
-                  isCollapsed ? 'p-1.5 justify-center' : 'justify-between p-1.5'
+                className={`flex items-center text-slate-300 bg-slate-800/70 hover:bg-slate-800 rounded-lg transition border border-slate-700/50 ${
+                  isCollapsed ? 'p-2 justify-center' : 'justify-between p-2'
                 }`}
-                title="StartGov: Coletor ativo"
+                title="StartGov Licitações • Última sincronização: Hoje às 13:45 (API ativa)"
               >
-                <span className="flex items-center space-x-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  {!isCollapsed && <span className="text-[11px]">StartGov</span>}
-                </span>
-                {!isCollapsed && (
-                  <span className="text-[9px] bg-emerald-900/60 text-emerald-200 px-1.5 py-0.2 rounded font-medium">API</span>
-                )}
+                <div className="flex items-center space-x-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                  {!isCollapsed && (
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-slate-200">StartGov</span>
+                        <span className="text-[9px] bg-emerald-900/60 text-emerald-300 px-1.5 py-0.2 rounded font-medium border border-emerald-700/50">
+                          API
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-mono">Hoje às 13:45</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* PNCP Federal */}
               <div 
-                className={`flex items-center text-slate-300 bg-slate-800/60 rounded ${
-                  isCollapsed ? 'p-1.5 justify-center' : 'justify-between p-1.5'
+                className={`flex items-center text-slate-300 bg-slate-800/70 hover:bg-slate-800 rounded-lg transition border border-slate-700/50 ${
+                  isCollapsed ? 'p-2 justify-center' : 'justify-between p-2'
                 }`}
-                title="PNCP Federal: Sincronização Art. 94"
+                title="PNCP Federal • Última sincronização: Hoje às 12:30 (Lei 14.133/2021)"
               >
-                <span className="flex items-center space-x-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  {!isCollapsed && <span className="text-[11px]">PNCP Federal</span>}
-                </span>
-                {!isCollapsed && (
-                  <span className="text-[9px] bg-amber-900/60 text-amber-200 px-1.5 py-0.2 rounded font-medium">Lei 14.133</span>
-                )}
+                <div className="flex items-center space-x-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                  {!isCollapsed && (
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-slate-200">PNCP Federal</span>
+                        <span className="text-[9px] bg-amber-900/60 text-amber-300 px-1.5 py-0.2 rounded font-medium border border-amber-700/50">
+                          Lei 14.133
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-mono">Hoje às 12:30</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

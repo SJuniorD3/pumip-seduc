@@ -7,17 +7,11 @@ import { CommandPalette } from './CommandPalette';
 import { useAuth } from '../lib/authContext';
 
 interface HeaderProps {
-  lastSyncSEI?: string;
-  lastSyncStartGov?: string;
-  lastSyncPNCP?: string;
   onToggleMobileMenu?: () => void;
   isMobileMenuOpen?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  lastSyncSEI = 'Hoje às 14:00',
-  lastSyncStartGov = 'Hoje às 13:45',
-  lastSyncPNCP = 'Hoje às 12:30',
   onToggleMobileMenu,
   isMobileMenuOpen = false,
 }) => {
@@ -91,25 +85,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <Command className="w-3 h-3" /> K
               </kbd>
             </button>
-
-            {/* Status dos Coletores de Dados (Jitter / Delta Hash) */}
-            <div className="hidden xl:flex items-center space-x-4 text-xs border-l border-r border-slate-200 px-3.5 py-1 bg-slate-50/60 rounded-lg">
-              <div className="flex items-center space-x-1.5 text-slate-700">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                <span className="font-semibold text-blue-900">SEI:</span>
-                <span className="text-slate-600">{lastSyncSEI}</span>
-              </div>
-              <div className="flex items-center space-x-1.5 text-slate-700">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-                <span className="font-semibold text-emerald-900">StartGov:</span>
-                <span className="text-slate-600">{lastSyncStartGov}</span>
-              </div>
-              <div className="flex items-center space-x-1.5 text-slate-700">
-                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                <span className="font-semibold text-amber-900">PNCP:</span>
-                <span className="text-slate-600">{lastSyncPNCP}</span>
-              </div>
-            </div>
 
             {/* Direita: Busca Mobile + Notificações e Identificação Dinâmica do Usuário */}
             <div className="flex items-center space-x-1 sm:space-x-3">
