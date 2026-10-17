@@ -52,14 +52,21 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
 
-              <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3 group shrink-0">
+              <Link 
+                href="/" 
+                className="flex items-center space-x-2.5 sm:space-x-3 group shrink-0"
+                title="PUMIP: Plataforma Unificada de Monitoramento e Inteligência Processual (SEDUC-MA)"
+              >
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-700 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-md group-hover:bg-blue-800 transition">
                   P
                 </div>
                 <div>
                   <div className="flex items-center space-x-1.5 sm:space-x-2">
                     <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">PUMIP</span>
-                    <span className="text-[10px] sm:text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full border border-blue-200">
+                    <span 
+                      className="text-[10px] sm:text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full border border-blue-200 cursor-help"
+                      title="Secretaria de Estado da Educação do Governo do Maranhão"
+                    >
                       SEDUC-MA
                     </span>
                   </div>
@@ -75,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={() => setIsSearchOpen(true)}
               className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-xs text-slate-500 transition shadow-inner w-56 lg:w-80 justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-              title="Buscar qualquer processo (Atalho: Cmd + K)"
+              title="Busca Global Unificada: pesquise por número SEI, objeto, fornecedor ou setor (Atalho: Cmd + K / Ctrl + K)"
             >
               <div className="flex items-center gap-2 truncate">
                 <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition shrink-0" />
@@ -93,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
                 className="md:hidden p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-                title="Buscar processo (Cmd + K)"
+                title="Buscar processo (Cmd + K / Ctrl + K)"
                 aria-label="Buscar processos"
               >
                 <Search className="w-5 h-5" />
@@ -102,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
               <Link 
                 href="/alertas" 
                 className="relative p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-                title="Notificações e Alertas SLA"
+                title="Central de Alertas: Notificações de inércia, SLA, diligências e prazos legais da Lei 14.133/2021"
                 aria-label="Notificações e Alertas"
               >
                 <Bell className="w-5 h-5" />
@@ -110,10 +117,12 @@ export const Header: React.FC<HeaderProps> = ({
               </Link>
 
               {/* Perfil do Usuário Autenticado */}
-              <div className="border-l border-slate-200 pl-2 sm:pl-3 flex items-center space-x-2">
+              <div 
+                className="border-l border-slate-200 pl-2 sm:pl-3 flex items-center space-x-2 cursor-help"
+                title={`Operador Conectado: ${user.nome}\nCargo: ${user.cargo_titulo}\nUnidade de Origem: ${user.unidade_sigla}\nPerfil: ${user.role}\nSegurança RLS: Visão restrita à hierarquia autorizada`}
+              >
                 <div 
                   className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-900 text-white font-bold flex items-center justify-center text-xs shadow-inner"
-                  title={`${user.nome} (${user.cargo_titulo})`}
                 >
                   {user.avatar_iniciais || 'SJ'}
                 </div>
@@ -124,7 +133,10 @@ export const Header: React.FC<HeaderProps> = ({
                       {user.nome.split(' ')[0]} {user.nome.split(' ').slice(-1)[0]}
                     </p>
                     {user.isAdmin && (
-                      <span className="text-[9px] bg-red-100 text-red-800 border border-red-200 px-1 py-0.2 rounded font-bold">
+                      <span 
+                        title="Administrador Geral: Acesso ao cofre de credenciais e parametrização do sistema"
+                        className="text-[9px] bg-red-100 text-red-800 border border-red-200 px-1 py-0.2 rounded font-bold"
+                      >
                         ADMIN
                       </span>
                     )}
@@ -141,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={logout}
                   className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  title="Sair do sistema ou trocar de perfil"
+                  title="Sair do sistema ou alternar perfil de usuário (para simular RLS setorial)"
                   aria-label="Sair do sistema"
                 >
                   <LogOut className="w-4 h-4" />

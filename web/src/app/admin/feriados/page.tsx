@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Breadcrumb } from '../../../components/Breadcrumb';
 import { AdminGuard } from '../../../components/AdminGuard';
+import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { 
   getFeriadosAno, 
   getFeriadosPersonalizados, 
@@ -122,15 +123,16 @@ export default function AdminFeriadosPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Calendar className="w-5 h-5 text-blue-700" />
-            <h1 className="text-xl font-bold text-slate-900">
-              Calendário de Feriados e Cálculo de Dias Úteis (RF04)
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>Calendário de Feriados e Cálculo de Dias Úteis (RF04)</span>
+              <InfoTooltip content="Cálculo oficial de permanência e SLA processual conforme Art. 183 da Lei 14.133/2021: exclui o dia do começo e inclui o do vencimento. Aplica o algoritmo de Meeus/Jones/Butcher para feriados móveis da Páscoa." />
             </h1>
             <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
               Módulo ADMIN
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Regulamenta o cálculo oficial de permanência de processos da SEDUC-MA, excluindo feriados nacionais, 
+            Regulamenta o cálculo oficial de permanência de processos da <Abbr sigla="SEDUC" />, excluindo feriados nacionais, 
             estaduais do Maranhão, municipais de São Luís e suspensões administrativas.
           </p>
         </div>
@@ -251,11 +253,17 @@ export default function AdminFeriadosPage() {
           {testResult && (
             <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-2 text-xs animate-fade-in">
               <div className="flex items-center justify-between">
-                <span className="text-slate-600">Dias Corridos:</span>
+                <span className="text-slate-600 flex items-center gap-1">
+                  <span>Dias Corridos:</span>
+                  <InfoTooltip content="Total absoluto de dias entre as duas datas sem qualquer desconto." />
+                </span>
                 <span className="font-bold text-slate-900 text-sm">{testResult.diasCorridos} dias</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-600">Dias Úteis Legais:</span>
+                <span className="text-slate-600 flex items-center gap-1">
+                  <span>Dias Úteis Legais:</span>
+                  <InfoTooltip content="Tempo líquido de tramitação excluindo fins de semana e feriados oficiais (Art. 183 da Lei 14.133/2021)." />
+                </span>
                 <span className="font-bold text-blue-700 text-sm">{testResult.diasUteis} dias úteis</span>
               </div>
               {testResult.feriadosCruzados.length > 0 && (
@@ -305,10 +313,25 @@ export default function AdminFeriadosPage() {
           <table className="w-full text-left text-xs text-slate-600">
             <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4">Data Oficial</th>
+                <th className="py-3 px-4">
+                  <span className="flex items-center gap-1">
+                    <span>Data Oficial</span>
+                    <InfoTooltip content="Data no formato DD/MM/AAAA considerada dia não útil para cômputo de prazos." />
+                  </span>
+                </th>
                 <th className="py-3 px-4">Descrição do Feriado / Suspensão</th>
-                <th className="py-3 px-4">Âmbito Legal</th>
-                <th className="py-3 px-4 text-center">Tipo</th>
+                <th className="py-3 px-4">
+                  <span className="flex items-center gap-1">
+                    <span>Âmbito Legal</span>
+                    <InfoTooltip content="Jurisdição da norma: Federal (Lei 10.607), Estadual Maranhão (Lei 2.457), Municipal São Luís (Lei 3.432) ou Portaria SEDUC." />
+                  </span>
+                </th>
+                <th className="py-3 px-4 text-center">
+                  <span className="flex items-center justify-center gap-1">
+                    <span>Tipo</span>
+                    <InfoTooltip content="Fixo (dia fixo do ano) ou Móvel (calculado pelas efemérides astronômicas da Páscoa)." />
+                  </span>
+                </th>
                 <th className="py-3 px-4 text-right">Ação</th>
               </tr>
             </thead>

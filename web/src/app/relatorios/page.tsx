@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Breadcrumb } from '../../components/Breadcrumb';
+import { Abbr, InfoTooltip } from '../../components/Tooltip';
 import { exportToExcel, exportToCSV, triggerPrintPDF } from '../../lib/exportUtils';
 import { 
   BarChart3, 
@@ -252,18 +253,20 @@ export default function RelatoriosPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <BarChart3 className="w-5 h-5 text-blue-700" />
-            <h1 className="text-xl font-bold text-slate-900">
-              Relatórios Gerenciais e Inteligência Processual
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>Relatórios Gerenciais e Inteligência Processual</span>
+              <InfoTooltip content="Módulo de inteligência jurídica e administrativa para controle de prazos da Lei 14.133/2021, auditoria do Portal Nacional de Contratações Públicas (PNCP) e gargalos setoriais." />
             </h1>
           </div>
           <p className="text-xs text-slate-500">
-            Acompanhamento de prazos da Lei 14.133/2021, auditoria de publicidade no PNCP e tempo de permanência por unidade.
+            Acompanhamento de prazos da Lei 14.133/2021, auditoria de publicidade no <Abbr sigla="PNCP" /> e tempo de permanência por unidade da <Abbr sigla="SEDUC" />.
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={handleExportExcel}
+            title="Exportar dados da tabela ativa para planilha Excel (.xlsx)"
             className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition shadow-sm"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -271,6 +274,7 @@ export default function RelatoriosPage() {
           </button>
           <button
             onClick={handlePrint}
+            title="Gerar visualização de impressão e relatório formatado em PDF"
             className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition shadow-sm"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -283,6 +287,7 @@ export default function RelatoriosPage() {
       <div className="flex border-b border-slate-200 gap-3">
         <button
           onClick={() => setActiveTab('art94')}
+          title="Art. 94 da Lei 14.133/2021: Divulgação obrigatória no PNCP em até 20 dias úteis (licitação) ou 10 dias úteis (contratação direta)"
           className={`pb-3 text-xs font-bold transition border-b-2 flex items-center gap-2 ${
             activeTab === 'art94'
               ? 'border-blue-600 text-blue-600'
@@ -295,6 +300,7 @@ export default function RelatoriosPage() {
 
         <button
           onClick={() => setActiveTab('vigencia')}
+          title="Acompanhamento preventivo de vencimento de contratos com alertas escalonados de 120, 90 e 60 dias"
           className={`pb-3 text-xs font-bold transition border-b-2 flex items-center gap-2 ${
             activeTab === 'vigencia'
               ? 'border-blue-600 text-blue-600'
@@ -307,6 +313,7 @@ export default function RelatoriosPage() {
 
         <button
           onClick={() => setActiveTab('permanencia')}
+          title="Métricas de retenção por unidade administrativa decompostas nos 3 estados: Em Análise, Aguardando Terceiro e Sobrestado"
           className={`pb-3 text-xs font-bold transition border-b-2 flex items-center gap-2 ${
             activeTab === 'permanencia'
               ? 'border-blue-600 text-blue-600'

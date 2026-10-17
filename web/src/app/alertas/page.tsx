@@ -16,6 +16,7 @@ import {
   Compass,
   Check
 } from 'lucide-react';
+import { Abbr, InfoTooltip } from '../../components/Tooltip';
 
 interface AlertaItem {
   id: string;
@@ -101,8 +102,9 @@ export default function AlertasPage() {
       <div className="pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2 mb-1">
           <BellRing className="w-5 h-5 text-blue-600" />
-          <h1 className="text-xl font-bold text-slate-900">
-            Central de Alertas e Notificações Inteligentes
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <span>Central de Alertas e Notificações Inteligentes</span>
+            <InfoTooltip content="Sistema de vigilância contínua que cruza dados do SEI, StartGov e PNCP para notificar gestores sobre inércia, diligências jurídicas e prazos legais." />
           </h1>
         </div>
         <p className="text-xs text-slate-500">
@@ -116,11 +118,15 @@ export default function AlertasPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-amber-400" />
-            <h2 className="text-base font-bold">
-              Gatilhos Automáticos do Sistema (Zero-Configuração Ativos)
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <span>Gatilhos Automáticos do Sistema (Zero-Configuração Ativos)</span>
+              <InfoTooltip content="Motores de vigilância pré-configurados que operam 24/7 sem requerer nenhuma intervenção técnica ou cadastro manual." />
             </h2>
           </div>
-          <span className="text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 self-start sm:self-auto">
+          <span 
+            title="Motores de vigilância autônomos em execução contínua"
+            className="text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 self-start sm:self-auto cursor-help"
+          >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             Proteção Ativa 24/7
           </span>
@@ -133,7 +139,10 @@ export default function AlertasPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
           {/* Card 1 */}
-          <div className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2">
+          <div 
+            title="Gatilho 1: Aciona semáforo vermelho quando o tempo útil de permanência na mesma unidade atinge ou supera 7 dias"
+            className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2 cursor-help"
+          >
             <div className="flex items-center justify-between">
               <span className="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse"></span>
               <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
@@ -141,7 +150,7 @@ export default function AlertasPage() {
               </span>
             </div>
             <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>Gargalo Crítico (&ge; 7 dias)</span>
+              <span>Gargalo Crítico (&ge; 7 dias úteis)</span>
             </h3>
             <p className="text-[11px] text-slate-300 leading-relaxed">
               Detecta processos sem nenhuma movimentação há mais de 7 dias úteis em qualquer setor, acionando o semáforo vermelho pulsante.
@@ -149,7 +158,10 @@ export default function AlertasPage() {
           </div>
 
           {/* Card 2 */}
-          <div className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2">
+          <div 
+            title="Gatilho 2: Notifica os operadores imediatamente ao identificar retorno dos autos com diligência ou pendência de saneamento"
+            className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2 cursor-help"
+          >
             <div className="flex items-center justify-between">
               <Repeat className="w-4 h-4 text-amber-400" />
               <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
@@ -157,15 +169,18 @@ export default function AlertasPage() {
               </span>
             </div>
             <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>Retorno de Diligência</span>
+              <span>Retorno de Diligência (<Abbr sigla="ASJUR" /> / <Abbr sigla="CSL" />)</span>
             </h3>
             <p className="text-[11px] text-slate-300 leading-relaxed">
-              Alerta imediato quando um processo retorna da Assessoria Jurídica (AJU) ou Comissões (CSL) solicitando saneamento ou adequação.
+              Alerta imediato quando um processo retorna da Assessoria Jurídica ou Comissões solicitando saneamento ou adequação documental.
             </p>
           </div>
 
           {/* Card 3 */}
-          <div className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2">
+          <div 
+            title="Gatilho 3: Monitora o avanço dos processos em tempo real e consolida o feed de novidades da pasta"
+            className="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 backdrop-blur-sm transition space-y-2 cursor-help"
+          >
             <div className="flex items-center justify-between">
               <Compass className="w-4 h-4 text-cyan-400" />
               <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">

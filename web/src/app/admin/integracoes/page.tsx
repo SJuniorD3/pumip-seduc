@@ -37,6 +37,7 @@ import {
   FileCheck2,
   CalendarClock
 } from 'lucide-react';
+import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 
 interface IntegracaoConfig {
   sei: {
@@ -523,8 +524,12 @@ export default function AdminIntegracoesPage() {
                     Sistema 100% Operacional sem Certificado
                   </span>
                 </div>
-                <h2 className="text-sm font-bold text-amber-950 mt-1">
-                  Urgência Institucional: Solicitação de Certificado Digital ICP-Brasil A1 (e-CNPJ SEDUC)
+                <h2 className="text-sm font-bold text-amber-950 mt-1 flex items-center gap-1.5 flex-wrap">
+                  <span>Urgência Institucional: Solicitação de Certificado Digital</span>
+                  <Abbr sigla="ICP-Brasil" />
+                  <Abbr sigla="A1" />
+                  <span>(e-CNPJ <Abbr sigla="SEDUC" />)</span>
+                  <InfoTooltip content="Certificado institucional em arquivo PKCS#12 (.pfx) emitido para o CNPJ da SEDUC-MA, indispensável em produção para mTLS e acesso irrestrito contra bloqueios WAF." />
                 </h2>
               </div>
             </div>
@@ -599,6 +604,7 @@ export default function AdminIntegracoesPage() {
           <button
             type="button"
             onClick={() => setActiveTab('CONECTORES')}
+            title="Configurar credenciais, tokens e endpoints oficiais das APIs do SEI!, StartGov e PNCP"
             className={`px-4 py-2.5 rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
               activeTab === 'CONECTORES'
                 ? 'bg-white border-blue-600 text-blue-700 font-bold shadow-sm'
@@ -612,6 +618,7 @@ export default function AdminIntegracoesPage() {
           <button
             type="button"
             onClick={() => setActiveTab('ON_DEMAND')}
+            title="Executar sincronização forçada de processos individuais com bypass de cache e auditoria de hash"
             className={`px-4 py-2.5 rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
               activeTab === 'ON_DEMAND'
                 ? 'bg-white border-blue-600 text-blue-700 font-bold shadow-sm'
@@ -625,6 +632,7 @@ export default function AdminIntegracoesPage() {
           <button
             type="button"
             onClick={() => setActiveTab('RESILIENCIA')}
+            title="Políticas de Circuit Breaker, Exponential Backoff com Jitter e Dead Letter Queue (DLQ) para falhas transitórias"
             className={`px-4 py-2.5 rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
               activeTab === 'RESILIENCIA'
                 ? 'bg-white border-blue-600 text-blue-700 font-bold shadow-sm'
@@ -638,6 +646,7 @@ export default function AdminIntegracoesPage() {
           <button
             type="button"
             onClick={() => setActiveTab('TELEMETRIA')}
+            title="Dashboard de observabilidade com latência p95, taxa de erro HTTP, volume de chamadas e logs em tempo real"
             className={`px-4 py-2.5 rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
               activeTab === 'TELEMETRIA'
                 ? 'bg-white border-blue-600 text-blue-700 font-bold shadow-sm'
@@ -651,6 +660,7 @@ export default function AdminIntegracoesPage() {
           <button
             type="button"
             onClick={() => setActiveTab('PLAYGROUND')}
+            title="Simulador interativo de requisições e respostas JSON/XML para homologação de esquemas das APIs"
             className={`px-4 py-2.5 rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
               activeTab === 'PLAYGROUND'
                 ? 'bg-white border-blue-600 text-blue-700 font-bold shadow-sm'

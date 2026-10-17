@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ProcessTable } from '../../components/ProcessTable';
 import { Breadcrumb } from '../../components/Breadcrumb';
+import { Abbr, InfoTooltip } from '../../components/Tooltip';
 import { mockProcessos } from '../../lib/mockData';
 import { Processo } from '../../lib/types';
 import { useAuth } from '../../lib/authContext';
@@ -27,20 +28,24 @@ export default function ProcessosPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <FileSearch className="w-5 h-5 text-blue-600" />
-            <h1 className="text-xl font-bold text-slate-900">
-              Processos Monitorados da SEDUC-MA
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>Processos Monitorados da <Abbr sigla="SEDUC" /></span>
+              <InfoTooltip content="Visão consolidada de todas as demandas e compras públicas sob a jurisdição do seu perfil ou subunidades subordinadas." />
             </h1>
           </div>
           <p className="text-xs text-slate-500">
             Acompanhe a lista de demandas autorizadas para seu perfil ({user.role} &bull; {user.unidade_sigla}) 
-            com metadados do SEI!, StartGov e PNCP.
+            com metadados do <Abbr sigla="SEI" />, StartGov e <Abbr sigla="PNCP" />.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1.5 shadow-sm">
+          <span 
+            title={`Segurança em Nível de Linha (RLS): Filtra automaticamente os processos autorizados para a lotação ${user.unidade_sigla} e setores hierarquicamente subordinados`}
+            className="text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1.5 shadow-sm cursor-help"
+          >
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>RLS Ativo: {processosVisiveis.length} visíveis ({user.role})</span>
+            <span><Abbr sigla="RLS" /> Ativo: {processosVisiveis.length} visíveis ({user.role})</span>
           </span>
         </div>
       </div>

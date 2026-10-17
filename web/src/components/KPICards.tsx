@@ -11,6 +11,7 @@ import {
   Filter
 } from 'lucide-react';
 import { Processo } from '../lib/types';
+import { Abbr, InfoTooltip } from './Tooltip';
 
 export type KPIFilterType = 'TODOS' | 'CRITICOS' | 'CONTRATACAO' | 'SETOR_GARGALO';
 
@@ -73,12 +74,15 @@ export const KPICards: React.FC<KPICardsProps> = ({
             ? 'border-blue-600 ring-2 ring-blue-500/30 shadow-md bg-blue-50/20'
             : 'border-slate-200 hover:border-blue-300 hover:shadow-sm'
         }`}
-        title="Clique para listar todos os processos da carteira"
+        title="Total de processos na sua alçada de governança (SEI-GOVMA + StartGov). Clique para ver a lista completa."
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Total Monitorados
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Total Monitorados
+            </span>
+            <InfoTooltip content="Processos administrativos autuados e integrados sob monitoramento contínuo da SEDUC-MA." />
+          </div>
           <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:scale-105 transition-transform">
             <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
@@ -91,7 +95,9 @@ export const KPICards: React.FC<KPICardsProps> = ({
           </span>
         </div>
         <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
-          <span>SEI GOVMA + StartGov</span>
+          <span>
+            <Abbr sigla="SEI" /> + <Abbr sigla="StartGov" />
+          </span>
           {activeFilter === 'TODOS' && (
             <span className="text-blue-700 font-bold flex items-center gap-0.5">
               <Check className="w-3 h-3" /> Ativo
@@ -111,12 +117,15 @@ export const KPICards: React.FC<KPICardsProps> = ({
             ? 'border-red-600 ring-2 ring-red-500/30 shadow-md bg-red-50/20'
             : 'border-slate-200 hover:border-red-300 hover:shadow-sm'
         }`}
-        title="Clique para filtrar apenas processos críticos com SLA estourado"
+        title="Processos parados na mesma unidade há 5 dias úteis ou mais sem despacho (SLA expirado). Clique para filtrar."
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            SLA Estourado / Críticos
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <Abbr sigla="SLA" /> Estourado / Críticos
+            </span>
+            <InfoTooltip content="SLA (Acordo de Nível de Serviço): meta estipulada pela SEDUC para permanência máxima de processos sem movimentação." />
+          </div>
           <div className="p-2 bg-red-50 text-red-600 rounded-lg group-hover:scale-105 transition-transform">
             <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
@@ -124,7 +133,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
         <div className="mt-2 flex items-baseline justify-between">
           <p className="text-2xl font-bold text-red-600">{criticos}</p>
           <span className="text-[11px] text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
-            &gt; 5 dias sem avanço
+            &gt; 5 dias úteis sem avanço
           </span>
         </div>
         <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
@@ -152,12 +161,15 @@ export const KPICards: React.FC<KPICardsProps> = ({
             ? 'border-emerald-600 ring-2 ring-emerald-500/30 shadow-md bg-emerald-50/20'
             : 'border-slate-200 hover:border-emerald-300 hover:shadow-sm'
         }`}
-        title="Clique para filtrar apenas processos em fase externa de contratação"
+        title="Processos em fase externa de compras e disputa pública no StartGov (Pregões e Dispensas Eletrônicas). Clique para filtrar."
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Fase de Contratação
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Fase de Contratação
+            </span>
+            <InfoTooltip content="Processos que já concluíram a fase preparatória interna e estão em disputa aberta ou adjudicação de propostas." />
+          </div>
           <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:scale-105 transition-transform">
             <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
@@ -193,20 +205,25 @@ export const KPICards: React.FC<KPICardsProps> = ({
             ? 'border-purple-600 ring-2 ring-purple-500/30 shadow-md bg-purple-50/20'
             : 'border-slate-200 hover:border-purple-300 hover:shadow-sm'
         }`}
-        title={`Clique para filtrar processos parados no setor com maior gargalo: ${maiorGargaloSetor}`}
+        title={`Setor com maior inércia média acumulada: ${maiorGargaloSetor} (${maiorMediaDias.toFixed(1)} dias úteis de espera). Clique para filtrar.`}
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Maior Gargalo
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Maior Gargalo
+            </span>
+            <InfoTooltip content="Unidade organizacional da SEDUC com a maior média de dias úteis retendo processos na mesa sem despacho." />
+          </div>
           <div className="p-2 bg-purple-50 text-purple-600 rounded-lg group-hover:scale-105 transition-transform">
             <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         </div>
         <div className="mt-2 flex items-baseline justify-between">
-          <p className="text-2xl font-bold text-purple-900">{maiorGargaloSetor}</p>
+          <p className="text-2xl font-bold text-purple-900">
+            <Abbr sigla={maiorGargaloSetor} />
+          </p>
           <span className="text-[11px] text-purple-800 font-bold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
-            Média: {maiorMediaDias.toFixed(1)}d
+            Média: {maiorMediaDias.toFixed(1)}d úteis
           </span>
         </div>
         <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">

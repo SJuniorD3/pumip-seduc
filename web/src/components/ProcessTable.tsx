@@ -28,6 +28,7 @@ import {
   RotateCcw,
   SearchX
 } from 'lucide-react';
+import { Abbr, InfoTooltip } from './Tooltip';
 
 interface ProcessTableProps {
   processos: Processo[];
@@ -359,17 +360,48 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
         <table className="w-full text-left text-xs text-slate-700 border-collapse">
           <thead className="bg-slate-100/90 text-slate-800 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
             <tr>
-              <th className="py-3 px-3 w-10 text-center sticky left-0 bg-slate-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]" title="Fixar na Minha Mesa">
-                ⭐
+              <th 
+                className="py-3 px-3 w-10 text-center sticky left-0 bg-slate-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]" 
+                title="Fixar na Minha Mesa (salve processos prioritários para acompanhamento rápido na aba Favoritos)"
+              >
+                <span className="cursor-help" title="Fixar na Minha Mesa">⭐</span>
               </th>
               <th className="py-3 px-4 min-w-[200px] sticky left-10 bg-slate-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
-                Protocolos (SEI / StartGov)
+                <div className="flex items-center gap-1.5">
+                  <span>Protocolos (<Abbr sigla="SEI" /> / <Abbr sigla="StartGov" />)</span>
+                  <InfoTooltip content="Identificadores do processo no Sistema Eletrônico de Informações (SEI-GOVMA) e na plataforma de licitações StartGov." />
+                </div>
               </th>
-              <th className="py-3 px-4 min-w-[260px]">Objeto e Próximo Passo</th>
-              <th className="py-3 px-4 min-w-[140px]">Unidade Atual</th>
-              <th className="py-3 px-4 min-w-[130px]">Etapa Processual</th>
-              <th className="py-3 px-4 min-w-[130px]">Semáforo de Inércia</th>
-              <th className="py-3 px-4 text-right min-w-[140px]">Ações Rápidas</th>
+              <th className="py-3 px-4 min-w-[260px]">
+                <div className="flex items-center gap-1.5">
+                  <span>Objeto e Próximo Passo</span>
+                  <InfoTooltip content="Descrição sintética do objeto da contratação e próximo ato administrativo previsto para dar andamento." />
+                </div>
+              </th>
+              <th className="py-3 px-4 min-w-[140px]">
+                <div className="flex items-center gap-1.5">
+                  <span>Unidade Atual</span>
+                  <InfoTooltip content="Setor da SEDUC-MA que detém a carga eletrônica atual do processo, regido pela hierarquia e regras de RLS." />
+                </div>
+              </th>
+              <th className="py-3 px-4 min-w-[140px]">
+                <div className="flex items-center gap-1.5">
+                  <span>Etapa Processual</span>
+                  <InfoTooltip content="Fase atual do ciclo de vida da contratação pública conforme a Lei Federal nº 14.133/2021." />
+                </div>
+              </th>
+              <th className="py-3 px-4 min-w-[130px]">
+                <div className="flex items-center gap-1.5">
+                  <span>Semáforo de Inércia</span>
+                  <InfoTooltip content="Contagem em dias úteis sem movimentação no setor atual. Exclui fins de semana e feriados oficiais da SEDUC (Art. 183 Lei 14.133/2021)." />
+                </div>
+              </th>
+              <th className="py-3 px-4 text-right min-w-[140px]">
+                <div className="flex items-center justify-end gap-1.5">
+                  <span>Ações Rápidas</span>
+                  <InfoTooltip content="Atalhos para copiar resumo formatado para despacho ou WhatsApp, sincronizar com o SEI e abrir a linha do tempo no Metrô Processual." />
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
@@ -412,7 +444,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                       <button
                         onClick={(e) => toggleFavorito(proc.id, e)}
                         className="p-1 rounded hover:bg-slate-200/60 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                        title={isFav ? 'Remover da minha mesa' : 'Fixar na minha mesa'}
+                        title={isFav ? 'Remover da minha mesa (desafixar)' : 'Fixar na minha mesa para acompanhamento prioritário'}
                       >
                         <Star
                           className={`w-4 h-4 transition ${
@@ -429,12 +461,16 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                       <div className="flex items-center gap-1.5">
                         <Link
                           href={`/processos/${proc.id}`}
+                          title={`Protocolo oficial no SEI-GOVMA: ${proc.protocolo_sei}. Clique para abrir a ficha completa e a linha do tempo no Metrô Processual.`}
                           className="font-bold text-blue-700 hover:underline hover:text-blue-900"
                         >
                           {proc.protocolo_sei}
                         </Link>
                         {proc.tem_novidade_hoje && (
-                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 border border-blue-200 animate-pulse">
+                          <span 
+                            title="Houve nova movimentação ou despacho registrado nas últimas 24 horas"
+                            className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800 border border-blue-200 animate-pulse cursor-help"
+                          >
                             <Sparkles className="w-2.5 h-2.5 text-blue-600" />
                             Novo
                           </span>
@@ -442,11 +478,17 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                       </div>
 
                       {proc.protocolo_startgov ? (
-                        <div className="text-[11px] text-emerald-800 font-semibold mt-0.5 flex items-center gap-1">
+                        <div 
+                          title={`Identificador do certame de compras no StartGov: ${proc.protocolo_startgov}`}
+                          className="text-[11px] text-emerald-800 font-semibold mt-0.5 flex items-center gap-1 cursor-help"
+                        >
                           <span>{proc.protocolo_startgov}</span>
                         </div>
                       ) : (
-                        <div className="text-[10px] text-slate-400 italic">
+                        <div 
+                          title="Este processo ainda está em fase interna preparatória e não possui certame autuado no StartGov"
+                          className="text-[10px] text-slate-400 italic cursor-help"
+                        >
                           Aguardando StartGov
                         </div>
                       )}
@@ -454,11 +496,17 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
 
                     {/* Objeto e Próximo Passo Esperado */}
                     <td className="py-3 px-4 max-w-sm">
-                      <p className="font-semibold text-slate-900 line-clamp-1">
+                      <p 
+                        title={`Objeto: ${proc.objeto}`}
+                        className="font-semibold text-slate-900 line-clamp-1"
+                      >
                         {proc.objeto}
                       </p>
 
-                      <div className="text-[11px] text-slate-600 font-medium flex items-center gap-1.5 mt-1 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                      <div 
+                        title={`Próxima ação administrativa prevista: ${proc.proximo_passo_esperado || 'Tramitação setorial de rotina'}`}
+                        className="text-[11px] text-slate-600 font-medium flex items-center gap-1.5 mt-1 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 cursor-help"
+                      >
                         <Compass className="w-3 h-3 text-blue-600 shrink-0" />
                         <span className="text-blue-900 font-bold shrink-0">Próximo passo:</span>
                         <span className="text-slate-700 truncate">
@@ -469,16 +517,20 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
 
                     {/* Unidade Atual no SEI */}
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 font-bold border border-slate-200">
+                      <span 
+                        title={`Unidade detentora da carga atual do processo: ${proc.unidade_atual_sei}. Regida pelas regras de RLS (Row Level Security).`}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 font-bold border border-slate-200 cursor-help"
+                      >
                         <Building className="w-3.5 h-3.5 text-slate-500" />
-                        {proc.unidade_atual_sei}
+                        <Abbr sigla={proc.unidade_atual_sei} />
                       </span>
                     </td>
 
                     {/* Etapa Processual */}
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusBadge(
+                        title={`Fase da Lei 14.133/2021: ${proc.status_etapa.replace(/_/g, ' ')}`}
+                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border cursor-help ${getStatusBadge(
                           proc.status_etapa
                         )}`}
                       >
@@ -488,16 +540,19 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
 
                     {/* Semáforo de Inércia (3 níveis claros) */}
                     <td className="py-3 px-4">
-                      <div className="flex flex-col gap-1">
+                      <div 
+                        title={`Inércia: Processo retido há ${proc.dias_parado_na_unidade} dias úteis na unidade ${proc.unidade_atual_sei}. Classificação: ${semaforo.label}.`}
+                        className="flex flex-col gap-1 cursor-help"
+                      >
                         <div className="flex items-center gap-1.5">
                           <span className={`w-2.5 h-2.5 rounded-full ${semaforo.dotClass}`}></span>
                           <span
                             className={`text-xs px-2 py-0.5 rounded border ${semaforo.badgeClass}`}
                           >
-                            {proc.dias_parado_na_unidade} {proc.dias_parado_na_unidade === 1 ? 'dia' : 'dias'}
+                            {proc.dias_parado_na_unidade} {proc.dias_parado_na_unidade === 1 ? 'dia' : 'dias'} úteis
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-slate-500 font-medium">
                           {semaforo.label}
                         </span>
                       </div>
@@ -515,7 +570,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : 'bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border-slate-300'
                           }`}
-                          title="Copiar resumo formatado para WhatsApp ou Despacho"
+                          title="Copiar resumo estruturado com link direto para WhatsApp ou Despacho"
                         >
                           {isCopied ? (
                             <>
@@ -538,7 +593,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                         <Link
                           href={`/processos/${proc.id}`}
                           className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-                          title="Abrir Metrô Processual"
+                          title="Abrir Linha do Tempo Unificada no Metrô Processual"
                         >
                           <ArrowRight className="w-4 h-4" />
                         </Link>

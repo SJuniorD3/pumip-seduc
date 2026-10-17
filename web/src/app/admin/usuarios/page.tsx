@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Breadcrumb } from '../../../components/Breadcrumb';
 import { AdminGuard } from '../../../components/AdminGuard';
+import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { mockProcessos, mockUnidades } from '../../../lib/mockData';
 import { UserRole } from '../../../lib/types';
 import { 
@@ -183,17 +184,19 @@ export default function AdminUsuariosPage() {
 
       {/* Cabeçalho */}
       <div className="pb-4 border-b border-slate-200">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
           <KeyRound className="w-5 h-5 text-blue-700" />
-          <h1 className="text-xl font-bold text-slate-900">
-            Perfis de Acesso & Concessão de Permissões Pontuais
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <span>Perfis de Acesso & Concessão de Permissões Pontuais</span>
+            <Abbr sigla="RLS" />
+            <InfoTooltip content="Controle de Acesso em Nível de Linha (RLS): Define o que cada usuário visualiza baseado em sua lotação hierárquica e regras de herança piramidal da SEDUC." />
           </h1>
           <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
             Acesso Restrito: ADMIN
           </span>
         </div>
         <p className="text-xs text-slate-500">
-          Gerenciamento exclusivo da equipe administrativa para atribuição de cargos funcionais e concessão de acesso a processos específicos fora da lotação de origem.
+          Gerenciamento exclusivo da equipe administrativa para atribuição de cargos funcionais, escopo <Abbr sigla="RLS" /> e concessão de acesso a processos específicos fora da lotação de origem.
         </p>
       </div>
 
@@ -233,9 +236,19 @@ export default function AdminUsuariosPage() {
                 <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4">Nome do Servidor</th>
-                    <th className="py-3 px-4">Lotação Atual</th>
+                    <th className="py-3 px-4">
+                      <span className="flex items-center gap-1">
+                        <span>Lotação Atual</span>
+                        <InfoTooltip content="Sigla da unidade administrativa oficial na árvore hierárquica da SEDUC onde o servidor está lotado." />
+                      </span>
+                    </th>
                     <th className="py-3 px-4">Cargo / Função</th>
-                    <th className="py-3 px-4">Alçada no Sistema (Role)</th>
+                    <th className="py-3 px-4">
+                      <span className="flex items-center gap-1">
+                        <span>Alçada no Sistema (Role)</span>
+                        <InfoTooltip content="Determina o escopo de visibilidade RLS: Secretário/Subsecretário (Gabinete total), Superintendente/Supervisor (Setorial e subordinadas), Técnico (lotação restrita), Auditor (somente leitura global)." />
+                      </span>
+                    </th>
                     <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>

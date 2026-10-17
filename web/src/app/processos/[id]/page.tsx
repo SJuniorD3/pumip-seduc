@@ -7,6 +7,7 @@ import { mockProcessos, mockTramitacoes } from '../../../lib/mockData';
 import { MetroTimeline } from '../../../components/MetroTimeline';
 import { SyncButton } from '../../../components/SyncButton';
 import { Breadcrumb } from '../../../components/Breadcrumb';
+import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { useAuth } from '../../../lib/authContext';
 import { 
   ArrowLeft, 
@@ -289,27 +290,42 @@ export default function ProcessoDetalhePage() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-base font-mono font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200">
+              <span 
+                title="Número de autuação oficial no Sistema Eletrônico de Informações (SEI-MA)"
+                className="text-base font-mono font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200"
+              >
                 {processo.protocolo_sei}
               </span>
               {processo.tem_novidade_hoje && (
-                <span className="text-xs font-bold text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                <span 
+                  title="Processo teve nova movimentação ou despacho registrado nas últimas 24 horas"
+                  className="text-xs font-bold text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse"
+                >
                   <Sparkles className="w-3 h-3 text-blue-600" />
                   Movimentado Hoje
                 </span>
               )}
               {processo.protocolo_startgov ? (
-                <span className="text-sm font-mono font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 flex items-center gap-1">
+                <span 
+                  title="Protocolo oficial de licitação / compra eletrônica no sistema StartGov"
+                  className="text-sm font-mono font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 flex items-center gap-1"
+                >
                   <span>StartGov: {processo.protocolo_startgov}</span>
                   <ExternalLink className="w-3 h-3 text-emerald-600" />
                 </span>
               ) : (
-                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
+                <span 
+                  title="Processo ainda não foi vinculado a nenhum certame no StartGov"
+                  className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded"
+                >
                   Sem vínculo StartGov
                 </span>
               )}
               {processo.numero_contrato_pncp && (
-                <span className="text-xs font-mono bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200">
+                <span 
+                  title="Identificador oficial do contrato no Portal Nacional de Contratações Públicas (Lei 14.133/2021)"
+                  className="text-xs font-mono bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200"
+                >
                   PNCP: {processo.numero_contrato_pncp}
                 </span>
               )}
@@ -322,7 +338,10 @@ export default function ProcessoDetalhePage() {
 
           {/* Indicadores de Tempo Parado e Setor Atual com Semáforo */}
           <div className="flex items-center gap-3 self-start">
-            <div className={`rounded-lg p-3 text-center border ${semaforo.bg}`}>
+            <div 
+              title={`Permanência líquida na unidade atual: ${processo.dias_parado_na_unidade} dias úteis (Meta SLA da SEDUC: máx 5 dias úteis)`}
+              className={`rounded-lg p-3 text-center border ${semaforo.bg}`}
+            >
               <div className="flex items-center justify-center gap-1.5 mb-0.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${semaforo.dot}`}></span>
                 <span className="text-[10px] uppercase tracking-wider font-bold text-slate-600">
@@ -337,7 +356,10 @@ export default function ProcessoDetalhePage() {
               </span>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center min-w-[120px]">
+            <div 
+              title={`Lotação atual do processo na estrutura organizacional da SEDUC: ${processo.unidade_atual_sei}`}
+              className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center min-w-[120px]"
+            >
               <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block mb-0.5">
                 Setor Atual
               </span>
@@ -384,8 +406,9 @@ export default function ProcessoDetalhePage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">
-                Próximo Passo Esperado
+              <span className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1">
+                <span>Próximo Passo Esperado</span>
+                <InfoTooltip content="Ação operacional prioritária recomendada pela inteligência de fluxo processual da SEDUC para acelerar a tramitação." />
               </span>
               <span className="text-[10px] bg-blue-200 text-blue-800 px-2 py-0.2 rounded-full font-semibold">
                 Guia Operacional

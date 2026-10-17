@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Building
 } from 'lucide-react';
+import { Abbr, InfoTooltip } from '../../components/Tooltip';
 
 interface ItemPCA {
   id: string;
@@ -184,8 +185,9 @@ export default function PcaPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <ClipboardList className="w-5 h-5 text-blue-700" />
-            <h1 className="text-xl font-bold text-slate-900">
-              Plano de Contratações Anual - PCA 2026 (RF14)
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>Plano de Contratações Anual - <Abbr sigla="PCA" /> 2026 (RF14)</span>
+              <InfoTooltip content="Instrumento prévio obrigatório de governança e planejamento conforme o Art. 12 da Lei Federal nº 14.133/2021. Consolida todas as aquisições e contratações que a SEDUC-MA pretende realizar no exercício." />
             </h1>
           </div>
           <p className="text-xs text-slate-500">
@@ -196,6 +198,7 @@ export default function PcaPage() {
         <button
           onClick={handleExportarExcel}
           className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition shadow-sm self-start sm:self-auto"
+          title="Exportar todos os itens do PCA 2026 para planilha Excel (XLSX)"
         >
           <Download className="w-3.5 h-3.5" />
           <span>Exportar Planilha (Excel)</span>
@@ -204,10 +207,16 @@ export default function PcaPage() {
 
       {/* Cards de Execução do PCA */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-            Itens Planejados no PCA
-          </span>
+        <div 
+          className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm cursor-help"
+          title="Total de demandas de compras e serviços formalizadas e aprovadas no Plano de Contratações Anual da SEDUC-MA"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Itens Planejados no PCA
+            </span>
+            <InfoTooltip content="Itens catalogados para o exercício de 2026 conforme planejamento das unidades demandantes." />
+          </div>
           <div className="mt-1 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900">{totalItens} itens</span>
             <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
@@ -219,10 +228,16 @@ export default function PcaPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-            Em Licitação (StartGov)
-          </span>
+        <div 
+          className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm cursor-help"
+          title="Demandas que já tramitaram internamente no SEI e estão com certame aberto ou pregão em andamento no StartGov"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Em Licitação (StartGov)
+            </span>
+            <InfoTooltip content="Fase externa da contratação: certames abertos para disputa pública de propostas e lances." />
+          </div>
           <div className="mt-1 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-emerald-600">{emLicitacao}</span>
             <span className="text-xs text-emerald-800 font-medium">Fase Externa</span>
@@ -230,10 +245,16 @@ export default function PcaPage() {
           <p className="text-[11px] text-slate-500 mt-1">Disputa de preços em curso</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-            Contratados / Vigentes
-          </span>
+        <div 
+          className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm cursor-help"
+          title="Contratos já formalizados e assinados, devidamente publicados no Portal Nacional de Contratações Públicas (PNCP)"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Contratados / Vigentes
+            </span>
+            <InfoTooltip content="Contratos formalizados e vigentes em cumprimento ao Art. 94 da Lei 14.133/2021." />
+          </div>
           <div className="mt-1 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-purple-600">{contratados}</span>
             <span className="text-xs text-purple-800 font-medium">Publicado PNCP</span>
@@ -241,10 +262,16 @@ export default function PcaPage() {
           <p className="text-[11px] text-slate-500 mt-1">Contrato assinado em execução</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-            Demandas Não Iniciadas
-          </span>
+        <div 
+          className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm cursor-help"
+          title="Demandas previstas no planejamento anual que ainda não tiveram processo autuado no SEI pelas unidades demandantes"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Demandas Não Iniciadas
+            </span>
+            <InfoTooltip content="Itens que exigem provocação da unidade demandante para elaboração do DFD (Documento de Formalização da Demanda)." />
+          </div>
           <div className="mt-1 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-red-600">{naoIniciados}</span>
             <span className="text-xs font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
@@ -291,38 +318,83 @@ export default function PcaPage() {
           <table className="w-full text-left text-xs text-slate-600">
             <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4">Item PCA</th>
-                <th className="py-3 px-4">Descrição da Demanda</th>
-                <th className="py-3 px-4">Unidade Demandante</th>
-                <th className="py-3 px-4">Valor Estimado</th>
-                <th className="py-3 px-4">Processo SEI Vinculado</th>
-                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4">
+                  <div className="flex items-center gap-1.5">
+                    <span>Item <Abbr sigla="PCA" /></span>
+                    <InfoTooltip content="Código único de registro do item no Plano de Contratações Anual oficial da SEDUC." />
+                  </div>
+                </th>
+                <th className="py-3 px-4">
+                  <div className="flex items-center gap-1.5">
+                    <span>Descrição da Demanda</span>
+                    <InfoTooltip content="Especificação preliminar do objeto a ser contratado, com categoria orçamentária." />
+                  </div>
+                </th>
+                <th className="py-3 px-4">
+                  <div className="flex items-center gap-1.5">
+                    <span>Unidade Demandante</span>
+                    <InfoTooltip content="Setor ou gerência da SEDUC responsável pela elaboração do DFD e justificativa da compra." />
+                  </div>
+                </th>
+                <th className="py-3 px-4">
+                  <div className="flex items-center gap-1.5">
+                    <span>Valor Estimado</span>
+                    <InfoTooltip content="Previsão orçamentária do dispêndio público para a contratação no exercício." />
+                  </div>
+                </th>
+                <th className="py-3 px-4">
+                  <div className="flex items-center gap-1.5">
+                    <span>Processo <Abbr sigla="SEI" /> Vinculado</span>
+                    <InfoTooltip content="Processo eletrônico autuado para materializar e tramitar o planejamento." />
+                  </div>
+                </th>
+                <th className="py-3 px-4 text-center">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span>Status</span>
+                    <InfoTooltip content="Situação atual de atendimento da meta planejada no PCA." />
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {filtered.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50 transition">
-                  <td className="py-3 px-4 font-mono font-bold text-slate-800">
+                  <td 
+                    title={`Código de registro: ${item.codigoPca}`}
+                    className="py-3 px-4 font-mono font-bold text-slate-800 cursor-help"
+                  >
                     {item.codigoPca}
                   </td>
 
                   <td className="py-3 px-4 max-w-xs">
-                    <p className="font-semibold text-slate-900 line-clamp-2">
+                    <p 
+                      title={`Demanda: ${item.descricao}`}
+                      className="font-semibold text-slate-900 line-clamp-2"
+                    >
                       {item.descricao}
                     </p>
-                    <span className="text-[10px] text-slate-400">
+                    <span 
+                      title={`Classificação orçamentária: ${item.categoria}`}
+                      className="text-[10px] text-slate-400 cursor-help"
+                    >
                       Categoria: {item.categoria}
                     </span>
                   </td>
 
                   <td className="py-3 px-4 font-medium text-slate-700">
-                    <span className="flex items-center gap-1">
+                    <span 
+                      title={`Setor responsável pela demanda: ${item.unidadeDemandante}`}
+                      className="flex items-center gap-1 cursor-help"
+                    >
                       <Building className="w-3.5 h-3.5 text-slate-400" />
                       {item.unidadeDemandante}
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 font-semibold text-slate-900">
+                  <td 
+                    title={`Valor global estimado: ${formatMoeda(item.valorEstimado)}`}
+                    className="py-3 px-4 font-semibold text-slate-900 cursor-help"
+                  >
                     {formatMoeda(item.valorEstimado)}
                   </td>
 
@@ -331,20 +403,26 @@ export default function PcaPage() {
                       <Link
                         href={`/processos/${item.processoSeiId}`}
                         className="font-bold text-blue-700 hover:underline flex items-center gap-1"
-                        title="Ver Linha do Tempo no Metrô Processual"
+                        title="Ver Linha do Tempo e Detalhes no Metrô Processual"
                       >
                         <span>{item.protocoloSei}</span>
                         <ArrowRight className="w-3 h-3 text-blue-500" />
                       </Link>
                     ) : (
-                      <span className="text-[11px] text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200 font-sans font-medium">
+                      <span 
+                        title="A unidade demandante ainda não cadastrou o processo administrativo no SEI para formalizar este item"
+                        className="text-[11px] text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200 font-sans font-medium cursor-help"
+                      >
                         Pendente de autuação
                       </span>
                     )}
                   </td>
 
                   <td className="py-3 px-4 text-center">
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${getStatusBadge(item.statusExecucao)}`}>
+                    <span 
+                      title={`Status de Execução: ${formatStatusLabel(item.statusExecucao)}`}
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full border cursor-help ${getStatusBadge(item.statusExecucao)}`}
+                    >
                       {formatStatusLabel(item.statusExecucao)}
                     </span>
                   </td>

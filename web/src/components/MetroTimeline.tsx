@@ -25,6 +25,7 @@ import {
   Send,
   HelpCircle
 } from 'lucide-react';
+import { Abbr, InfoTooltip } from './Tooltip';
 
 interface MetroTimelineProps {
   eventos: HistoricoTramitacao[];
@@ -170,21 +171,31 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <Milestone className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-slate-900">
-              Metrô Processual Unificado
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span>Metrô Processual Unificado</span>
+              <InfoTooltip content="Linha do tempo cronológica que unifica as movimentações internas do SEI-GOVMA, as fases externas do StartGov Compras e as publicações do PNCP Federal." />
             </h2>
-            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
+            <span 
+              className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono cursor-help"
+              title="Integração ativa entre despachos SEI e eventos licitatórios StartGov"
+            >
               Híbrido SEI + StartGov
             </span>
           </div>
           <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-600">
-            <span className="font-mono bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded font-bold">
+            <span 
+              className="font-mono bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded font-bold cursor-help"
+              title="Número de autuação oficial no Sistema Eletrônico de Informações do Estado do Maranhão"
+            >
               SEI: {protocoloSei}
             </span>
             {protocoloStartGov && (
               <>
                 <span className="text-slate-400">&harr;</span>
-                <span className="font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-bold">
+                <span 
+                  className="font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-bold cursor-help"
+                  title="Número do certame correspondente na plataforma StartGov Compras Públicas"
+                >
                   StartGov: {protocoloStartGov}
                 </span>
               </>
@@ -198,6 +209,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
           <div className="bg-slate-100 p-0.5 rounded-lg border border-slate-200 flex items-center text-xs">
             <button
               onClick={() => setVisaoFiltro('CRITICOS')}
+              title="Filtrar apenas atos decisórios e jurídicos fundamentais (oculta despachos de mero expediente)"
               className={`px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition ${
                 visaoFiltro === 'CRITICOS'
                   ? 'bg-white text-blue-700 shadow-sm'
@@ -213,6 +225,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
 
             <button
               onClick={() => setVisaoFiltro('TODOS')}
+              title="Exibir o histórico integral de despachos e tramitações em ordem cronológica"
               className={`px-3 py-1.5 rounded-md font-semibold flex items-center gap-1.5 transition ${
                 visaoFiltro === 'TODOS'
                   ? 'bg-white text-blue-700 shadow-sm'
@@ -230,7 +243,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
           <button
             onClick={() => triggerPrintPDF(`Linha_do_Tempo_${protocoloSei}`)}
             className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
-            title="Imprimir ou Salvar Linha do Tempo em PDF"
+            title="Imprimir ou Salvar Linha do Tempo em PDF estruturado para anexar ao processo"
           >
             <Printer className="w-3.5 h-3.5 text-slate-600" />
             <span>Imprimir PDF</span>
@@ -242,15 +255,15 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs bg-slate-50/70 p-3 rounded-lg border border-slate-200 gap-2">
         <div className="flex flex-wrap items-center gap-4">
           <span className="text-slate-500 font-semibold">Fontes Integradas:</span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 cursor-help" title="Sistema Eletrônico de Informações do Maranhão (tramitação e despachos)">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
             <span className="text-slate-700 font-medium">SEI (Azul)</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 cursor-help" title="StartGov Compras e Licitações (fase externa de propostas e lances)">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
             <span className="text-slate-700 font-medium">StartGov Compras (Verde)</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 cursor-help" title="Portal Nacional de Contratações Públicas (publicidade obrigatória da Lei 14.133/2021)">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
             <span className="text-slate-700 font-medium">PNCP Federal (Âmbar)</span>
           </div>
@@ -274,7 +287,8 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
             <div key={evt.id || index} className="relative group">
               {/* Ponto na Linha do Metrô */}
               <div 
-                className={`absolute -left-6 sm:-left-8 top-1.5 w-6 h-6 rounded-full border-2 border-white ${theme.dot} ring-4 flex items-center justify-center text-white text-[10px] font-bold shadow-sm transition-transform group-hover:scale-110`}
+                title={`Parada ${index + 1}: Evento originado em ${theme.nome}`}
+                className={`absolute -left-6 sm:-left-8 top-1.5 w-6 h-6 rounded-full border-2 border-white ${theme.dot} ring-4 flex items-center justify-center text-white text-[10px] font-bold shadow-sm transition-transform group-hover:scale-110 cursor-help`}
               >
                 {index + 1}
               </div>
@@ -287,24 +301,34 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
                     <span 
-                      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${theme.badge}`}
+                      title={`Fonte oficial de dados: ${theme.nome}`}
+                      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border cursor-help ${theme.badge}`}
                     >
                       {theme.nome}
                     </span>
-                    <span className="text-xs font-medium text-slate-700 flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-slate-200">
+                    <span 
+                      title={`Unidade ou setor responsável: ${evt.unidade_setor}`}
+                      className="text-xs font-medium text-slate-700 flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-slate-200 cursor-help"
+                    >
                       <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                      {evt.unidade_setor}
+                      <Abbr sigla={evt.unidade_setor} />
                     </span>
 
                     {isCritico && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+                      <span 
+                        title="Marco Decisório: Ato determinante que altera o status ou aprova fase processual (Parecer, Portaria, Edital, Contrato)"
+                        className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1 cursor-help"
+                      >
                         <Milestone className="w-3 h-3 text-amber-600" />
                         Marco Decisório
                       </span>
                     )}
                   </div>
 
-                  <span className="text-xs text-slate-500 flex items-center gap-1 font-mono">
+                  <span 
+                    title={`Data e hora exata do registro: ${formatDate(evt.data_hora_evento)}`}
+                    className="text-xs text-slate-500 flex items-center gap-1 font-mono cursor-help"
+                  >
                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
                     {formatDate(evt.data_hora_evento)}
                   </span>
@@ -317,7 +341,10 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
 
                 {/* Documento Anexado (se houver) */}
                 {evt.documento_anexado && (
-                  <div className="flex items-center gap-2 text-xs text-slate-600 bg-white p-2 rounded-lg border border-slate-200 mb-2">
+                  <div 
+                    title="Documento oficial integrante dos autos do processo"
+                    className="flex items-center gap-2 text-xs text-slate-600 bg-white p-2 rounded-lg border border-slate-200 mb-2"
+                  >
                     <FileText className="w-4 h-4 text-blue-600" />
                     <span className="font-semibold text-slate-800">
                       {evt.tipo_documento ? `${evt.tipo_documento}: ` : 'Documento: '}
@@ -336,9 +363,13 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 font-semibold text-blue-900 text-xs">
                         <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Resumo Automático do Despacho (IA Local Estadual - vLLM/Ollama)</span>
+                        <span>Resumo Automático do Despacho</span>
+                        <InfoTooltip content="Síntese gerada por Inteligência Artificial local estadual (vLLM/Ollama). Não substitui a leitura da íntegra oficial para fins decisórios." />
                       </div>
-                      <span className="text-[10px] text-blue-700 bg-blue-100/70 px-1.5 py-0.2 rounded border border-blue-200 font-semibold">
+                      <span 
+                        title="Texto gerado por modelo de linguagem com conferência de integridade"
+                        className="text-[10px] text-blue-700 bg-blue-100/70 px-1.5 py-0.2 rounded border border-blue-200 font-semibold cursor-help"
+                      >
                         Informativo
                       </span>
                     </div>
@@ -362,7 +393,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
                           type="button"
                           onClick={() => handleOpenFeedback(evt.id || String(index))}
                           className="text-slate-500 hover:text-red-700 flex items-center gap-1 font-medium transition"
-                          title="Sinalizar que este resumo contém imprecisão ou alucinação"
+                          title="Sinalizar que este resumo contém imprecisão, alucinação ou omissão importante (Auditoria RF20)"
                         >
                           <ThumbsDown className="w-3.5 h-3.5" />
                           <span>Apontar divergência / erro no resumo (RF20)</span>

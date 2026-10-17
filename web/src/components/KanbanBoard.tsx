@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Processo, StatusEtapaProcessual } from '../lib/types';
 import { Clock, AlertCircle, ArrowRight, Building, FileText } from 'lucide-react';
+import { Abbr, InfoTooltip } from './Tooltip';
 
 interface KanbanBoardProps {
   processos: Processo[];
@@ -79,8 +80,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
               {/* Cabeçalho da Coluna */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-slate-800">{col.title}</h3>
-                  <span className="text-xs bg-white text-slate-700 font-bold px-2 py-0.5 rounded-full border border-slate-200 shadow-sm">
+                  <h3 className="font-bold text-sm text-slate-800 flex items-center gap-1">
+                    <span>{col.title}</span>
+                    <InfoTooltip content={col.description} />
+                  </h3>
+                  <span className="text-xs bg-white text-slate-700 font-bold px-2 py-0.5 rounded-full border border-slate-200 shadow-sm" title={`Total de processos nesta etapa: ${colProcessos.length}`}>
                     {colProcessos.length}
                   </span>
                 </div>
@@ -104,6 +108,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span
+                            title={`Prioridade ${proc.prioridade}: ${proc.prioridade === 'QUENTE' ? 'Risco iminente de desabastecimento ou prazo fatal' : proc.prioridade === 'MORNO' ? 'Instrução regular em andamento' : 'Planejamento ou baixa urgência'}`}
                             className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getPriorityBadge(
                               proc.prioridade
                             )}`}
@@ -112,6 +117,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
                           </span>
 
                           <div
+                            title={`Permanência líquida na unidade atual: ${proc.dias_parado_na_unidade} dias úteis (Meta de SLA SEDUC: máx 5 dias)`}
                             className={`flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded ${
                               slaEstourado
                                 ? 'bg-red-50 text-red-700 border border-red-200'
@@ -125,30 +131,40 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
 
                         {/* Protocolos */}
                         <div className="space-y-1 mb-2">
-                          <p className="text-xs font-mono font-bold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 truncate">
+                          <p 
+                            title="Protocolo oficial no Sistema Eletrônico de Informações (SEI-MA)"
+                            className="text-xs font-mono font-bold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 truncate"
+                          >
                             {proc.protocolo_sei}
                           </p>
                           {proc.protocolo_startgov && (
-                            <p className="text-xs font-mono font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 truncate">
+                            <p 
+                              title="Protocolo oficial de licitação / compra no sistema StartGov"
+                              className="text-xs font-mono font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 truncate"
+                            >
                               {proc.protocolo_startgov}
                             </p>
                           )}
                         </div>
 
                         {/* Objeto */}
-                        <p className="text-xs text-slate-700 font-medium line-clamp-2 mb-3">
+                        <p className="text-xs text-slate-700 font-medium line-clamp-2 mb-3" title={proc.objeto}>
                           {proc.objeto}
                         </p>
 
                         {/* Rodapé do Card */}
                         <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-                          <span className="flex items-center gap-1 font-semibold text-slate-600">
+                          <span 
+                            title={`Unidade de lotação atual do processo: ${proc.unidade_atual_sei}`}
+                            className="flex items-center gap-1 font-semibold text-slate-600"
+                          >
                             <Building className="w-3 h-3 text-slate-400" />
                             {proc.unidade_atual_sei}
                           </span>
 
                           <Link
                             href={`/processos/${proc.id}`}
+                            title="Abrir a Linha do Tempo estilo Metrô (RF08) com auditoria detalhada de todos os marcos"
                             className="text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-0.5 group"
                           >
                             <span>Metrô</span>

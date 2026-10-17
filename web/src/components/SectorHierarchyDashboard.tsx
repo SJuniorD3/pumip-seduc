@@ -23,6 +23,7 @@ import {
   Activity,
   FolderTree
 } from 'lucide-react';
+import { Abbr, InfoTooltip } from './Tooltip';
 
 interface SectorHierarchyDashboardProps {
   processos: Processo[];
@@ -161,8 +162,9 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
         <div>
           <div className="flex items-center gap-2 mb-1">
             <BarChart3 className="w-5 h-5 text-blue-600" />
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-              Distribuição Visual de Processos por Setor & Hierarquia
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Distribuição Visual de Processos por Setor & Hierarquia</span>
+              <InfoTooltip content="Painel analítico para gestão visualizar onde os processos estão localizados na estrutura da SEDUC-MA, com filtragem multinível pela árvore organizacional." />
             </h2>
           </div>
           <p className="text-xs text-slate-500">
@@ -179,6 +181,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                 setHierarquiaFiltro(e.target.value);
                 onSelectSector(null); // Reseta filtro de setor individual
               }}
+              title="Selecione um nível da árvore hierárquica da SEDUC-MA para filtrar os processos subordinados"
               className="w-full text-xs font-semibold px-3.5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 transition cursor-pointer"
             >
               {nosHierarquicos.map((no) => (
@@ -267,11 +270,20 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                     ? 'bg-amber-500 hover:bg-amber-600'
                     : 'bg-blue-600 hover:bg-blue-700';
 
+                  const statusInercia = setor.mediaDias >= 10
+                    ? 'Crítico (≥ 10d úteis)'
+                    : setor.mediaDias >= 5
+                    ? 'Atenção (5-9d úteis)'
+                    : 'Regular (< 5d úteis)';
+
+                  const tooltipText = `Unidade: ${setor.nome} (${setor.sigla})\nCaminho Hierárquico: ${setor.caminho}\nTipo: ${setor.tipo}\nVolume Atual: ${setor.total} processo(s) (${setor.percentual}% da carteira)\nInércia Média: ${setor.mediaDias} dias úteis sem despacho\nClassificação SLA: ${statusInercia}\n\nClique para ${isSelected ? 'remover este filtro' : 'filtrar os processos deste setor'}.`;
+
                   return (
                     <button
                       key={setor.sigla}
                       type="button"
                       onClick={() => onSelectSector(isSelected ? null : setor.sigla)}
+                      title={tooltipText}
                       className={`w-full text-left p-2.5 rounded-xl border transition group focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         isSelected
                           ? 'bg-blue-50 border-blue-400 shadow-sm ring-1 ring-blue-300'
@@ -283,7 +295,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                           <span className={`px-2 py-0.5 rounded font-mono font-bold text-[11px] border ${
                             isSelected ? 'bg-blue-600 text-white border-blue-700' : 'bg-slate-100 text-slate-800 border-slate-300'
                           }`}>
-                            {setor.sigla}
+                            <Abbr sigla={setor.sigla} descricao={setor.nome} />
                           </span>
                           <span className="text-slate-800 truncate text-[11px]">{setor.nome}</span>
                         </div>
@@ -313,15 +325,15 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
 
           {/* Legenda de Inércia */}
           <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-slate-200">
-            <span>Legenda de Retenção:</span>
+            <span className="font-semibold text-slate-600">Semáforo de Retenção:</span>
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1" title="Menos de 5 dias úteis sem movimentação: Dentro do prazo regular">
                 <span className="w-2 h-2 rounded-full bg-blue-600"></span> Regular (&lt; 5d)
               </span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1" title="Entre 5 e 9 dias úteis sem movimentação: Requer atenção da chefia imediata">
                 <span className="w-2 h-2 rounded-full bg-amber-500"></span> Atenção (5-9d)
               </span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1" title="10 dias úteis ou mais parado no mesmo setor: Crítico (SLA estourado)">
                 <span className="w-2 h-2 rounded-full bg-red-500"></span> Crítico (≥ 10d)
               </span>
             </div>
@@ -335,8 +347,9 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
               <div className="flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-purple-600" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  Fases do Ciclo de Vida (Lei 14.133)
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <span>Fases do Ciclo de Vida</span>
+                  <InfoTooltip content="Ciclo de contratação pública conforme a Lei Federal nº 14.133/2021: desde a fase preparatória interna no SEI até a disputa no StartGov e publicação no PNCP." />
                 </h3>
               </div>
               <span className="text-[10px] text-slate-400 font-mono">SEI + StartGov</span>
@@ -348,9 +361,15 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                 const percent = ((fase.count / total) * 100).toFixed(0);
 
                 return (
-                  <div key={fase.label} className="space-y-1">
+                  <div 
+                    key={fase.label} 
+                    className="space-y-1 group/fase cursor-help"
+                    title={`Fase: ${fase.label}\nProcessos nesta etapa: ${fase.count} (${percent}% do total filtrado)`}
+                  >
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-slate-700 text-[11px] truncate">{fase.label}</span>
+                      <span className="text-slate-700 text-[11px] truncate group-hover/fase:text-blue-700 transition">
+                        {fase.label}
+                      </span>
                       <span className="font-mono text-slate-900 font-bold shrink-0">
                         {fase.count} ({percent}%)
                       </span>
@@ -369,13 +388,17 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
 
           {/* Card de Diagnóstico Executivo de Gargalo */}
           {setorMaiorGargalo && (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 space-y-2 shadow-2xs">
+            <div 
+              className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 space-y-2 shadow-2xs"
+              title={`Diagnóstico Automático: A unidade ${setorMaiorGargalo.sigla} apresenta a maior inércia média da carteira (${setorMaiorGargalo.mediaDias} dias úteis).`}
+            >
               <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wider">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>Ponto Crítico de Retenção</span>
+                <InfoTooltip content="Indica o setor com maior tempo médio de retenção de processos sem movimentação oficial no SEI." />
               </div>
               <p className="text-xs text-amber-950 leading-relaxed">
-                A <strong>{setorMaiorGargalo.nome} ({setorMaiorGargalo.sigla})</strong> concentra a maior média de permanência da carteira: 
+                A <strong>{setorMaiorGargalo.nome} (<Abbr sigla={setorMaiorGargalo.sigla} />)</strong> concentra a maior média de permanência da carteira: 
                 <span className="text-red-700 font-bold ml-1">{setorMaiorGargalo.mediaDias} dias úteis</span> por processo.
               </p>
               <div className="pt-1 flex items-center justify-between text-[11px] text-amber-900 font-semibold border-t border-amber-200/80">
@@ -383,6 +406,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                 <button
                   type="button"
                   onClick={() => onSelectSector(setorMaiorGargalo.sigla)}
+                  title={`Filtrar apenas os ${setorMaiorGargalo.total} processos parados na unidade ${setorMaiorGargalo.sigla}`}
                   className="text-blue-700 hover:text-blue-900 underline font-bold flex items-center gap-1"
                 >
                   <span>Filtrar este setor</span>

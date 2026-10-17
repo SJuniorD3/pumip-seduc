@@ -17,6 +17,7 @@ import {
   Clock,
   Building
 } from 'lucide-react';
+import { Abbr, InfoTooltip } from '../../components/Tooltip';
 
 interface SugestaoVinculo {
   id: string;
@@ -156,8 +157,9 @@ export default function VinculosPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <GitMerge className="w-5 h-5 text-blue-700" />
-            <h1 className="text-xl font-bold text-slate-900">
-              Vinculação de Processos: SEI &harr; StartGov (RF16)
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>Vinculação de Processos: <Abbr sigla="SEI" /> &harr; <Abbr sigla="StartGov" /> (RF16)</span>
+              <InfoTooltip content="Conexão cruzada entre a tramitação preparatória interna no SEI-GOVMA e o certame licitatório no StartGov. Conforme o requisito RF16, o cruzamento algorítmico requer validação humana formal de auditoria." />
             </h1>
           </div>
           <p className="text-xs text-slate-500">
@@ -169,6 +171,7 @@ export default function VinculosPage() {
         <button
           onClick={() => setShowManualModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition shadow-sm self-start sm:self-auto"
+          title="Criar vinculação direta quando a busca automática não identificar a correspondência"
         >
           <Plus className="w-4 h-4" />
           <span>Vincular Manualmente</span>
@@ -186,8 +189,9 @@ export default function VinculosPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Sugestões Pendentes de Confirmação Humana
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <span>Sugestões Pendentes de Confirmação Humana</span>
+              <InfoTooltip content="Sugestões detectadas pelo robô coletor ao localizar menções a protocolos SEI nos avisos de licitação e editais do StartGov." />
             </h2>
             <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">
               {pendentes.length} pendentes
@@ -211,17 +215,26 @@ export default function VinculosPage() {
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-100 gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200">
+                    <span 
+                      title="Processo administrativo autuado no SEI-GOVMA"
+                      className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200 cursor-help"
+                    >
                       SEI: {sug.protocoloSei}
                     </span>
                     <span className="text-slate-400 font-bold">&harr;</span>
-                    <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                    <span 
+                      title="Certame licitatório correspondente na plataforma StartGov"
+                      className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 cursor-help"
+                    >
                       StartGov: {sug.protocoloStartGov}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded flex items-center gap-1 border border-slate-200">
+                    <span 
+                      title="Grau de certeza do cruzamento baseado em menção expressa do número do processo nos autos do certame"
+                      className="text-[11px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded flex items-center gap-1 border border-slate-200 cursor-help"
+                    >
                       <Percent className="w-3 h-3 text-blue-600" />
                       <span>{sug.confiancaPercent}% de Confiança</span>
                     </span>
@@ -233,7 +246,7 @@ export default function VinculosPage() {
                     <span className="text-slate-400 block mb-0.5 font-semibold">Demanda no SEI:</span>
                     <p className="font-medium text-slate-900">{sug.objetoSei}</p>
                     <span className="text-[10px] text-slate-500 mt-1 block">
-                      Unidade de Origem: <strong>{sug.unidadeOrigem}</strong>
+                      Unidade de Origem: <strong><Abbr sigla={sug.unidadeOrigem} /></strong>
                     </span>
                   </div>
 
@@ -246,7 +259,10 @@ export default function VinculosPage() {
                 </div>
 
                 {/* Trecho onde foi encontrado */}
-                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+                <div 
+                  title="Evidência textual capturada pelo coletor para comprovar o vínculo"
+                  className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs cursor-help"
+                >
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
                     Trecho de Origem Localizado pelo Robô:
                   </span>
@@ -260,6 +276,7 @@ export default function VinculosPage() {
                   <button
                     onClick={() => handleRejeitar(sug.id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition"
+                    title="Descartar esta sugestão caso se trate de falso positivo ou homônimo"
                   >
                     <XCircle className="w-3.5 h-3.5 text-red-500" />
                     <span>Rejeitar Vínculo</span>
@@ -268,6 +285,7 @@ export default function VinculosPage() {
                   <button
                     onClick={() => handleConfirmar(sug.id)}
                     className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition shadow-sm"
+                    title="Registrar sua assinatura eletrônica de auditoria e unificar a linha do tempo no Metrô Processual"
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     <span>Confirmar e Vincular Linha do Tempo</span>

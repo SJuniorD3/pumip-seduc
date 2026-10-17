@@ -68,20 +68,75 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
   };
 
   const navItems = [
-    { label: 'Visão Geral', href: '/', icon: LayoutDashboard },
-    { label: 'Processos Monitorados', href: '/processos', icon: FileSearch },
-    { label: 'Quadro Kanban', href: '/kanban', icon: KanbanSquare },
-    { label: 'Vínculos SEI/StartGov', href: '/vinculos', icon: GitMerge },
-    { label: 'Plano Anual (PCA)', href: '/pca', icon: ClipboardList },
-    { label: 'Relatórios & Prazos', href: '/relatorios', icon: BarChart3 },
-    { label: 'Central de Alertas', href: '/alertas', icon: BellRing },
+    { 
+      label: 'Visão Geral', 
+      href: '/', 
+      icon: LayoutDashboard,
+      descricao: 'Visão Geral: Painel executivo da SEDUC, semáforos de inércia e gráficos analíticos por setor'
+    },
+    { 
+      label: 'Processos Monitorados', 
+      href: '/processos', 
+      icon: FileSearch,
+      descricao: 'Processos Monitorados: Carteira completa com busca textual, filtros de SLA e exportação para Excel/PDF'
+    },
+    { 
+      label: 'Quadro Kanban', 
+      href: '/kanban', 
+      icon: KanbanSquare,
+      descricao: 'Quadro Kanban: Gestão visual de fluxo de processos pelas etapas da Lei 14.133/2021'
+    },
+    { 
+      label: 'Vínculos SEI/StartGov', 
+      href: '/vinculos', 
+      icon: GitMerge,
+      descricao: 'Vínculos SEI ↔ StartGov: Validação humana obrigatória de correspondência entre processos e certames (RF16)'
+    },
+    { 
+      label: 'Plano Anual (PCA)', 
+      href: '/pca', 
+      icon: ClipboardList,
+      descricao: 'Plano de Contratações Anual (PCA): Monitoramento da execução do planejamento anual da SEDUC-MA (Art. 12 Lei 14.133/2021)'
+    },
+    { 
+      label: 'Relatórios & Prazos', 
+      href: '/relatorios', 
+      icon: BarChart3,
+      descricao: 'Relatórios & Prazos: Métricas de permanência, inércia processual e relatórios estruturados para CGE e TCE-MA'
+    },
+    { 
+      label: 'Central de Alertas', 
+      href: '/alertas', 
+      icon: BellRing,
+      descricao: 'Central de Alertas: Vigilância automática 24/7 de prazos legais, inércia, diligências e publicidade no PNCP'
+    },
   ];
 
   const adminItems = [
-    { label: 'Organograma Setorial', href: '/admin/organograma', icon: Network },
-    { label: 'Perfis & Acessos', href: '/admin/usuarios', icon: Users },
-    { label: 'Feriados & Prazos', href: '/admin/feriados', icon: Calendar },
-    { label: 'Credenciais & APIs', href: '/admin/integracoes', icon: KeyRound },
+    { 
+      label: 'Organograma Setorial', 
+      href: '/admin/organograma', 
+      icon: Network,
+      descricao: 'Organograma Setorial: Gestão da árvore hierárquica e unidades organizacionais da SEDUC-MA'
+    },
+    { 
+      label: 'Perfis & Acessos', 
+      href: '/admin/usuarios', 
+      icon: Users,
+      descricao: 'Perfis & Acessos: Controle de operadores, concessões pontuais e regras de segurança RLS (Row Level Security)'
+    },
+    { 
+      label: 'Feriados & Prazos', 
+      href: '/admin/feriados', 
+      icon: Calendar,
+      descricao: 'Feriados & Prazos: Calendário de dias úteis com feriados de São Luís e do Maranhão (Art. 183 Lei 14.133/2021)'
+    },
+    { 
+      label: 'Credenciais & APIs', 
+      href: '/admin/integracoes', 
+      icon: KeyRound,
+      descricao: 'Credenciais & APIs: Cofre de segredos e conectores automáticos do SEI-GOVMA, StartGov e PNCP Federal'
+    },
   ];
 
   const handleLinkClick = () => {
@@ -213,7 +268,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
                     key={item.href}
                     href={item.href}
                     onClick={handleLinkClick}
-                    title={isCollapsed ? item.label : undefined}
+                    title={item.descricao || item.label}
                     className={`flex items-center rounded-lg text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       isCollapsed 
                         ? 'justify-center p-2.5' 
@@ -279,7 +334,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
                       key={item.href}
                       href={item.href}
                       onClick={handleLinkClick}
-                      title={isCollapsed ? item.label : undefined}
+                      title={item.descricao || item.label}
                       className={`flex items-center rounded-lg text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                         isCollapsed 
                           ? 'justify-center p-2.5' 

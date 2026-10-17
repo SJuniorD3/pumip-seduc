@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Breadcrumb } from '../../../components/Breadcrumb';
 import { AdminGuard } from '../../../components/AdminGuard';
+import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { mockUnidades } from '../../../lib/mockData';
 import { UnidadeOrganizacional, TipoUnidade } from '../../../lib/types';
 import { 
@@ -108,8 +109,9 @@ export default function AdminOrganogramaPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Network className="w-5 h-5 text-blue-700" />
-            <h1 className="text-xl font-bold text-slate-900">
-              Gestão do Organograma e Estrutura Setorial (SEDUC-MA)
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>Gestão do Organograma e Estrutura Setorial (<Abbr sigla="SEDUC" />)</span>
+              <InfoTooltip content="Mapeamento completo da árvore de unidades administrativas da SEDUC-MA. A estrutura define as regras de subordinação e a visibilidade de processos no sistema." />
             </h1>
             <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
               Acesso Restrito: ADMIN
@@ -133,9 +135,12 @@ export default function AdminOrganogramaPage() {
       <div className="bg-amber-50 border border-amber-200 text-amber-900 p-3.5 rounded-xl text-xs flex items-start gap-2.5">
         <ShieldAlert className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold">Aviso de Controle e Versionamento Temporal:</span>
+          <span className="font-bold flex items-center gap-1.5">
+            <span>Aviso de Controle e Versionamento Temporal:</span>
+            <InfoTooltip content="Alterações na árvore hierárquica afetam imediatamente as políticas RLS. O banco mantém log permanente de alterações estruturais para conformidade com auditoria." />
+          </span>
           <p className="mt-0.5 text-amber-800 leading-relaxed">
-            Alterações na árvore hierárquica impactam imediatamente o cálculo de permissões de <strong>Row Level Security (RLS)</strong> no banco de dados. 
+            Alterações na árvore hierárquica impactam imediatamente o cálculo de permissões de <strong><Abbr sigla="RLS" /></strong> no banco de dados. 
             Conforme a Seção 3 do Descritivo Técnico, o histórico de lotações anteriores permanece preservado para relatórios retroativos.
           </p>
         </div>
@@ -187,9 +192,19 @@ export default function AdminOrganogramaPage() {
           <table className="w-full text-left text-xs text-slate-600">
             <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4">Sigla / Nível</th>
+                <th className="py-3 px-4">
+                  <span className="flex items-center gap-1">
+                    <span>Sigla / Nível</span>
+                    <InfoTooltip content="Sigla oficial padronizada e nível de escalão administrativo da unidade na estrutura da SEDUC." />
+                  </span>
+                </th>
                 <th className="py-3 px-4">Nome da Unidade</th>
-                <th className="py-3 px-4">Caminho Hierárquico (ltree)</th>
+                <th className="py-3 px-4">
+                  <span className="flex items-center gap-1">
+                    <span>Caminho Hierárquico (ltree)</span>
+                    <InfoTooltip content="Estrutura de dados ltree do PostgreSQL que mapeia toda a árvore de subordinação (ex: SEDUC.SUBSEDUC.SAAD.STI.SUDES)." />
+                  </span>
+                </th>
                 <th className="py-3 px-4">Titular Atual</th>
                 <th className="py-3 px-4 text-right">Ação</th>
               </tr>
