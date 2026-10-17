@@ -28,6 +28,8 @@ ENV/
 .env.production.local
 *.pem
 *.key
+*.pfx
+*.p12
 
 # Logs
 npm-debug.log*
