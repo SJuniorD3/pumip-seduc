@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../lib/authContext';
@@ -8,18 +8,24 @@ import {
   LayoutDashboard, 
   KanbanSquare, 
   BellRing, 
-  FileSearch,
-  Server,
-  Network,
-  Users,
-  GitMerge,
-  ClipboardList,
-  BarChart3,
-  Calendar,
-  X,
-  LogOut,
-  ShieldCheck,
-  KeyRound
+  FileSearch, 
+  Server, 
+  Network, 
+  Users, 
+  GitMerge, 
+  ClipboardList, 
+  BarChart3, 
+  Calendar, 
+  X, 
+  LogOut, 
+  ShieldCheck, 
+  KeyRound,
+  ChevronDown,
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+  SlidersHorizontal,
+  FolderLock
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,6 +36,36 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMobile }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+
+  // 1. Estado de Recolhimento Global da Sidebar (Modo Compacto / Clean)
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // 2. Estados de Supressão por Seção (Acordeões Recolhíveis)
+  const [sectionOperacaoOpen, setSectionOperacaoOpen] = useState(true);
+  const [sectionAdminOpen, setSectionAdminOpen] = useState(true);
+  const [sectionFontesOpen, setSectionFontesOpen] = useState(true);
+
+  // Carrega preferência persistida do usuário
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('pumip_sidebar_collapsed');
+      if (stored !== null) {
+        setIsCollapsed(stored === 'true');
+      }
+    } catch {
+      // Falha silenciosa em ambientes sem localStorage
+    }
+  }, []);
+
+  const toggleSidebarCollapse = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('pumip_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const navItems = [
     { label: 'Visão Geral', href: '/', icon: LayoutDashboard },
@@ -55,8 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
   };
 
   const sidebarContent = (
-    <div className="flex flex-col justify-between h-full">
-      <div className="p-3.5 space-y-4 overflow-y-auto">
+    <div className="flex flex-col justify-between h-full select-none">
+      <div className="p-3 space-y-3 overflow-y-auto overflow-x-hidden">
         {/* Cabeçalho do Drawer no Mobile com Botão Fechar */}
         <div className="flex items-center justify-between lg:hidden pb-3 border-b border-slate-800">
           <div className="flex items-center space-x-2">
@@ -74,20 +110,55 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
           </button>
         </div>
 
+        {/* Botão de Alternância de Recolhimento da Sidebar no Desktop */}
+        <div className="hidden lg:flex items-center justify-between pb-2 border-b border-slate-800/80">
+          {!isCollapsed && (
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+              Menu Principal
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={toggleSidebarCollapse}
+            className={`p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+              isCollapsed ? 'mx-auto' : ''
+            }`}
+            title={isCollapsed ? 'Expandir Menu Lateral (Shift + S)' : 'Recolher Menu Lateral (Modo Clean)'}
+            aria-label={isCollapsed ? 'Expandir Menu' : 'Recolher Menu'}
+          >
+            {isCollapsed ? (
+              <PanelLeftOpen className="w-4 h-4 text-blue-400 hover:text-blue-300" />
+            ) : (
+              <div className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200">
+                <PanelLeftClose className="w-4 h-4" />
+                <span className="text-[11px]">Recolher</span>
+              </div>
+            )}
+          </button>
+        </div>
+
         {/* Card do Usuário Logado na Sidebar */}
-        <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+        <div className={`bg-slate-800/80 rounded-xl border border-slate-700/60 transition-all ${
+          isCollapsed ? 'p-1.5 flex flex-col items-center gap-1.5' : 'p-2.5 flex items-center justify-between gap-2'
+        }`}>
+          <div className={`flex items-center min-w-0 ${isCollapsed ? 'justify-center' : 'gap-2'}`}>
+            <div 
+              className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm"
+              title={`${user.nome} (${user.cargo_titulo}) - ${user.unidade_sigla}`}
+            >
               {user.avatar_iniciais || 'SJ'}
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate leading-tight">
-                {user.nome}
-              </p>
-              <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                {user.unidade_sigla} &bull; {user.role}
-              </p>
-            </div>
+            
+            {!isCollapsed && (
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white truncate leading-tight">
+                  {user.nome}
+                </p>
+                <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                  {user.unidade_sigla} &bull; {user.role}
+                </p>
+              </div>
+            )}
           </div>
 
           <button
@@ -95,7 +166,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
               handleLinkClick();
               logout();
             }}
-            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700/60 rounded-lg transition shrink-0"
+            className={`text-slate-400 hover:text-red-400 hover:bg-slate-700/60 rounded-lg transition shrink-0 ${
+              isCollapsed ? 'p-1' : 'p-1.5'
+            }`}
             title="Sair da conta"
             aria-label="Sair"
           >
@@ -103,119 +176,253 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
           </button>
         </div>
 
-        {/* Navegação Operacional */}
+        {/* ============================================================== */}
+        {/* SEÇÃO 1: OPERAÇÃO & INTELIGÊNCIA (COM OPÇÃO DE SUPRIMIR/ACORDEÃO) */}
+        {/* ============================================================== */}
         <div>
-          <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold px-3 mb-2">
-            Operação & Inteligência
-          </p>
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={handleLinkClick}
-                  className={`flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                    isActive
-                      ? 'bg-blue-600 text-white shadow-md font-semibold'
-                      : 'hover:bg-slate-800 hover:text-white text-slate-300'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          <button
+            type="button"
+            onClick={() => setSectionOperacaoOpen(prev => !prev)}
+            className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-[11px] uppercase tracking-wider font-bold mb-1 ${
+              isCollapsed ? 'justify-center' : ''
+            }`}
+            title={sectionOperacaoOpen ? 'Suprimir seção de Operação' : 'Expandir seção de Operação'}
+          >
+            {!isCollapsed && (
+              <div className="flex items-center gap-1.5">
+                <span>Operação & Inteligência</span>
+              </div>
+            )}
+            {!isCollapsed && (
+              sectionOperacaoOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+              )
+            )}
+          </button>
+
+          {/* Links Operacionais (Suprimíveis pelo botão da seção) */}
+          {sectionOperacaoOpen && (
+            <nav className="space-y-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={handleLinkClick}
+                    title={isCollapsed ? item.label : undefined}
+                    className={`flex items-center rounded-lg text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                      isCollapsed 
+                        ? 'justify-center p-2.5' 
+                        : 'space-x-2.5 px-3 py-2'
+                    } ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-md font-semibold'
+                        : 'hover:bg-slate-800 hover:text-white text-slate-300'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {!isCollapsed && <span className="truncate">{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
         </div>
 
-        {/* Gestão Administrativa Restrita */}
-        <div className="pt-2 border-t border-slate-800/80">
-          <div className="flex items-center justify-between px-3 mb-2">
-            <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-              Administração
-            </p>
-            <span className={`text-[9px] px-1 py-0.2 rounded font-bold border ${
-              user.isAdmin 
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                : 'bg-red-950 text-red-300 border border-red-800'
-            }`}>
-              {user.isAdmin ? 'ADMIN ATIVO' : 'ADMIN'}
-            </span>
-          </div>
-          <nav className="space-y-1">
-            {adminItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href || pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={handleLinkClick}
-                  className={`flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                    isActive
-                      ? 'bg-slate-800 text-blue-400 font-bold border-l-2 border-blue-500 pl-2.5'
-                      : 'hover:bg-slate-800 hover:text-white text-slate-300'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0 text-slate-400" />
-                  <span className="truncate">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+        {/* ============================================================== */}
+        {/* SEÇÃO 2: ADMINISTRAÇÃO RESTRITA                                 */}
+        {/* REGRA: QUANDO O PERFIL NÃO É ADMIN, SEMPRE SUPRIMIDO (NULL)!    */}
+        {/* QUANDO É ADMIN, DISPONÍVEL COM OPÇÃO DE SUPRIMIR / ACORDEÃO!    */}
+        {/* ============================================================== */}
+        {user.isAdmin && (
+          <div className="pt-2 border-t border-slate-800/80">
+            <button
+              type="button"
+              onClick={() => setSectionAdminOpen(prev => !prev)}
+              className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-[11px] uppercase tracking-wider font-bold mb-1 ${
+                isCollapsed ? 'justify-center' : ''
+              }`}
+              title={sectionAdminOpen ? 'Suprimir seção de Administração' : 'Expandir seção de Administração'}
+            >
+              {!isCollapsed && (
+                <div className="flex items-center gap-1.5">
+                  <span>Administração</span>
+                  <span className="text-[9px] bg-red-950 text-red-300 border border-red-800 px-1 py-0.2 rounded font-bold">
+                    ADMIN
+                  </span>
+                </div>
+              )}
+              {!isCollapsed && (
+                sectionAdminOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                )
+              )}
+              {isCollapsed && (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+              )}
+            </button>
 
-        {/* Status das Fontes Integradas */}
-        <div className="pt-2 border-t border-slate-800/80">
-          <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold px-3 mb-2">
-            Fontes Integradas
-          </p>
-          <div className="space-y-1 px-3 text-xs">
-            <div className="flex items-center justify-between text-slate-300 bg-slate-800/60 p-1.5 rounded">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                <span className="text-[11px]">SEI! GOVMA</span>
-              </span>
-              <span className="text-[9px] bg-blue-900/60 text-blue-200 px-1.5 py-0.2 rounded font-medium">Consulta</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-300 bg-slate-800/60 p-1.5 rounded">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span className="text-[11px]">StartGov</span>
-              </span>
-              <span className="text-[9px] bg-emerald-900/60 text-emerald-200 px-1.5 py-0.2 rounded font-medium">Scraper</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-300 bg-slate-800/60 p-1.5 rounded">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                <span className="text-[11px]">PNCP Federal</span>
-              </span>
-              <span className="text-[9px] bg-amber-900/60 text-amber-200 px-1.5 py-0.2 rounded font-medium">API Art. 94</span>
-            </div>
+            {/* Links Administrativos (Exibidos apenas para Admin e quando a seção não está suprimida) */}
+            {sectionAdminOpen && (
+              <nav className="space-y-1">
+                {adminItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href || pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={handleLinkClick}
+                      title={isCollapsed ? item.label : undefined}
+                      className={`flex items-center rounded-lg text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                        isCollapsed 
+                          ? 'justify-center p-2.5' 
+                          : 'space-x-2.5 px-3 py-2'
+                      } ${
+                        isActive
+                          ? 'bg-slate-800 text-blue-400 font-bold border-l-2 border-blue-500 pl-2.5'
+                          : 'hover:bg-slate-800 hover:text-white text-slate-300'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0 text-slate-400" />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+            )}
           </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* SEÇÃO 3: STATUS DAS FONTES INTEGRADAS (COM OPÇÃO DE SUPRIMIR)  */}
+        {/* ============================================================== */}
+        <div className="pt-2 border-t border-slate-800/80">
+          <button
+            type="button"
+            onClick={() => setSectionFontesOpen(prev => !prev)}
+            className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-[11px] uppercase tracking-wider font-bold mb-1 ${
+              isCollapsed ? 'justify-center' : ''
+            }`}
+            title={sectionFontesOpen ? 'Suprimir fontes integradas' : 'Expandir fontes integradas'}
+          >
+            {!isCollapsed && <span>Fontes Integradas</span>}
+            {!isCollapsed && (
+              sectionFontesOpen ? (
+                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+              )
+            )}
+            {isCollapsed && (
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+            )}
+          </button>
+
+          {sectionFontesOpen && (
+            <div className={`space-y-1 ${isCollapsed ? 'flex flex-col items-center py-1' : 'px-2 text-xs'}`}>
+              <div 
+                className={`flex items-center text-slate-300 bg-slate-800/60 rounded ${
+                  isCollapsed ? 'p-1.5 justify-center' : 'justify-between p-1.5'
+                }`}
+                title="SEI! GOVMA: Consulta ativa"
+              >
+                <span className="flex items-center space-x-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                  {!isCollapsed && <span className="text-[11px]">SEI! GOVMA</span>}
+                </span>
+                {!isCollapsed && (
+                  <span className="text-[9px] bg-blue-900/60 text-blue-200 px-1.5 py-0.2 rounded font-medium">Ativo</span>
+                )}
+              </div>
+
+              <div 
+                className={`flex items-center text-slate-300 bg-slate-800/60 rounded ${
+                  isCollapsed ? 'p-1.5 justify-center' : 'justify-between p-1.5'
+                }`}
+                title="StartGov: Coletor ativo"
+              >
+                <span className="flex items-center space-x-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  {!isCollapsed && <span className="text-[11px]">StartGov</span>}
+                </span>
+                {!isCollapsed && (
+                  <span className="text-[9px] bg-emerald-900/60 text-emerald-200 px-1.5 py-0.2 rounded font-medium">API</span>
+                )}
+              </div>
+
+              <div 
+                className={`flex items-center text-slate-300 bg-slate-800/60 rounded ${
+                  isCollapsed ? 'p-1.5 justify-center' : 'justify-between p-1.5'
+                }`}
+                title="PNCP Federal: Sincronização Art. 94"
+              >
+                <span className="flex items-center space-x-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  {!isCollapsed && <span className="text-[11px]">PNCP Federal</span>}
+                </span>
+                {!isCollapsed && (
+                  <span className="text-[9px] bg-amber-900/60 text-amber-200 px-1.5 py-0.2 rounded font-medium">Lei 14.133</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Rodapé da Sidebar */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/60 text-xs shrink-0">
-        <div className="flex items-center space-x-2 text-slate-300 mb-0.5">
-          <Server className="w-3.5 h-3.5 text-blue-400" />
-          <span className="font-semibold text-slate-200 text-[11px]">Zero-Cost Stack</span>
-        </div>
-        <p className="text-[10px] text-slate-400 leading-tight">
-          Next.js 14 + Supabase + GitHub Actions + Resend.
-        </p>
+      {/* Rodapé da Sidebar com Botão de Modo Clean / Expandir */}
+      <div className="p-2.5 border-t border-slate-800 bg-slate-950/60 text-xs shrink-0">
+        {!isCollapsed ? (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-slate-300">
+              <div className="flex items-center space-x-1.5">
+                <Server className="w-3.5 h-3.5 text-blue-400" />
+                <span className="font-semibold text-slate-200 text-[11px]">SEDUC-MA &bull; PUMIP</span>
+              </div>
+              <button
+                type="button"
+                onClick={toggleSidebarCollapse}
+                className="text-[10px] text-blue-400 hover:text-blue-300 font-semibold"
+                title="Ativar modo limpo de tela cheia"
+              >
+                Clean Mode
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 leading-tight">
+              Monitoramento Unificado de Processos e Inteligência.
+            </p>
+          </div>
+        ) : (
+          <div className="flex justify-center py-1">
+            <button
+              type="button"
+              onClick={toggleSidebarCollapse}
+              className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              title="Expandir Menu Lateral"
+              aria-label="Expandir Menu"
+            >
+              <PanelLeftOpen className="w-4 h-4 text-blue-400" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 
   return (
     <>
-      {/* 1. Versão Desktop (Fixa na lateral para telas grandes >= lg) */}
-      <aside className="hidden lg:flex w-64 bg-slate-900 text-slate-300 flex-col justify-between h-[calc(100vh-4rem)] sticky top-16 border-r border-slate-800 shrink-0">
+      {/* 1. Versão Desktop: Largura Dinâmica (w-64 quando expandido, w-20 quando recolhido) */}
+      <aside 
+        className={`hidden lg:flex bg-slate-900 text-slate-300 flex-col justify-between h-[calc(100vh-4rem)] sticky top-16 border-r border-slate-800 shrink-0 transition-all duration-300 ease-in-out ${
+          isCollapsed ? 'w-20' : 'w-64'
+        }`}
+      >
         {sidebarContent}
       </aside>
 
