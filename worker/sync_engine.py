@@ -502,52 +502,78 @@ def process_delta_and_alerts(
 
     agora = datetime.now(timezone.utc)
 
-    # 1. Inserir em historico_tramitacoes
     # REMEDIAÇÃO P1-1: Separa ocorrido_em (da fonte) de coletado_em (agora)
     data_hora_fonte = novo_evento.get("data_hora")
     if not data_hora_fonte:
         data_hora_fonte = agora.isoformat()
         logger.warning(f"[Processo {processo.get('protocolo_sei')}] Evento sem data_hora da fonte. Usando timestamp de coleta.")
 
-    payload_evento = {
-        "processo_id": processo["id"],
-        "origem_sistema": origem,
-        "data_hora_evento": data_hora_fonte,
-        "unidade_setor": novo_evento.get("unidade_setor", "NÃO INFORMADO"),
-        "descricao_andamento": descricao,
-        "documento_anexado": novo_evento.get("documento"),
-        "tipo_documento": novo_evento.get("tipo_documento"),
-        "resumo_ia": novo_evento.get("resumo_ia"),
-        "hash_evento": novo_hash,
-        "metadados": json.dumps({"coletado_em": agora.isoformat(), "origem_adapter": origem})
-    }
-
-    try:
-        manager.supabase.table("historico_tramitacoes").insert(payload_evento).execute()
-    except Exception as e:
-        logger.warning(f"Possível idempotência acionada na gravação do histórico: {e}")
-
-    # 2. Atualizar processo
+    # 1 e 2. Gravação Atômica (Transação PL/pgSQL - REMEDIAÇÃO P1-2)
     prio = processo.get("prioridade", "QUENTE")
     hours_interval = 1 if prio == "QUENTE" else (12 if prio == "MORNO" else 72)
     prox_verificacao = (agora + timedelta(hours=hours_interval)).isoformat()
+    nova_unidade = novo_evento.get("unidade_setor") if (origem == "SEI" and novo_evento.get("unidade_setor")) else None
 
-    # REMEDIAÇÃO P0-2: Só atualiza unidade_atual_sei se o evento veio do SEI
-    update_payload: Dict[str, Any] = {
-        "hash_ultimo_estado": novo_hash,
-        "dias_parado_na_unidade": 0,
-        "ultima_movimentacao_em": agora.isoformat(),
-        "ultima_verificacao_em": agora.isoformat(),
-        "proxima_verificacao_em": prox_verificacao
+    metadados_dict = {"coletado_em": agora.isoformat(), "origem_adapter": origem}
+
+    rpc_params = {
+        "p_processo_id": processo["id"],
+        "p_origem": origem,
+        "p_data_hora_evento": data_hora_fonte,
+        "p_unidade_setor": novo_evento.get("unidade_setor", "NÃO INFORMADO"),
+        "p_descricao_andamento": descricao,
+        "p_documento_anexado": novo_evento.get("documento"),
+        "p_tipo_documento": novo_evento.get("tipo_documento"),
+        "p_resumo_ia": novo_evento.get("resumo_ia"),
+        "p_hash_evento": novo_hash,
+        "p_metadados": metadados_dict,
+        "p_nova_unidade_sei": nova_unidade,
+        "p_proxima_verificacao": prox_verificacao
     }
 
-    if origem == "SEI" and novo_evento.get("unidade_setor"):
-        update_payload["unidade_atual_sei"] = novo_evento["unidade_setor"]
+    gravado_com_sucesso = False
+    try:
+        # Tenta transação atômica via função PL/pgSQL do Supabase
+        manager.supabase.rpc("registrar_andamento_sincronizacao", rpc_params).execute()
+        gravado_com_sucesso = True
+        logger.info(f"[Processo {processo.get('protocolo_sei')}] Andamento gravado atomicamente via RPC.")
+    except Exception as rpc_err:
+        logger.warning(f"RPC registrar_andamento_sincronizacao falhou ou não existe, executando fallback sequencial: {rpc_err}")
+        # Fallback de compatibilidade
+        try:
+            payload_evento = {
+                "processo_id": processo["id"],
+                "origem_sistema": origem,
+                "data_hora_evento": data_hora_fonte,
+                "unidade_setor": novo_evento.get("unidade_setor", "NÃO INFORMADO"),
+                "descricao_andamento": descricao,
+                "documento_anexado": novo_evento.get("documento"),
+                "tipo_documento": novo_evento.get("tipo_documento"),
+                "resumo_ia": novo_evento.get("resumo_ia"),
+                "hash_evento": novo_hash,
+                "metadados": json.dumps(metadados_dict)
+            }
+            manager.supabase.table("historico_tramitacoes").insert(payload_evento).execute()
 
-    manager.supabase.table("processos").update(update_payload).eq("id", processo["id"]).execute()
+            update_payload: Dict[str, Any] = {
+                "hash_ultimo_estado": novo_hash,
+                "dias_parado_na_unidade": 0,
+                "ultima_movimentacao_em": agora.isoformat(),
+                "ultima_verificacao_em": agora.isoformat(),
+                "proxima_verificacao_em": prox_verificacao
+            }
+            if nova_unidade:
+                update_payload["unidade_atual_sei"] = nova_unidade
+
+            manager.supabase.table("processos").update(update_payload).eq("id", processo["id"]).execute()
+            gravado_com_sucesso = True
+        except Exception as fallback_err:
+            logger.error(f"[Processo {processo.get('protocolo_sei')}] Erro fatal na gravação do andamento: {fallback_err}")
+            return False
 
     # 3. Avaliar regras de alertas configurados para este processo
-    check_and_trigger_alerts(manager, processo, novo_evento, origem)
+    if gravado_com_sucesso:
+        check_and_trigger_alerts(manager, processo, novo_evento, origem)
     return True
 
 
