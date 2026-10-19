@@ -126,3 +126,27 @@ class WorkerRepositorio:
         except Exception as e:
             logger.warning(f"Erro ao consultar regras de alerta: {e}")
             return []
+
+    def registrar_execucao_rodada(self, resumo: Dict[str, Any]) -> bool:
+        """Persiste telemetria da rodada de sincronização na tabela execucoes_coleta (Migração 006)."""
+        if not self.supabase:
+            return False
+        try:
+            payload = {
+                "execution_id": resumo.get("execucao_id"),
+                "iniciada_em": resumo.get("iniciada_em"),
+                "concluida_em": resumo.get("concluida_em"),
+                "duracao_ms": resumo.get("duracao_ms", 0),
+                "processos_analisados": resumo.get("processos_analisados", 0),
+                "novos_andamentos": resumo.get("novos_andamentos", 0),
+                "status": resumo.get("status", "SUCESSO"),
+                "detalhes_fontes": {
+                    "sucessos": resumo.get("sucessos_por_fonte", {}),
+                    "falhas": resumo.get("falhas_por_fonte", {})
+                }
+            }
+            self.supabase.table("execucoes_coleta").insert(payload).execute()
+            return True
+        except Exception as e:
+            logger.warning(f"Erro ao persistir telemetria em execucoes_coleta: {e}")
+            return False

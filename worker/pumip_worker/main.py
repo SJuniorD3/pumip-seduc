@@ -4,6 +4,7 @@ Conforme Seção 6.1 e 6.2 do Relatório de Auditoria Técnica (@Cpacesso).
 """
 
 import sys
+import time
 import uuid
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
@@ -34,6 +35,8 @@ def executar_rodada_coleta(
     Executa uma rodada completa de sincronização em camadas.
     Recebe fontes por injeção de dependência para viabilizar testes sem rede.
     """
+    t0 = time.time()
+    iniciada_em = datetime.now(timezone.utc).isoformat()
     execucao_id = str(uuid.uuid4())
     configurar_logger(execucao_id=execucao_id)
 
@@ -116,15 +119,29 @@ def executar_rodada_coleta(
                 falhas_por_fonte[fonte.nome] += 1
                 resiliencia_global.registrar_resultado(fonte.nome, sucesso=False, motivo=resultado.erro)
 
-    logger.info(f"Rodada concluída. Processos analisados: {total_analisados}, novos andamentos: {novos_andamentos}")
+    concluida_em = datetime.now(timezone.utc).isoformat()
+    duracao_ms = int((time.time() - t0) * 1000)
 
-    return {
+    resumo = {
         "execucao_id": execucao_id,
+        "iniciada_em": iniciada_em,
+        "concluida_em": concluida_em,
+        "duracao_ms": duracao_ms,
         "processos_analisados": total_analisados,
         "novos_andamentos": novos_andamentos,
+        "status": "SUCESSO" if sum(falhas_por_fonte.values()) == 0 else "PARCIAL",
         "sucessos_por_fonte": sucessos_por_fonte,
         "falhas_por_fonte": falhas_por_fonte
     }
+
+    try:
+        repo.registrar_execucao_rodada(resumo)
+    except Exception as e:
+        logger.warning(f"Não foi possível persistir telemetria em execucoes_coleta: {e}")
+
+    logger.info(f"Rodada concluída em {duracao_ms}ms. Processos analisados: {total_analisados}, novos andamentos: {novos_andamentos}")
+
+    return resumo
 
 
 if __name__ == "__main__":
