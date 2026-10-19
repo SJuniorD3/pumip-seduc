@@ -2,7 +2,7 @@ export interface AuthUser {
   id: string;
   nome: string;
   email: string;
-  role: 'SECRETARIO' | 'SUBSECRETARIO' | 'SECRETARIO_ADJUNTO' | 'SUPERINTENDENTE' | 'SUPERVISOR' | 'ASSESSOR' | 'TECNICO' | 'ADMIN';
+  role: 'SECRETARIO' | 'SUBSECRETARIO' | 'SECRETARIO_ADJUNTO' | 'SUPERINTENDENTE' | 'SUPERVISOR' | 'ASSESSOR' | 'TECNICO' | 'ADMIN' | 'AUDITOR';
   cargo_titulo: string;
   unidade_sigla: string;
   unidade_nome: string;

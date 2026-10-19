@@ -13,9 +13,9 @@ interface AdminGuardProps {
 }
 
 export const AdminGuard: React.FC<AdminGuardProps> = ({ children, moduloNome }) => {
-  const { user, loginAs } = useAuth();
+  const { user, isAuthenticated, loginAs } = useAuth();
 
-  if (user.isAdmin) {
+  if (isAuthenticated && user?.isAdmin) {
     return <>{children}</>;
   }
 

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, DEMO_USERS } from '../../lib/authContext';
+import { isDemoMode } from '../../lib/appMode';
 import { 
   ShieldCheck, 
   Lock, 
@@ -26,8 +27,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, loginAs } = useAuth();
 
-  const [email, setEmail] = useState('servulo.junior@seduc.ma.gov.br');
-  const [password, setPassword] = useState('••••••••••••');
+  const [email, setEmail] = useState(isDemoMode() ? 'servulo.junior@seduc.ma.gov.br' : '');
+  const [password, setPassword] = useState(isDemoMode() ? '••••••••••••' : '');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loginMethod, setLoginMethod] = useState<'SEDUC' | 'GOVBR'>('SEDUC');
@@ -62,10 +63,14 @@ export default function LoginPage() {
   const handleGovBrLogin = async () => {
     setIsLoading(true);
     setErrorMsg('');
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    // Loga como Sérvulo Junior via Gov.br
-    await login('servulo.junior@seduc.ma.gov.br');
-    router.push('/');
+    if (isDemoMode()) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await login('servulo.junior@seduc.ma.gov.br');
+      router.push('/');
+    } else {
+      setErrorMsg('O login unificado Gov.br em ambiente de produção requer habilitação do provedor OIDC junto à STI / COGETIC.');
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -342,100 +347,102 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Painel de Avaliação Rápida de Perfis (Quick Evaluation para Gestores) */}
-            <div className="mt-6 pt-5 border-t border-slate-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Acesso Rápido para Avaliação de Perfis (1-Clique)</span>
-                </span>
-                <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.2 rounded font-semibold border border-blue-200">
-                  Demonstração RLS
-                </span>
+            {/* Painel de Avaliação Rápida de Perfis (Apenas em Modo Demonstração) */}
+            {isDemoMode() && (
+              <div className="mt-6 pt-5 border-t border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Acesso Rápido para Avaliação de Perfis (1-Clique)</span>
+                  </span>
+                  <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.2 rounded font-semibold border border-blue-200">
+                    Demonstração RLS
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-left">
+                  {/* 1. Sérvulo Junior (SUDES) */}
+                  <button
+                    type="button"
+                    onClick={() => loginAs('servulo')}
+                    className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
+                    title="Supervisor de Desenvolvimento (SUDES)"
+                  >
+                    <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
+                      Sérvulo Junior
+                    </p>
+                    <p className="text-[10px] text-slate-500 truncate">SUDES / STI</p>
+                    <span className="text-[9px] text-blue-700 font-semibold bg-blue-50 px-1 py-0.2 rounded mt-1 inline-block">
+                      SUPERVISOR
+                    </span>
+                  </button>
+
+                  {/* 2. Natália Jansen (STI) */}
+                  <button
+                    type="button"
+                    onClick={() => loginAs('natalia')}
+                    className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
+                    title="Superintendente de Informática (STI)"
+                  >
+                    <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
+                      Natália Jansen
+                    </p>
+                    <p className="text-[10px] text-slate-500 truncate">Superintendente STI</p>
+                    <span className="text-[9px] text-indigo-700 font-semibold bg-indigo-50 px-1 py-0.2 rounded mt-1 inline-block">
+                      SUPERINTENDENTE
+                    </span>
+                  </button>
+
+                  {/* 3. Valter Veras (ASJUR) */}
+                  <button
+                    type="button"
+                    onClick={() => loginAs('valter')}
+                    className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
+                    title="Assessor Jurídico Chefe (ASJUR)"
+                  >
+                    <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
+                      Valter Veras
+                    </p>
+                    <p className="text-[10px] text-slate-500 truncate">Assessor ASJUR</p>
+                    <span className="text-[9px] text-purple-700 font-semibold bg-purple-50 px-1 py-0.2 rounded mt-1 inline-block">
+                      ASSESSOR
+                    </span>
+                  </button>
+
+                  {/* 4. Secretário de Educação */}
+                  <button
+                    type="button"
+                    onClick={() => loginAs('secretario')}
+                    className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
+                    title="Secretário de Estado da Educação"
+                  >
+                    <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
+                      Sec. de Educação
+                    </p>
+                    <p className="text-[10px] text-slate-500 truncate">Gabinete SEDUC</p>
+                    <span className="text-[9px] text-amber-800 font-semibold bg-amber-50 px-1 py-0.2 rounded mt-1 inline-block">
+                      SECRETARIO
+                    </span>
+                  </button>
+
+                  {/* 5. Administrador do Sistema */}
+                  <button
+                    type="button"
+                    onClick={() => loginAs('admin')}
+                    className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group col-span-2 sm:col-span-1"
+                    title="Administrador Geral com acesso às telas restritas"
+                  >
+                    <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
+                      Administrador TI
+                    </p>
+                    <p className="text-[10px] text-slate-500 truncate">Gestão & Acessos</p>
+                    <span className="text-[9px] text-red-700 font-bold bg-red-50 px-1 py-0.2 rounded mt-1 inline-block">
+                      ADMIN TOTAL
+                    </span>
+                  </button>
+                </div>
               </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-left">
-                {/* 1. Sérvulo Junior (SUDES) */}
-                <button
-                  type="button"
-                  onClick={() => loginAs('servulo')}
-                  className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
-                  title="Supervisor de Desenvolvimento (SUDES)"
-                >
-                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                    Sérvulo Junior
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">SUDES / STI</p>
-                  <span className="text-[9px] text-blue-700 font-semibold bg-blue-50 px-1 py-0.2 rounded mt-1 inline-block">
-                    SUPERVISOR
-                  </span>
-                </button>
-
-                {/* 2. Natália Jansen (STI) */}
-                <button
-                  type="button"
-                  onClick={() => loginAs('natalia')}
-                  className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
-                  title="Superintendente de Informática (STI)"
-                >
-                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                    Natália Jansen
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">Superintendente STI</p>
-                  <span className="text-[9px] text-indigo-700 font-semibold bg-indigo-50 px-1 py-0.2 rounded mt-1 inline-block">
-                    SUPERINTENDENTE
-                  </span>
-                </button>
-
-                {/* 3. Valter Veras (ASJUR) */}
-                <button
-                  type="button"
-                  onClick={() => loginAs('valter')}
-                  className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
-                  title="Assessor Jurídico Chefe (ASJUR)"
-                >
-                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                    Valter Veras
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">Assessor ASJUR</p>
-                  <span className="text-[9px] text-purple-700 font-semibold bg-purple-50 px-1 py-0.2 rounded mt-1 inline-block">
-                    ASSESSOR
-                  </span>
-                </button>
-
-                {/* 4. Secretário de Educação */}
-                <button
-                  type="button"
-                  onClick={() => loginAs('secretario')}
-                  className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group"
-                  title="Secretário de Estado da Educação"
-                >
-                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                    Sec. de Educação
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">Gabinete SEDUC</p>
-                  <span className="text-[9px] text-amber-800 font-semibold bg-amber-50 px-1 py-0.2 rounded mt-1 inline-block">
-                    SECRETARIO
-                  </span>
-                </button>
-
-                {/* 5. Administrador do Sistema */}
-                <button
-                  type="button"
-                  onClick={() => loginAs('admin')}
-                  className="p-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition text-left group col-span-2 sm:col-span-1"
-                  title="Administrador Geral com acesso às telas restritas"
-                >
-                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                    Administrador TI
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">Gestão & Acessos</p>
-                  <span className="text-[9px] text-red-700 font-bold bg-red-50 px-1 py-0.2 rounded mt-1 inline-block">
-                    ADMIN TOTAL
-                  </span>
-                </button>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Rodapé de Auditoria e Aviso Legal */}
