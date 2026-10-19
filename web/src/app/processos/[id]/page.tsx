@@ -13,6 +13,7 @@ import { filterProcessosByRLS } from '../../../lib/rlsFilter';
 import { getSemaforoInercia, isSlaEstourado } from '../../../lib/slaConfig';
 import { isSupabaseConfigured } from '../../../lib/supabase';
 import { obterProcessoPorIdBanco } from '../../../lib/dados/processos';
+import { listarNotasProcessoBanco, criarNotaProcessoBanco } from '../../../lib/dados/notas';
 import { Processo } from '../../../lib/types';
 import { 
   ArrowLeft, 
@@ -79,7 +80,24 @@ export default function ProcessoDetalhePage() {
         setFavorito(favs.includes(processo.id));
       }
 
-      // 2. Notas Internas
+      // 2. Notas Internas: Sincronização com Supabase e Fallback Local
+      if (isSupabaseConfigured() && processo.id.length === 36) {
+        listarNotasProcessoBanco(processo.id).then((bancoNotas) => {
+          if (bancoNotas.length > 0) {
+            setNotas(
+              bancoNotas.map((n) => ({
+                id: n.id,
+                autor: `${n.autor_nome} (${n.autor_sigla || 'SEDUC'})`,
+                data: new Date(n.created_at).toLocaleString('pt-BR'),
+                conteudo: n.conteudo,
+                versao: n.versao
+              }))
+            );
+            return;
+          }
+        }).catch(() => {});
+      }
+
       const savedNotas = localStorage.getItem(`pumip_notas_${processo.id}`);
       if (savedNotas) {
         setNotas(JSON.parse(savedNotas));
@@ -138,15 +156,29 @@ export default function ProcessoDetalhePage() {
     }
   };
 
-  const handleAddNota = (e: React.FormEvent) => {
+  const handleAddNota = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!novaNota.trim() || !processo) return;
 
+    let novaId = `nota-${Date.now()}`;
+    const textoNota = novaNota.trim();
+
+    if (isSupabaseConfigured() && processo.id.length === 36 && user.id.length === 36) {
+      const notaSalva = await criarNotaProcessoBanco({
+        processo_id: processo.id,
+        usuario_id: user.id,
+        conteudo: textoNota
+      });
+      if (notaSalva) {
+        novaId = notaSalva.id;
+      }
+    }
+
     const nova = {
-      id: `nota-${Date.now()}`,
+      id: novaId,
       autor: `${user.nome} (${user.unidade_sigla})`,
       data: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      conteudo: novaNota.trim(),
+      conteudo: textoNota,
       versao: 1
     };
 

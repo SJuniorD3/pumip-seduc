@@ -1,15 +1,35 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { KanbanBoard } from '../../components/KanbanBoard';
 import { Breadcrumb } from '../../components/Breadcrumb';
 import { Abbr, InfoTooltip } from '../../components/Tooltip';
 import { mockProcessos } from '../../lib/mockData';
 import { Processo } from '../../lib/types';
-import { KanbanSquare } from 'lucide-react';
+import { useAuth } from '../../lib/authContext';
+import { filterProcessosByRLS } from '../../lib/rlsFilter';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import { listarProcessosBanco } from '../../lib/dados/processos';
+import { KanbanSquare, ShieldCheck } from 'lucide-react';
 
 export default function KanbanPage() {
-  const [processos] = useState<Processo[]>(mockProcessos);
+  const { user } = useAuth();
+  const [processos, setProcessos] = useState<Processo[]>(mockProcessos);
+
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      listarProcessosBanco(1, 100)
+        .then(({ processos: bancoProcessos }) => {
+          if (bancoProcessos && bancoProcessos.length > 0) {
+            setProcessos(bancoProcessos);
+          }
+        })
+        .catch((e) => console.warn('Erro ao carregar processos no Kanban:', e));
+    }
+  }, []);
+
+  // Aplica filtro de segurança e autorização RLS
+  const processosAutorizados = filterProcessosByRLS(processos, user);
 
   return (
     <div className="space-y-5">
@@ -35,14 +55,18 @@ export default function KanbanPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs bg-slate-100 text-slate-700 font-medium px-3 py-1.5 rounded-lg border border-slate-200">
-            Total no Quadro: <strong className="text-slate-900">{processos.length}</strong>
+          <span 
+            title={`Filtrado por RLS para ${user.unidade_sigla}`}
+            className="text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1.5 shadow-sm"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>RLS Ativo: {processosAutorizados.length} visíveis ({user.role})</span>
           </span>
         </div>
       </div>
 
       {/* Componente do Quadro Kanban com Colunas por Etapa */}
-      <KanbanBoard processos={processos} />
+      <KanbanBoard processos={processosAutorizados} />
     </div>
   );
 }

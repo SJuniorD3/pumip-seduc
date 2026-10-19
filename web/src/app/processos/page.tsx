@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProcessTable } from '../../components/ProcessTable';
 import { Breadcrumb } from '../../components/Breadcrumb';
 import { Abbr, InfoTooltip } from '../../components/Tooltip';
@@ -8,11 +8,26 @@ import { mockProcessos } from '../../lib/mockData';
 import { Processo } from '../../lib/types';
 import { useAuth } from '../../lib/authContext';
 import { filterProcessosByRLS } from '../../lib/rlsFilter';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import { listarProcessosBanco } from '../../lib/dados/processos';
 import { FileSearch, ShieldCheck } from 'lucide-react';
 
 export default function ProcessosPage() {
   const { user } = useAuth();
-  const [processos] = useState<Processo[]>(mockProcessos);
+  const [processos, setProcessos] = useState<Processo[]>(mockProcessos);
+
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      listarProcessosBanco(1, 100)
+        .then(({ processos: bancoProcessos }) => {
+          if (bancoProcessos && bancoProcessos.length > 0) {
+            setProcessos(bancoProcessos);
+          }
+        })
+        .catch((e) => console.warn('Erro ao carregar processos do Supabase:', e));
+    }
+  }, []);
+
   const processosVisiveis = filterProcessosByRLS(processos, user);
 
   return (

@@ -1,7 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Breadcrumb } from '../../components/Breadcrumb';
+import { useAuth } from '../../lib/authContext';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import { 
+  listarAlertasBanco, 
+  criarAlertaBanco, 
+  alternarStatusAlertaBanco, 
+  removerAlertaBanco 
+} from '../../lib/dados/alertas';
 import { 
   BellRing, 
   Plus, 
@@ -28,6 +36,7 @@ interface AlertaItem {
 }
 
 export default function AlertasPage() {
+  const { user } = useAuth();
   const [alertas, setAlertas] = useState<AlertaItem[]>([
     {
       id: 'alt-1',
@@ -61,31 +70,87 @@ export default function AlertasPage() {
   const [notificarEmail, setNotificarEmail] = useState(true);
   const [feedbackMsg, setFeedbackMsg] = useState(false);
 
-  const handleCriarAlerta = (e: React.FormEvent) => {
+  // Sincronização com o Supabase quando configurado
+  useEffect(() => {
+    if (isSupabaseConfigured() && user?.id) {
+      listarAlertasBanco(user.id)
+        .then((bancoAlertas) => {
+          if (bancoAlertas.length > 0) {
+            setAlertas(
+              bancoAlertas.map((b) => ({
+                id: b.id,
+                tipo: b.tipo === 'INERCIA_DIAS' ? 'INÉRCIA / SLA (RF05)' : b.tipo === 'PALAVRA_CHAVE' ? 'PALAVRA-CHAVE (RF06)' : b.tipo,
+                descricao: b.descricao_legivel || 'Alerta automático',
+                processo: b.processo_protocolo || 'Geral',
+                viaEmail: b.notificar_email,
+                ativo: b.ativo
+              }))
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.id]);
+
+  const handleCriarAlerta = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const tipoEnum = tipoSelecionado === 'INERCIA_SLA' ? 'INERCIA_DIAS' : 'PALAVRA_CHAVE';
+    const params = tipoSelecionado === 'INERCIA_SLA' 
+      ? { dias: parseInt(parametroValor, 10) || 5 }
+      : { palavras_chave: parametroValor };
+
+    const desc = tipoSelecionado === 'INERCIA_SLA'
+      ? `Alerta se parado por mais de ${parametroValor} dias úteis`
+      : `Gatilho monitorando: "${parametroValor}"`;
+
+    let novoId = `alt-${Date.now()}`;
+
+    if (isSupabaseConfigured() && user?.id && user.id.length === 36) {
+      const criado = await criarAlertaBanco({
+        usuario_id: user.id,
+        tipo: tipoEnum,
+        parametros: params,
+        notificar_email: notificarEmail,
+        notificar_sistema: true
+      });
+      if (criado) {
+        novoId = criado.id;
+      }
+    }
+
     const novo: AlertaItem = {
-      id: `alt-${Date.now()}`,
+      id: novoId,
       tipo: tipoSelecionado === 'INERCIA_SLA' ? 'INÉRCIA / SLA (RF05)' : 'PALAVRA-CHAVE (RF06)',
-      descricao:
-        tipoSelecionado === 'INERCIA_SLA'
-          ? `Alerta se parado por mais de ${parametroValor} dias úteis`
-          : `Gatilho monitorando: "${parametroValor}"`,
+      descricao: desc,
       processo: processoAlvo,
       viaEmail: notificarEmail,
       ativo: true
     };
+
     setAlertas([novo, ...alertas]);
     setFeedbackMsg(true);
     setTimeout(() => setFeedbackMsg(false), 3000);
   };
 
   const handleToggle = (id: string) => {
+    const alertaAtual = alertas.find((a) => a.id === id);
+    if (!alertaAtual) return;
+    const novoStatus = !alertaAtual.ativo;
+
+    if (isSupabaseConfigured() && id.length === 36) {
+      alternarStatusAlertaBanco(id, novoStatus).catch(() => {});
+    }
+
     setAlertas(
-      alertas.map((a) => (a.id === id ? { ...a, ativo: !a.ativo } : a))
+      alertas.map((a) => (a.id === id ? { ...a, ativo: novoStatus } : a))
     );
   };
 
   const handleRemove = (id: string) => {
+    if (isSupabaseConfigured() && id.length === 36) {
+      removerAlertaBanco(id).catch(() => {});
+    }
     setAlertas(alertas.filter((a) => a.id !== id));
   };
 
