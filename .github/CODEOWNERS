@@ -1,0 +1,26 @@
+# ==============================================================================
+# PUMIP-SEDUC: CODEOWNERS (Governança e Responsabilidade Técnica)
+# Define revisores obrigatórios por área conforme padrões da auditoria técnica.
+# ==============================================================================
+
+# Padrão Global do Repositório
+* @SJuniorD3
+
+# Infraestrutura de CI/CD e Segurança de Segredos
+/.github/workflows/   @SJuniorD3
+/.github/dependabot.yml @SJuniorD3
+
+# Banco de Dados, Migrações e Regras de RLS
+/supabase/migrations/ @SJuniorD3
+/supabase/seed.sql    @SJuniorD3
+/supabase/tests/      @SJuniorD3
+
+# Camada de Frontend (Next.js App Router e Componentes)
+/web/                 @SJuniorD3
+
+# Motor de Coleta e Worker Python (pumip_worker)
+/worker/              @SJuniorD3
+
+# Documentação, Governança e Runbooks
+/docs/                @SJuniorD3
+README.md             @SJuniorD3
