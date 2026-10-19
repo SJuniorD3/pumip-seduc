@@ -110,8 +110,8 @@ const DEFAULT_CONFIG: IntegracaoConfig = {
     url: 'https://sei.ma.gov.br/sei/controlador_ws.php?servico=sei',
     orgao: 'SEDUC',
     sistemaIntegrador: 'PUMIP_SEDUC_V2',
-    usuarioConsulta: 'svc_pumip_bot_consulta',
-    senhaAcesso: 'Seduc@Sei#2026_KeySecret',
+    usuarioConsulta: '',
+    senhaAcesso: '',
     tipoConexao: 'WEBSERVICE_SOAP',
     ativo: true,
     ultimaChecagem: 'Hoje às 14:00',
@@ -121,8 +121,8 @@ const DEFAULT_CONFIG: IntegracaoConfig = {
   startgov: {
     url: 'https://api.startgov.com.br/v2/seduc-ma',
     cnpjOrgao: '06.354.468/0001-30',
-    clientId: 'seduc_pumip_client_4892',
-    clientSecret: 'sg_sec_live_9921abcf8471920acb4521',
+    clientId: '',
+    clientSecret: '',
     ambiente: 'PRODUCAO',
     ativo: true,
     ultimaChecagem: 'Hoje às 13:45',
@@ -132,7 +132,7 @@ const DEFAULT_CONFIG: IntegracaoConfig = {
   pncp: {
     url: 'https://pncp.gov.br/api/pncp/v1/orgaos/06354468000130',
     cnpjOrgao: '06.354.468/0001-30',
-    apiKey: 'pncp_api_key_public_gov_2026_seduc_ma',
+    apiKey: '',
     intervaloMinutos: 30,
     ativo: true,
     ultimaChecagem: 'Hoje às 12:30',
@@ -226,12 +226,21 @@ export default function AdminIntegracoesPage() {
   const [playgroundOutput, setPlaygroundOutput] = useState<string | null>(null);
   const [playgroundLoading, setPlaygroundLoading] = useState(false);
 
-  // Carrega configurações persistidas se existirem
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('pumip_integracoes_credenciais_v2');
+      // REMEDIAÇÃO P0-3: Carrega apenas configurações não-sensíveis
+      const stored = localStorage.getItem('pumip_integracoes_config_v3');
       if (stored) {
-        setConfig(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        setConfig(prev => ({
+          ...prev,
+          sei: { ...prev.sei, ...parsed.sei },
+          startgov: { ...prev.startgov, ...parsed.startgov },
+          pncp: { ...prev.pncp, ...parsed.pncp },
+          certificadoDigital: { ...prev.certificadoDigital, ...parsed.certificadoDigital },
+          resiliencia: parsed.resiliencia || prev.resiliencia,
+          agendamento: parsed.agendamento || prev.agendamento
+        }));
       }
       const storedLogs = localStorage.getItem('pumip_integracoes_audit_logs');
       if (storedLogs) {
@@ -248,13 +257,43 @@ export default function AdminIntegracoesPage() {
     setFeedbackMensagem(null);
 
     try {
-      localStorage.setItem('pumip_integracoes_credenciais_v2', JSON.stringify(config));
+      // REMEDIAÇÃO P0-3: NÃO armazena credenciais no navegador.
+      // Salva apenas configurações não-sensíveis (URLs, intervalos, toggles).
+      const configSegura = {
+        sei: {
+          url: config.sei.url,
+          orgao: config.sei.orgao,
+          sistemaIntegrador: config.sei.sistemaIntegrador,
+          tipoConexao: config.sei.tipoConexao,
+          ativo: config.sei.ativo
+        },
+        startgov: {
+          url: config.startgov.url,
+          cnpjOrgao: config.startgov.cnpjOrgao,
+          ambiente: config.startgov.ambiente,
+          ativo: config.startgov.ativo
+        },
+        pncp: {
+          url: config.pncp.url,
+          cnpjOrgao: config.pncp.cnpjOrgao,
+          intervaloMinutos: config.pncp.intervaloMinutos,
+          ativo: config.pncp.ativo
+        },
+        certificadoDigital: {
+          habilitado: config.certificadoDigital.habilitado,
+          alertaUrgenciaAtivo: config.certificadoDigital.alertaUrgenciaAtivo
+        },
+        resiliencia: config.resiliencia,
+        agendamento: config.agendamento
+      };
+
+      localStorage.setItem('pumip_integracoes_config_v3', JSON.stringify(configSegura));
 
       const novoLog: AuditLogEntry = {
         id: `log-${Date.now()}`,
         dataHora: new Date().toLocaleString('pt-BR'),
         usuarioNome: user.nome,
-        acao: 'Atualização e salvamento de parâmetros dos conectores e políticas de resiliência',
+        acao: 'Atualização de parâmetros dos conectores e políticas de resiliência (credenciais gerenciadas no servidor)',
         sistema: 'GLOBAL',
         ipOrigem: '10.20.15.42 (Rede Interna SEDUC)'
       };
@@ -265,7 +304,7 @@ export default function AdminIntegracoesPage() {
 
       setFeedbackMensagem({
         tipo: 'sucesso',
-        texto: 'Credenciais, políticas de resiliência e agendamento salvas com sucesso no cofre seguro!'
+        texto: 'Configurações de conectores e resiliência salvas. Credenciais de acesso são gerenciadas exclusivamente no servidor (variáveis de ambiente).'
       });
     } catch {
       setFeedbackMensagem({
