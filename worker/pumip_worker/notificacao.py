@@ -5,7 +5,10 @@ Conforme Seção 6.1 e 10.1 do Relatório de Auditoria Técnica (@Cpacesso).
 
 import html
 from typing import Optional, Dict, Any
-import httpx
+try:
+    import httpx
+except ImportError:
+    httpx = None
 
 from pumip_worker.config import config
 from pumip_worker.log import logger, mascarar_email
@@ -18,7 +21,7 @@ def disparar_notificacao_email(
     processo: Processo,
     evento: Optional[EventoFonte] = None,
     titulo_alerta: str = "Novo Andamento Detectado",
-    client: Optional[httpx.Client] = None
+    client: Optional[Any] = None
 ) -> bool:
     """
     Envia notificação transacional via Resend API com sanitização HTML completa

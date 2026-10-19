@@ -16,7 +16,7 @@ def normalizar_protocolo(texto: Optional[str]) -> str:
     """
     if not texto:
         return ""
-    limpo = re.sub(r"^(SEI|STARTGOV|PNCP)[\s\-_:]*", "", texto.strip(), flags=re.IGNORECASE)
+    limpo = re.sub(r"^(SEI|STARTGOV|PNCP|PROC)[\s\-_:]*", "", texto.strip(), flags=re.IGNORECASE)
     return re.sub(r"[^A-Za-z0-9]", "", limpo).upper()
 
 

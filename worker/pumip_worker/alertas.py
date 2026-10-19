@@ -40,7 +40,7 @@ def avaliar_gatilho_vencimento_contrato(
         dias_restantes = (dt_fim - agora).days
 
         marcos = alerta_parametros.get("marcos_dias", [90, 60, 30])
-        for marco in sorted(marcos, reverse=True):
+        for marco in sorted(marcos):
             if dias_restantes <= marco:
                 return marco
         return None

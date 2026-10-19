@@ -5,7 +5,11 @@ Conforme Seção 6.1 e 10.2 do Relatório de Auditoria Técnica (@Cpacesso).
 
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
-from supabase import create_client, Client
+try:
+    from supabase import create_client, Client
+except ImportError:
+    create_client = None
+    Client = None
 
 from pumip_worker.config import config
 from pumip_worker.log import logger
@@ -13,11 +17,13 @@ from pumip_worker.modelos import Processo, EventoFonte
 
 
 class WorkerRepositorio:
-    def __init__(self, supabase_client: Optional[Client] = None) -> None:
+    def __init__(self, supabase_client: Optional[Any] = None) -> None:
         if supabase_client:
             self.supabase = supabase_client
-        else:
+        elif create_client is not None:
             self.supabase = create_client(config.supabase_url, config.supabase_service_role_key)
+        else:
+            self.supabase = None
 
     def obter_processos_candidatos(self, limite: int = 50) -> List[Processo]:
         """Obtém processos da fila prioritária para sincronização periódica."""

@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsc -p tests/tsconfig.json && node --test tests/dist/tests/*.test.js"
+    "test": "npm run test:unit",
+    "test:unit": "tsc -p tests/tsconfig.json && node --test tests/dist/tests/01_security_and_rls.test.js tests/dist/tests/02_prazos_feriados_inercia.test.js tests/dist/tests/03_integridade_negocio_contratos.test.js tests/dist/tests/05_acessibilidade_e_navegacao.test.js",
+    "test:benchmarks": "tsc -p tests/tsconfig.json && node --test tests/dist/tests/04_performance_benchmarks.test.js",
+    "test:all": "tsc -p tests/tsconfig.json && node --test tests/dist/tests/*.test.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

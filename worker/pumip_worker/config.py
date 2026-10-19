@@ -5,9 +5,11 @@ Conforme Seção 6.1 do Relatório de Auditoria Técnica (@Cpacesso).
 
 import os
 from typing import Optional
-from dotenv import load_dotenv
-
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 
 class WorkerConfig:

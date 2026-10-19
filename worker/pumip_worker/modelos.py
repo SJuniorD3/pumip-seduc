@@ -55,7 +55,7 @@ class ContratoPNCP:
 @dataclass
 class Processo:
     id: str
-    protocolo_sei: string = ""
+    protocolo_sei: str = ""
     protocolo_startgov: Optional[str] = None
     numero_contrato_pncp: Optional[str] = None
     objeto: str = ""

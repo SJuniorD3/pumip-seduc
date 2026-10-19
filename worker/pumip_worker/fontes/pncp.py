@@ -7,7 +7,10 @@ import time
 import hashlib
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
-import httpx
+try:
+    import httpx
+except ImportError:
+    httpx = None
 
 from pumip_worker.config import config
 from pumip_worker.modelos import (
@@ -22,7 +25,7 @@ from pumip_worker.modelos import (
 class PNCPFonte:
     nome = "PNCP"
 
-    def __init__(self, client: Optional[httpx.Client] = None) -> None:
+    def __init__(self, client: Optional[Any] = None) -> None:
         self.client = client
 
     def coletar(self, processo: Processo) -> ResultadoColeta:
