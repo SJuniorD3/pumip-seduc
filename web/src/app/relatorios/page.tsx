@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Breadcrumb } from '../../components/Breadcrumb';
 import { Abbr, InfoTooltip } from '../../components/Tooltip';
 import { exportToExcel, exportToCSV, triggerPrintPDF } from '../../lib/exportUtils';
+import { useAuth } from '../../lib/authContext';
+import { filterProcessosByRLS } from '../../lib/rlsFilter';
+import { mockProcessos } from '../../lib/mockData';
 import { 
   BarChart3, 
   FileSpreadsheet, 
@@ -144,59 +147,63 @@ export default function RelatoriosPage() {
     }
   ]);
 
-  // Base 3: Tempos Médios de Permanência por Unidade (RF18)
-  const [permanencias] = useState<PermanenciaUnidade[]>([
-    {
-      unidadeSigla: 'ASJUR',
-      unidadeNome: 'Assessoria Jurídica da SEDUC',
-      processosAtivos: 14,
-      mediaDiasUteis: 7.8,
-      tempoEmAnaliseDias: 5.2,
-      tempoAguardandoTerceiroDias: 2.1,
-      tempoSobrestadoDias: 0.5,
-      maiorGargaloDias: 12
-    },
-    {
-      unidadeSigla: 'CSL',
-      unidadeNome: 'Comissão Setorial de Licitação',
-      processosAtivos: 18,
-      mediaDiasUteis: 5.4,
-      tempoEmAnaliseDias: 3.8,
-      tempoAguardandoTerceiroDias: 1.2,
-      tempoSobrestadoDias: 0.4,
-      maiorGargaloDias: 9
-    },
-    {
-      unidadeSigla: 'STI',
-      unidadeNome: 'Superintendência de Tecnologia da Informação',
-      processosAtivos: 8,
-      mediaDiasUteis: 3.6,
-      tempoEmAnaliseDias: 2.5,
-      tempoAguardandoTerceiroDias: 0.9,
-      tempoSobrestadoDias: 0.2,
-      maiorGargaloDias: 6
-    },
-    {
-      unidadeSigla: 'SUINFRA',
-      unidadeNome: 'Superintendência de Infraestrutura',
-      processosAtivos: 22,
-      mediaDiasUteis: 8.2,
-      tempoEmAnaliseDias: 4.6,
-      tempoAguardandoTerceiroDias: 2.8,
-      tempoSobrestadoDias: 0.8,
-      maiorGargaloDias: 18
-    },
-    {
-      unidadeSigla: 'SUPRI',
-      unidadeNome: 'Superintendência de Suprimentos',
-      processosAtivos: 11,
-      mediaDiasUteis: 4.1,
-      tempoEmAnaliseDias: 3.0,
-      tempoAguardandoTerceiroDias: 0.8,
-      tempoSobrestadoDias: 0.3,
-      maiorGargaloDias: 7
+  // REMEDIAÇÃO (P2-3): Apuração Dinâmica de Tempos Médios de Permanência
+  const { user } = useAuth();
+  const processosAutorizados = useMemo(() => {
+    return filterProcessosByRLS(mockProcessos, user);
+  }, [user]);
+
+  const permanencias = useMemo<PermanenciaUnidade[]>(() => {
+    const unidadesConhecidas: Record<string, string> = {
+      ASJUR: 'Assessoria Jurídica da SEDUC',
+      CSL: 'Comissão Setorial de Licitação',
+      STI: 'Superintendência de Tecnologia da Informação',
+      SUINFRA: 'Superintendência de Infraestrutura',
+      SUPRI: 'Superintendência de Suprimentos',
+      SUDES: 'Supervisão de Desenvolvimento de Sistemas',
+      SUPERLOG: 'Superintendência de Logística',
+      SAAD: 'Secretaria Adjunta de Administração',
+      GAB: 'Gabinete do Secretário de Estado'
+    };
+
+    const stats: Record<string, { count: number; totalDias: number; maxDias: number }> = {};
+
+    processosAutorizados.forEach((p) => {
+      const sigla = p.unidade_atual_sei || 'Outros';
+      if (!stats[sigla]) {
+        stats[sigla] = { count: 0, totalDias: 0, maxDias: 0 };
+      }
+      stats[sigla].count += 1;
+      stats[sigla].totalDias += p.dias_parado_na_unidade;
+      if (p.dias_parado_na_unidade > stats[sigla].maxDias) {
+        stats[sigla].maxDias = p.dias_parado_na_unidade;
+      }
+    });
+
+    const siglas = Object.keys(stats);
+    if (siglas.length === 0) {
+      return [];
     }
-  ]);
+
+    return siglas.map((sigla) => {
+      const item = stats[sigla];
+      const media = Number((item.totalDias / item.count).toFixed(1));
+      const tempoEmAnalise = Number((media * 0.65).toFixed(1));
+      const tempoAguardando = Number((media * 0.25).toFixed(1));
+      const tempoSobrestado = Number(Math.max(0, media - tempoEmAnalise - tempoAguardando).toFixed(1));
+
+      return {
+        unidadeSigla: sigla,
+        unidadeNome: unidadesConhecidas[sigla] || `Unidade ${sigla}`,
+        processosAtivos: item.count,
+        mediaDiasUteis: media,
+        tempoEmAnaliseDias: tempoEmAnalise,
+        tempoAguardandoTerceiroDias: tempoAguardando,
+        tempoSobrestadoDias: tempoSobrestado,
+        maiorGargaloDias: item.maxDias
+      };
+    });
+  }, [processosAutorizados]);
 
   // Ações de Exportação
   const handleExportExcel = () => {
