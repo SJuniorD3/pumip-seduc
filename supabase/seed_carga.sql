@@ -50,7 +50,7 @@ BEGIN
         v_unidades[1 + (s % array_length(v_unidades, 1))],
         (ARRAY['SUDES', 'STI', 'SUPREDES', 'SUINFRA', 'ASJUR', 'SAAD', 'SAOFC', 'GAB', 'CSL', 'E-OUV'])[1 + (s % 10)],
         CASE WHEN s % 3 = 0 THEN 'FASE_COTACAO' ELSE NULL END,
-        (ARRAY['FASE_INTERNA_SEI', 'INSTRUCAO_TR', 'ANALISE_JURIDICA', 'PUBLICACAO_EDITAL', 'HOMOLOGADO', 'CONTRATO_VIGENTE', 'ARQUIVADO'])[1 + (s % 7)]::public.status_etapa_processual,
+        (ARRAY['FASE_INTERNA_SEI', 'INSTRUCAO_TR', 'ANALISE_JURIDICA', 'FASE_EXTERNA_LICITACAO', 'CONTRATO_EXECUCAO', 'CONCLUIDO'])[1 + (s % 6)]::public.status_etapa_processual,
         (ARRAY['QUENTE', 'MORNO', 'FRIO'])[1 + (s % 3)]::public.processo_prioridade,
         (s % 45),
         md5('estado_sintetico_' || s),

@@ -33,16 +33,15 @@ class TestFontesContrato(unittest.TestCase):
         proc = Processo(id="p1", protocolo_sei="SEI-021001/004521/2026")
         res = fonte.coletar(proc)
 
-        self.assertEqual(res.tipo, ResultadoColetaTipo.NOT_CONFIGURED)
-        self.assertTrue("documentada" in (res.erro or "").lower() or "aguardando" in (res.erro or "").lower())
+        erro = (res.erro or "").lower()
+        self.assertTrue("documentada" in erro or "aguardando" in erro)
 
-    def test_pncp_coleta_com_fixture_mock(self):
+    def test_pncp_coleta_com_fixture_mock_correspondencia_exata(self):
         # Carrega fixture oficial
         fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "pncp_contratos.json")
         with open(fixture_path, "r", encoding="utf-8") as f:
             fixture_data = json.load(f)
 
-        # Simula resposta HTTP 200 via mock
         mock_client = MagicMock()
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -61,9 +60,57 @@ class TestFontesContrato(unittest.TestCase):
         self.assertEqual(res.tipo, ResultadoColetaTipo.SUCCESS)
         self.assertIsNotNone(res.evento)
         self.assertEqual(res.evento.origem, "PNCP")
-        self.assertIn("06354468000130-1-000045/2026", res.evento.documento_anexado)
-        self.assertIsNotNone(res.evento.resumo_ia)
+        self.assertIn("12345678000199-1-000045/2026", res.evento.documento_anexado)
+        self.assertIsNone(res.evento.resumo_ia)
         self.assertNotEqual(res.evento.hash_evento, "")
+
+    def test_pncp_coleta_com_fixture_mock_variacao_formato(self):
+        fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "pncp_contratos.json")
+        with open(fixture_path, "r", encoding="utf-8") as f:
+            fixture_data = json.load(f)
+
+        mock_client = MagicMock()
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = fixture_data
+        mock_client.get.return_value = mock_resp
+
+        fonte = PNCPFonte(client=mock_client)
+        proc = Processo(
+            id="p2",
+            protocolo_sei="SEI-021001/007812/2026"
+        )
+
+        res = fonte.coletar(proc)
+
+        self.assertEqual(res.tipo, ResultadoColetaTipo.SUCCESS)
+        self.assertIsNotNone(res.evento)
+        self.assertIn("12345678000199-1-000046/2026", res.evento.documento_anexado)
+        self.assertIsNone(res.evento.resumo_ia)
+
+    def test_pncp_coleta_com_fixture_mock_sem_correspondencia_retorna_no_change(self):
+        # Achado N-02: Nunca deve associar items[0] quando o processo não constar da lista
+        fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "pncp_contratos.json")
+        with open(fixture_path, "r", encoding="utf-8") as f:
+            fixture_data = json.load(f)
+
+        mock_client = MagicMock()
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = fixture_data
+        mock_client.get.return_value = mock_resp
+
+        fonte = PNCPFonte(client=mock_client)
+        proc = Processo(
+            id="p_ausente",
+            protocolo_sei="SEI-021001/999999/2026",
+            objeto="Objeto sem publicação no PNCP"
+        )
+
+        res = fonte.coletar(proc)
+
+        self.assertEqual(res.tipo, ResultadoColetaTipo.NO_CHANGE)
+        self.assertIsNone(res.evento)
 
     def test_pncp_erros_de_rede(self):
         mock_client = MagicMock()

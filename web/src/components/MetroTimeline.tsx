@@ -174,7 +174,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
       {sucessoFeedback && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in duration-150">
           <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Apontamento de auditoria registrado com sucesso para retreinamento da IA local (RF20).</span>
+          <span>Apontamento de auditoria registrado com sucesso para análise e governança técnica (RF20).</span>
         </div>
       )}
 

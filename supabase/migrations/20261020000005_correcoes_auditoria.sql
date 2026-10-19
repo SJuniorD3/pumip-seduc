@@ -202,7 +202,7 @@ BEGIN
     RETURN (
         SELECT COALESCE(pg_catalog.count(*)::INT, 0)
         FROM pg_catalog.generate_series(inicio + 1, fim, '1 day'::interval) d
-        WHERE pg_catalog.extract(isodow FROM d) < 6
+        WHERE extract(isodow FROM d) < 6
           AND d::date NOT IN (SELECT data FROM public.feriados)
     );
 END;
@@ -211,8 +211,9 @@ $$;
 GRANT EXECUTE ON FUNCTION public.dias_uteis_entre(DATE, DATE) TO authenticated, anon, service_role;
 
 
--- 4. VISÃO DE PROCESSOS COM INÉRCIA PROCESSUAL COMPUTADA NO BANCO
-CREATE OR REPLACE VIEW public.processos_com_inercia AS
+-- 4. VISÃO DE PROCESSOS COM INÉRCIA PROCESSUAL COMPUTADA NO BANCO (COM SECURITY INVOKER)
+CREATE OR REPLACE VIEW public.processos_com_inercia
+WITH (security_invoker = true) AS
 SELECT
     p.*,
     public.dias_uteis_entre(p.ultima_movimentacao_em::DATE, pg_catalog.now()::DATE) AS dias_uteis_parado
@@ -260,8 +261,9 @@ USING (
     )
 );
 
--- Visão pública de status das integrações (sem segredos, sem tokens)
-CREATE OR REPLACE VIEW public.status_integracoes AS
+-- Visão pública de status das integrações (sem segredos, sem tokens, com security_invoker)
+CREATE OR REPLACE VIEW public.status_integracoes
+WITH (security_invoker = true) AS
 SELECT
     it.sistema,
     it.ultimo_status,
@@ -271,3 +273,37 @@ SELECT
 FROM public.integracoes_telemetria it;
 
 GRANT SELECT ON public.status_integracoes TO authenticated;
+
+
+-- 7. TABELA DE APONTAMENTOS DE AUDITORIA E DIVERGÊNCIA DE IA (RF20 / ASVS Nível 2 - Achado N-13)
+CREATE TABLE IF NOT EXISTS public.apontamentos_ia (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    evento_id TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    observacao TEXT,
+    protocolo_sei TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT pg_catalog.now()
+);
+
+ALTER TABLE public.apontamentos_ia ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Insercao de apontamentos por usuarios autenticados" ON public.apontamentos_ia;
+CREATE POLICY "Insercao de apontamentos por usuarios autenticados"
+ON public.apontamentos_ia FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = usuario_id OR usuario_id IS NULL);
+
+DROP POLICY IF EXISTS "Leitura de apontamentos por administradores e autor" ON public.apontamentos_ia;
+CREATE POLICY "Leitura de apontamentos por administradores e autor"
+ON public.apontamentos_ia FOR SELECT
+TO authenticated
+USING (
+    auth.uid() = usuario_id OR
+    EXISTS (
+        SELECT 1 FROM public.perfis_usuarios pu
+        WHERE pu.id = auth.uid() AND pu.role = 'ADMIN'
+    )
+);
+
+GRANT SELECT, INSERT ON public.apontamentos_ia TO authenticated;

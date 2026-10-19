@@ -5,12 +5,9 @@ Elimina endpoints presumidos e retorna NOT_CONFIGURED até fornecimento de docum
 """
 
 from typing import Optional
+
 from pumip_worker.config import config
-from pumip_worker.modelos import (
-    Processo,
-    ResultadoColeta,
-    ResultadoColetaTipo
-)
+from pumip_worker.modelos import Processo, ResultadoColeta, ResultadoColetaTipo
 
 
 class StartGovFonte:
@@ -24,7 +21,10 @@ class StartGovFonte:
             return ResultadoColeta(
                 tipo=ResultadoColetaTipo.NOT_CONFIGURED,
                 fonte=self.nome,
-                erro="Integração StartGov aguardando documentação oficial de API e credenciais contratuais."
+                erro=(
+                    "Integração StartGov aguardando documentação oficial de API "
+                    "e credenciais contratuais."
+                )
             )
 
         return ResultadoColeta(

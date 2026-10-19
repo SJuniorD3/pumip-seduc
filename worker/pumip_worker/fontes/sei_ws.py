@@ -6,12 +6,9 @@ Retorna NOT_CONFIGURED até fornecimento das credenciais e WSDL oficiais pela AT
 """
 
 from typing import Optional
+
 from pumip_worker.config import config
-from pumip_worker.modelos import (
-    Processo,
-    ResultadoColeta,
-    ResultadoColetaTipo
-)
+from pumip_worker.modelos import Processo, ResultadoColeta, ResultadoColetaTipo
 
 
 class SEIWSFonte:
@@ -26,7 +23,10 @@ class SEIWSFonte:
             return ResultadoColeta(
                 tipo=ResultadoColetaTipo.NOT_CONFIGURED,
                 fonte=self.nome,
-                erro="WebService SOAP do SEI! aguardando fornecimento formal de WSDL e credenciais pela ATI-MA."
+                erro=(
+                    "WebService SOAP do SEI! aguardando fornecimento formal "
+                    "de WSDL e credenciais pela ATI-MA."
+                )
             )
 
         # TODO: Quando o cadastro de sistema integrador for liberado pela ATI-MA,

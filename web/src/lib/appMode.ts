@@ -7,9 +7,8 @@
 export type AppMode = 'demo' | 'production';
 
 export function getAppMode(): AppMode {
-  const mode = process.env.NEXT_PUBLIC_PUMIP_MODE;
-  if (mode === 'production') return 'production';
-  return 'demo'; // Padrão seguro para desenvolvimento
+  // REMEDIAÇÃO N-06: Produção é o padrão estrito. Modo demo exige valor explícito.
+  return process.env.NEXT_PUBLIC_PUMIP_MODE === 'demo' ? 'demo' : 'production';
 }
 
 export function isDemoMode(): boolean {

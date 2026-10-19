@@ -1,10 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { supabase, isSupabaseConfigured } from '../../../lib/supabase';
+import { criarClienteServidor } from '../../../lib/supabase/server';
+import { isSupabaseConfigured } from '../../../lib/supabase';
+import { obterPerfil } from '../../../lib/auth/perfil';
 
 /**
  * PUMIP-SEDUC: API de Sincronização Manual com o Worker (RF08 / OPS-02)
  * Aciona o worker agendando verificação imediata (prioridade QUENTE e proxima_verificacao = now).
- * Aplica trava anti-sobrecarga (cooldown de 15 minutos) validada no servidor.
+ * Aplica trava anti-sobrecarga (cooldown de 15 minutos) e autorização RLS via usuario_pode_ver_processo.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +20,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // REMEDIAÇÃO N-04: Autenticação obrigatória com obterPerfil()
+    const user = await obterPerfil();
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Não autenticado. Sessão necessária para acionar sincronização.' },
+        { status: 401 }
+      );
+    }
+
     if (!isSupabaseConfigured()) {
       // Modo demonstração: simula agendamento com sucesso
       return NextResponse.json({
@@ -26,6 +37,23 @@ export async function POST(request: NextRequest) {
         mensagem: 'Sincronização solicitada em modo demonstração.',
         proxima_verificacao: new Date().toISOString()
       });
+    }
+
+    const supabase = criarClienteServidor();
+
+    // REMEDIAÇÃO N-04: Validação de autorização com RPC usuario_pode_ver_processo
+    if (user.id) {
+      const { data: podeVer, error: permError } = await supabase.rpc('usuario_pode_ver_processo', {
+        p_usuario: user.id,
+        p_processo: processoId
+      });
+
+      if (permError || !podeVer) {
+        return NextResponse.json(
+          { error: 'Acesso negado: você não possui permissão para visualizar ou sincronizar este processo.' },
+          { status: 403 }
+        );
+      }
     }
 
     // Consulta estado atual do processo e última verificação

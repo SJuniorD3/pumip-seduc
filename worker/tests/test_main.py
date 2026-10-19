@@ -44,7 +44,11 @@ class TestOrquestracaoWorker(unittest.TestCase):
         # Repositório simulado
         mock_repo = MagicMock(spec=WorkerRepositorio)
         mock_repo.obter_processos_candidatos.return_value = [
-            Processo(id="p1", protocolo_sei="SEI-021001/004521/2026", hash_ultimo_estado="hash_antigo")
+            Processo(
+                id="p1",
+                protocolo_sei="SEI-021001/004521/2026",
+                hash_ultimo_estado="hash_antigo"
+            )
         ]
         mock_repo.registrar_andamento_rpc.return_value = True
         mock_repo.listar_regras_alertas.return_value = []
@@ -56,6 +60,16 @@ class TestOrquestracaoWorker(unittest.TestCase):
         self.assertNotEqual(res["execucao_id"], "")
         self.assertEqual(res["sucessos_por_fonte"]["PNCP"], 1)
         self.assertTrue(mock_repo.registrar_andamento_rpc.called)
+
+    def test_usuario_pode_ver_processo_falha_fechada(self):
+        # Achado N-07: Falha em RPC deve retornar False (Fail-Closed) e suprimir alerta
+        mock_supabase = MagicMock()
+        mock_supabase.rpc.side_effect = Exception("Conexão com PostgreSQL recusada")
+
+        repo = WorkerRepositorio(supabase_client=mock_supabase)
+        pode_ver = repo.usuario_pode_ver_processo("u1", "p1")
+
+        self.assertFalse(pode_ver)
 
 
 if __name__ == "__main__":

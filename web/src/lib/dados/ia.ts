@@ -1,6 +1,6 @@
 /**
  * PUMIP-SEDUC: Camada de Acesso a Dados — Auditoria e Feedback de IA (RF20 / ASVS Nível 2)
- * Persiste apontamentos de divergência (alucinações, omissões ou erros factuais) na tabela auditoria_log.
+ * Persiste apontamentos de divergência na tabela dedicada apontamentos_ia com RLS (Achado N-13).
  */
 
 import { supabase, isSupabaseConfigured } from '../supabase';
@@ -20,18 +20,13 @@ export async function registrarDivergenciaIABanco(dados: ApontamentoDivergenciaI
 
   try {
     const { error } = await supabase
-      .from('auditoria_log')
+      .from('apontamentos_ia')
       .insert({
         usuario_id: (dados.usuarioId && dados.usuarioId.length === 36) ? dados.usuarioId : null,
-        acao: 'DIVERGENCIA_IA_RF20',
-        entidade: 'historico_tramitacoes',
-        entidade_id: dados.eventoId,
-        dados: {
-          tipo: dados.tipoDivergencia,
-          observacao: dados.observacao || '',
-          protocolo_sei: dados.protocoloSei || '',
-          registrado_em: new Date().toISOString()
-        }
+        evento_id: dados.eventoId,
+        tipo: dados.tipoDivergencia,
+        observacao: dados.observacao || '',
+        protocolo_sei: dados.protocoloSei || ''
       });
 
     if (error) {

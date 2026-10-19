@@ -28,13 +28,11 @@ SELECT lives_ok(
 
 -- Teste 4: Gatilho automático de auditoria registra alteração no banco
 INSERT INTO public.notas_internas (
-    id, processo_id, autor_id, autor_nome, autor_cargo, texto
+    id, processo_id, autor_id, conteudo
 ) VALUES (
     '20000000-0000-0000-0000-000000000001',
     '10000000-0000-0000-0000-000000000001',
     'aaaaaaaa-0000-0000-0000-000000000001',
-    'Servidor Exemplo',
-    'Técnico',
     'Nota de teste para verificar gatilho de auditoria'
 );
 

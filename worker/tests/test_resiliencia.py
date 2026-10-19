@@ -39,7 +39,9 @@ class TestResilienciaCircuitBreaker(unittest.TestCase):
 
         # Simula 5 falhas no StartGov
         for _ in range(5):
-            gerenciador.registrar_resultado("STARTGOV", sucesso=False, motivo="503 Service Unavailable")
+            gerenciador.registrar_resultado(
+                "STARTGOV", sucesso=False, motivo="503 Service Unavailable"
+            )
 
         self.assertFalse(gerenciador.pode_executar("STARTGOV"))
         # As outras fontes continuam operacionais

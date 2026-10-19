@@ -3,17 +3,18 @@ PUMIP-SEDUC: Camada de Persistência e Acesso ao Banco (Repositório)
 Conforme Seção 6.1 e 10.2 do Relatório de Auditoria Técnica (@Cpacesso).
 """
 
-from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+
 try:
-    from supabase import create_client, Client
+    from supabase import Client, create_client
 except ImportError:
     create_client = None
     Client = None
 
 from pumip_worker.config import config
 from pumip_worker.log import logger
-from pumip_worker.modelos import Processo, EventoFonte
+from pumip_worker.modelos import EventoFonte, Processo
 
 
 class WorkerRepositorio:
@@ -69,10 +70,11 @@ class WorkerRepositorio:
         proxima_verificacao: Optional[str] = None
     ) -> bool:
         """
-        Executa a gravação atômica via função registrar_andamento_sincronizacao (Migração 003).
+        Executa a gravação atômica via registrar_andamento_sincronizacao (Migração 003).
         Retorna True somente se um novo andamento inédito foi inserido no histórico.
         """
         try:
+            agora = datetime.now(timezone.utc).isoformat()
             rpc_params = {
                 "p_processo_id": processo_id,
                 "p_origem": evento.origem,
@@ -85,7 +87,7 @@ class WorkerRepositorio:
                 "p_hash_evento": evento.hash_evento,
                 "p_metadados": evento.metadados,
                 "p_nova_unidade_sei": nova_unidade_sei,
-                "p_proxima_verificacao": proxima_verificacao or datetime.now(timezone.utc).isoformat()
+                "p_proxima_verificacao": proxima_verificacao or agora,
             }
 
             res = self.supabase.rpc("registrar_andamento_sincronizacao", rpc_params).execute()
@@ -103,10 +105,12 @@ class WorkerRepositorio:
             ).execute()
             return res.data is True
         except Exception as e:
-            logger.warning(f"Erro ao verificar visibilidade de processo: {e}. Permitindo por contingência.")
-            return True
+            logger.error(f"Falha ao verificar visibilidade, alerta suprimido: {e}")
+            return False
 
-    def listar_regras_alertas(self, processo_id: str, unidade_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def listar_regras_alertas(
+        self, processo_id: str, unidade_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Consulta regras ativas na tabela alertas_configurados para o escopo do processo."""
         try:
             query = self.supabase.table("alertas_configurados").select(
@@ -128,7 +132,7 @@ class WorkerRepositorio:
             return []
 
     def registrar_execucao_rodada(self, resumo: Dict[str, Any]) -> bool:
-        """Persiste telemetria da rodada de sincronização na tabela execucoes_coleta (Migração 006)."""
+        """Persiste telemetria da rodada na tabela execucoes_coleta (Migração 006)."""
         if not self.supabase:
             return False
         try:

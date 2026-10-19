@@ -4,8 +4,8 @@ Conforme Seção 6.6 do Relatório de Auditoria Técnica (@Cpacesso).
 """
 
 import time
-from typing import Dict, Any, Optional
-from datetime import datetime, timezone
+from typing import Dict, Optional
+
 from pumip_worker.config import config
 
 
@@ -53,7 +53,9 @@ class GerenciadorResiliencia:
             return True
         return not cb.is_aberto()
 
-    def registrar_resultado(self, fonte: str, sucesso: bool, motivo: Optional[str] = None) -> None:
+    def registrar_resultado(
+        self, fonte: str, sucesso: bool, motivo: Optional[str] = None
+    ) -> None:
         cb = self.circuitos.get(fonte)
         if not cb:
             cb = CircuitBreakerStatus(fonte)

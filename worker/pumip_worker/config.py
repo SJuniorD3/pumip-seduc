@@ -5,6 +5,7 @@ Conforme Seção 6.1 do Relatório de Auditoria Técnica (@Cpacesso).
 
 import os
 from typing import Optional
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -14,11 +15,17 @@ except ImportError:
 
 class WorkerConfig:
     def __init__(self) -> None:
-        self.supabase_url: str = os.getenv("SUPABASE_URL", "https://placeholder.supabase.co")
-        self.supabase_service_role_key: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "placeholder-key")
+        self.supabase_url: str = os.getenv(
+            "SUPABASE_URL", "https://placeholder.supabase.co"
+        )
+        self.supabase_service_role_key: str = os.getenv(
+            "SUPABASE_SERVICE_ROLE_KEY", "placeholder-key"
+        )
         self.app_secret_encryption_key: Optional[str] = os.getenv("APP_SECRET_ENCRYPTION_KEY")
         self.resend_api_key: Optional[str] = os.getenv("RESEND_API_KEY")
-        self.remetente_email: str = os.getenv("ALERTA_REMETENTE_EMAIL", "alertas-pumip@seduc.ma.gov.br")
+        self.remetente_email: str = os.getenv(
+            "ALERTA_REMETENTE_EMAIL", "alertas-pumip@seduc.ma.gov.br"
+        )
         self.seduc_cnpj: str = os.getenv("SEDUC_CNPJ", "06354468000130")
         self.pncp_base_url: str = os.getenv("PNCP_BASE_URL", "https://pncp.gov.br/api/consulta")
         self.sei_ws_url: Optional[str] = os.getenv("SEI_WS_URL")
@@ -31,7 +38,6 @@ class WorkerConfig:
     def validate_keys(self) -> None:
         """Garante que a chave de criptografia Fernet esteja definida em ambientes produtivos."""
         if not self.app_secret_encryption_key:
-            # Em contingência local de desenvolvimento, alerta sem bloquear execução de testes
             pass
 
 

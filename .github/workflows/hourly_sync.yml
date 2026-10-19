@@ -55,5 +55,6 @@ jobs:
           STARTGOV_CLIENT_SECRET: ${{ secrets.STARTGOV_CLIENT_SECRET }}
           APP_SECRET_ENCRYPTION_KEY: ${{ secrets.APP_SECRET_ENCRYPTION_KEY }}
           FORCE_MODE: ${{ inputs.force_mode || false }}
+        working-directory: worker
         run: |
-          python worker/sync_engine.py
+          python -m pumip_worker.main

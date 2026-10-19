@@ -4,8 +4,9 @@ Conforme Seção 6.4 do Relatório de Auditoria Técnica (@Cpacesso).
 """
 
 import re
-from typing import Optional, List
-from pumip_worker.modelos import Processo, ContratoPNCP
+from typing import List, Optional
+
+from pumip_worker.modelos import ContratoPNCP, Processo
 
 
 def normalizar_protocolo(texto: Optional[str]) -> str:
@@ -16,7 +17,9 @@ def normalizar_protocolo(texto: Optional[str]) -> str:
     """
     if not texto:
         return ""
-    limpo = re.sub(r"^(SEI|STARTGOV|PNCP|PROC)[\s\-_:]*", "", texto.strip(), flags=re.IGNORECASE)
+    limpo = re.sub(
+        r"^(SEI|STARTGOV|PNCP|PROC)[\s\-_:]*", "", texto.strip(), flags=re.IGNORECASE
+    )
     return re.sub(r"[^A-Za-z0-9]", "", limpo).upper()
 
 
@@ -40,7 +43,9 @@ def vincular_contrato_a_processos(
         proc_sei_norm = normalizar_protocolo(proc.protocolo_sei)
         proc_sg_norm = normalizar_protocolo(proc.protocolo_startgov)
 
-        if contrato_proc_norm == proc_sei_norm or (proc_sg_norm and contrato_proc_norm == proc_sg_norm):
+        if contrato_proc_norm == proc_sei_norm:
+            return proc
+        if proc_sg_norm and contrato_proc_norm == proc_sg_norm:
             return proc
 
     return None

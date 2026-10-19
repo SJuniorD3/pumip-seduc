@@ -123,4 +123,26 @@ describe('Segurança de Aplicação e RLS (OWASP Top 10 - Broken Access Control)
     assert.strictEqual(neutralizarCelula('@SUM(1+1)'), "'@SUM(1+1)", 'Anotação iniciada por @ deve ser neutralizada');
     assert.strictEqual(neutralizarCelula('SEI-021001/004521/2026'), 'SEI-021001/004521/2026', 'Texto comum não deve ser alterado');
   });
+
+  test('Configuração de Modo Seguro (N-06): Padrão obrigatório é produção quando variável ausente', async () => {
+    const { getAppMode, isDemoMode, isProductionMode } = await import('../src/lib/appMode');
+    const originalEnv = process.env.NEXT_PUBLIC_PUMIP_MODE;
+    try {
+      delete process.env.NEXT_PUBLIC_PUMIP_MODE;
+      assert.strictEqual(getAppMode(), 'production', 'Sem variável definida, deve obrigatoriamente operar em production');
+      assert.strictEqual(isProductionMode(), true);
+      assert.strictEqual(isDemoMode(), false);
+
+      process.env.NEXT_PUBLIC_PUMIP_MODE = 'demo';
+      assert.strictEqual(getAppMode(), 'demo', 'Apenas com valor estrito demo deve operar em demonstração');
+      assert.strictEqual(isDemoMode(), true);
+      assert.strictEqual(isProductionMode(), false);
+    } finally {
+      if (originalEnv !== undefined) {
+        process.env.NEXT_PUBLIC_PUMIP_MODE = originalEnv;
+      } else {
+        delete process.env.NEXT_PUBLIC_PUMIP_MODE;
+      }
+    }
+  });
 });

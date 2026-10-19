@@ -3,9 +3,10 @@ PUMIP-SEDUC: Motor de Avaliação dos Cinco Gatilhos de Alerta
 Conforme Seção 6.5 do Relatório de Auditoria Técnica (@Cpacesso).
 """
 
-from typing import Dict, Any, Optional
 from datetime import datetime, timezone
-from pumip_worker.modelos import Processo, EventoFonte
+from typing import Any, Dict, Optional
+
+from pumip_worker.modelos import EventoFonte, Processo
 
 
 def avaliar_gatilho_inercia_sla(
@@ -16,9 +17,13 @@ def avaliar_gatilho_inercia_sla(
     Gatilho 1: Inércia de SLA.
     Dispara quando os dias úteis parado (calculados no banco) atingem ou superam o limite.
     """
-    limite_dias = int(alerta_parametros.get("dias_limite", alerta_parametros.get("limite_dias", 10)))
+    limite_padrao = alerta_parametros.get("limite_dias", 10)
+    limite_dias = int(alerta_parametros.get("dias_limite", limite_padrao))
     # Utiliza dias_uteis_parado conforme cálculo oficial da visão processos_com_inercia
-    dias_parado = processo.dias_uteis_parado if processo.dias_uteis_parado > 0 else processo.dias_parado_na_unidade
+    if processo.dias_uteis_parado > 0:
+        dias_parado = processo.dias_uteis_parado
+    else:
+        dias_parado = processo.dias_parado_na_unidade
     return dias_parado >= limite_dias
 
 
@@ -42,7 +47,7 @@ def avaliar_gatilho_vencimento_contrato(
         marcos = alerta_parametros.get("marcos_dias", [90, 60, 30])
         for marco in sorted(marcos):
             if dias_restantes <= marco:
-                return marco
+                return int(marco)
         return None
     except Exception:
         return None
@@ -68,11 +73,18 @@ def avaliar_gatilho_palavra_chave(
     """
     Gatilho 4: Palavra-chave no andamento ou documento anexado.
     """
-    termo = str(alerta_parametros.get("palavra_chave", alerta_parametros.get("termo", ""))).strip().lower()
+    termo_bruto = alerta_parametros.get(
+        "palavra_chave", alerta_parametros.get("termo", "")
+    )
+    termo = str(termo_bruto).strip().lower()
     if not termo:
         return False
 
-    conteudo = f"{evento.descricao_andamento} {evento.documento_anexado or ''} {evento.tipo_documento or ''}".lower()
+    conteudo = (
+        f"{evento.descricao_andamento} "
+        f"{evento.documento_anexado or ''} "
+        f"{evento.tipo_documento or ''}"
+    ).lower()
     return termo in conteudo
 
 

@@ -6,8 +6,6 @@
 
 [![CI Qualidade e Testes](https://github.com/SJuniorD3/pumip-seduc/actions/workflows/ci.yml/badge.svg)](https://github.com/SJuniorD3/pumip-seduc/actions/workflows/ci.yml)
 [![SAST & Secret Scanning](https://github.com/SJuniorD3/pumip-seduc/actions/workflows/security-scan.yml/badge.svg)](https://github.com/SJuniorD3/pumip-seduc/actions/workflows/security-scan.yml)
-[![Conformidade Lei 14.133/2021](https://img.shields.io/badge/Lei%2014.133%2F2021-Art.%20183%20Conforme-16a34a)](docs/adr/ADR-003-RLS-HIERARQUICO-DIAS-UTEIS.md)
-[![Acessibilidade e-MAG / WCAG](https://img.shields.io/badge/Acessibilidade-e--MAG%20%2F%20WCAG%202.2%20AA-2563eb)](docs/RIPD-LGPD.md)
 
 ---
 

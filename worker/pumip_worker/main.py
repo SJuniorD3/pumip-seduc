@@ -6,24 +6,19 @@ Conforme Seção 6.1 e 6.2 do Relatório de Auditoria Técnica (@Cpacesso).
 import sys
 import time
 import uuid
-from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-from pumip_worker.config import config
-from pumip_worker.log import configurar_logger, logger
-from pumip_worker.modelos import (
-    Processo,
-    ResultadoColetaTipo,
-    ResultadoColeta
-)
+from pumip_worker.alertas import avaliar_alerta
 from pumip_worker.fontes.base import FonteDados
 from pumip_worker.fontes.pncp import PNCPFonte
 from pumip_worker.fontes.sei_ws import SEIWSFonte
 from pumip_worker.fontes.startgov import StartGovFonte
+from pumip_worker.log import configurar_logger, logger
+from pumip_worker.modelos import ResultadoColetaTipo
+from pumip_worker.notificacao import disparar_notificacao_email
 from pumip_worker.repositorio import WorkerRepositorio
 from pumip_worker.resiliencia import resiliencia_global
-from pumip_worker.alertas import avaliar_alerta
-from pumip_worker.notificacao import disparar_notificacao_email
 
 
 def executar_rodada_coleta(
@@ -50,7 +45,9 @@ def executar_rodada_coleta(
     ]
 
     candidatos = repo.obter_processos_candidatos(limite=limite_processos)
-    logger.info(f"Identificados {len(candidatos)} processos candidatos para verificação de andamentos")
+    logger.info(
+        f"Identificados {len(candidatos)} processos candidatos para verificação de andamentos"
+    )
 
     total_analisados = 0
     novos_andamentos = 0
@@ -63,10 +60,12 @@ def executar_rodada_coleta(
         for fonte in lista_fontes:
             # Resiliência: Verifica se o circuito para esta fonte está fechado
             if not resiliencia_global.pode_executar(fonte.nome):
-                logger.warning(f"Circuito aberto para {fonte.nome}. Coleta suspensa temporariamente.")
+                logger.warning(
+                    f"Circuito aberto para {fonte.nome}. Coleta suspensa temporariamente."
+                )
                 continue
 
-            resultado: ResultadoColeta = fonte.coletar(proc)
+            resultado = fonte.coletar(proc)
 
             if resultado.tipo == ResultadoColetaTipo.SUCCESS and resultado.evento:
                 resiliencia_global.registrar_resultado(fonte.nome, sucesso=True)
@@ -74,15 +73,21 @@ def executar_rodada_coleta(
 
                 # Se o hash do evento for diferente do último registrado no processo
                 if resultado.evento.hash_evento != proc.hash_ultimo_estado:
+                    nova_unidade = (
+                        resultado.evento.unidade_setor if fonte.nome == "SEI" else None
+                    )
                     gravou_novo = repo.registrar_andamento_rpc(
                         processo_id=proc.id,
                         evento=resultado.evento,
-                        nova_unidade_sei=resultado.evento.unidade_setor if fonte.nome == "SEI" else None
+                        nova_unidade_sei=nova_unidade
                     )
 
                     if gravou_novo:
                         novos_andamentos += 1
-                        logger.info(f"Novo andamento registrado atomicamente para {proc.protocolo_sei} ({fonte.nome})")
+                        logger.info(
+                            f"Novo andamento registrado atomicamente para "
+                            f"{proc.protocolo_sei} ({fonte.nome})"
+                        )
 
                         # Avaliação de alertas configurados
                         regras = repo.listar_regras_alertas(proc.id, proc.unidade_origem_id)
@@ -106,21 +111,35 @@ def executar_rodada_coleta(
                                     # Valida autorização do destinatário via RLS unificada
                                     if repo.usuario_pode_ver_processo(usuario_id, proc.id):
                                         disparar_notificacao_email(
-                                          destinatario_email=email_dest,
-                                          destinatario_nome=nome_dest,
-                                          processo=proc,
-                                          evento=resultado.evento,
-                                          titulo_alerta=f"Alerta: {tipo_alerta}"
+                                            destinatario_email=email_dest,
+                                            destinatario_nome=nome_dest,
+                                            processo=proc,
+                                            evento=resultado.evento,
+                                            titulo_alerta=f"Alerta: {tipo_alerta}"
                                         )
 
-            elif resultado.tipo in (ResultadoColetaTipo.NO_CHANGE, ResultadoColetaTipo.NOT_CONFIGURED):
+            elif resultado.tipo in (
+                ResultadoColetaTipo.NO_CHANGE,
+                ResultadoColetaTipo.NOT_CONFIGURED
+            ):
                 resiliencia_global.registrar_resultado(fonte.nome, sucesso=True)
             else:
                 falhas_por_fonte[fonte.nome] += 1
-                resiliencia_global.registrar_resultado(fonte.nome, sucesso=False, motivo=resultado.erro)
+                resiliencia_global.registrar_resultado(
+                    fonte.nome, sucesso=False, motivo=resultado.erro
+                )
 
     concluida_em = datetime.now(timezone.utc).isoformat()
     duracao_ms = int((time.time() - t0) * 1000)
+
+    total_falhas = sum(falhas_por_fonte.values())
+    total_sucessos = sum(sucessos_por_fonte.values())
+    if total_falhas > 0 and total_sucessos == 0:
+        status_execucao = "FALHA"
+    elif total_falhas > 0:
+        status_execucao = "PARCIAL"
+    else:
+        status_execucao = "SUCESSO"
 
     resumo = {
         "execucao_id": execucao_id,
@@ -129,7 +148,7 @@ def executar_rodada_coleta(
         "duracao_ms": duracao_ms,
         "processos_analisados": total_analisados,
         "novos_andamentos": novos_andamentos,
-        "status": "SUCESSO" if sum(falhas_por_fonte.values()) == 0 else "PARCIAL",
+        "status": status_execucao,
         "sucessos_por_fonte": sucessos_por_fonte,
         "falhas_por_fonte": falhas_por_fonte
     }
@@ -139,11 +158,16 @@ def executar_rodada_coleta(
     except Exception as e:
         logger.warning(f"Não foi possível persistir telemetria em execucoes_coleta: {e}")
 
-    logger.info(f"Rodada concluída em {duracao_ms}ms. Processos analisados: {total_analisados}, novos andamentos: {novos_andamentos}")
+    logger.info(
+        f"Rodada concluída em {duracao_ms}ms. "
+        f"Processos analisados: {total_analisados}, novos andamentos: {novos_andamentos}"
+    )
 
     return resumo
 
 
 if __name__ == "__main__":
     res = executar_rodada_coleta()
+    if res.get("status") == "FALHA":
+        sys.exit(1)
     sys.exit(0)

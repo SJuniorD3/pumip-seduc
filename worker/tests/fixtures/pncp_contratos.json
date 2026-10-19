@@ -1,25 +1,35 @@
 {
   "data": [
     {
-      "numeroControlePNCP": "06354468000130-1-000045/2026",
-      "numeroProcesso": "SEI-021001/004521/2026",
-      "objeto": "Aquisição de Switches e Equipamentos de Conectividade para Unidades Escolares da Rede Estadual",
+      "numeroControlePNCP": "12345678000199-1-000045/2026",
+      "processo": "SEI-021001/004521/2026",
+      "objetoCompra": "Aquisição de Switches e Equipamentos de Conectividade para Unidades Escolares da Rede Estadual",
       "modalidadeNome": "Pregão Eletrônico (Lei 14.133/2021)",
       "dataPublicacaoPncp": "2026-10-10T14:00:00Z",
       "dataVigenciaFim": "2026-12-31T23:59:59Z",
       "valorGlobal": 2450000.00
     },
     {
-      "numeroControlePNCP": "06354468000130-1-000046/2026",
-      "numeroProcesso": "021001.007812/2026",
-      "objeto": "Contratação de Serviços Especializados de Nuvem Governamental e Banco de Dados",
+      "numeroControlePNCP": "12345678000199-1-000046/2026",
+      "processo": "021001.007812/2026",
+      "objetoCompra": "Contratação de Serviços Especializados de Nuvem Governamental e Banco de Dados",
       "modalidadeNome": "Concorrência Pública",
       "dataPublicacaoPncp": "2026-10-12T09:30:00Z",
       "dataVigenciaFim": "2027-10-12T23:59:59Z",
       "valorGlobal": 1890000.00
+    },
+    {
+      "numeroControlePNCP": "12345678000199-1-000099/2026",
+      "processo": "099999/999999/2026",
+      "objetoCompra": "Reforma e Manutenção Predial de Imóvel Público Descentralizado",
+      "modalidadeNome": "Dispensa de Licitação",
+      "dataPublicacaoPncp": "2026-10-15T11:00:00Z",
+      "dataVigenciaFim": "2027-01-15T23:59:59Z",
+      "valorGlobal": 45000.00
     }
   ],
-  "totalRegistros": 2,
+  "totalRegistros": 3,
   "totalPaginas": 1,
-  "numeroPagina": 1
+  "numeroPagina": 1,
+  "paginasRestantes": 0
 }

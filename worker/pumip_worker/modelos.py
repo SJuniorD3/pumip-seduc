@@ -3,10 +3,10 @@ PUMIP-SEDUC: Modelos de Dados Tipados do Worker (Pydantic / dataclasses)
 Conforme Seção 6.1 e 6.2 do Relatório de Auditoria Técnica (@Cpacesso).
 """
 
-from enum import Enum
-from typing import Dict, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class ResultadoColetaTipo(str, Enum):
@@ -66,4 +66,6 @@ class Processo:
     dias_parado_na_unidade: int = 0
     dias_uteis_parado: int = 0
     hash_ultimo_estado: Optional[str] = None
-    ultima_movimentacao_em: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    ultima_movimentacao_em: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )

@@ -57,8 +57,12 @@ jobs:
 
       - name: Validação de Sintaxe e Compilação Bytecode
         run: |
-          python -m py_compile worker/sync_engine.py
           python -m py_compile worker/pumip_worker/*.py worker/pumip_worker/fontes/*.py
+
+      - name: Verificação Estática de Tipos e Estilo (Ruff & Mypy)
+        run: |
+          ruff check worker/pumip_worker worker/tests
+          mypy --strict worker/pumip_worker
 
       - name: Executar Testes Unitários e de Contrato (pytest)
         run: |

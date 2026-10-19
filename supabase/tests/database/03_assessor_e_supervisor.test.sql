@@ -35,7 +35,7 @@ SELECT is(
 -- 3. Concessão temporária de acesso para o processo 003
 RESET ROLE;
 INSERT INTO public.processos_acessos_concedidos (
-    processo_id, usuario_id, concedido_por, motivo, data_inicio, data_fim, ativo
+    processo_id, usuario_id, concedido_por_id, motivo, data_inicio, data_fim, ativo
 ) VALUES (
     '10000000-0000-0000-0000-000000000003',
     'aaaaaaaa-0000-0000-0000-000000000003',
