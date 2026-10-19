@@ -6,6 +6,8 @@ import {
   OrigemSistema 
 } from '../lib/types';
 import { triggerPrintPDF } from '../lib/exportUtils';
+import { useAuth } from '../lib/authContext';
+import { registrarDivergenciaIABanco } from '../lib/dados/ia';
 import { 
   FileText, 
   Sparkles, 
@@ -38,6 +40,7 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
   protocoloSei,
   protocoloStartGov
 }) => {
+  const { user } = useAuth();
   const [resumosIncorretos, setResumosIncorretos] = useState<Record<string, { tipo: string; observacao?: string }>>({});
   const [visaoFiltro, setVisaoFiltro] = useState<'CRITICOS' | 'TODOS'>('CRITICOS');
   
@@ -58,6 +61,15 @@ export const MetroTimeline: React.FC<MetroTimelineProps> = ({
   const handleConfirmarFeedback = (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetEventoId) return;
+
+    // Persistência no banco Supabase (auditoria_log) para conformidade RF20
+    registrarDivergenciaIABanco({
+      eventoId: targetEventoId,
+      protocoloSei,
+      tipoDivergencia,
+      observacao: observacaoTexto.trim(),
+      usuarioId: user?.id
+    }).catch(() => {});
 
     setResumosIncorretos((prev) => ({
       ...prev,

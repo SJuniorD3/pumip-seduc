@@ -243,6 +243,86 @@ class PUMIPSyncManager:
 
 
 # ==============================================================================
+# PIPELINE DE SÍNTESE INTELIGENTE (RF20 / ASVS NÍVEL 2)
+# ==============================================================================
+def generate_resumo_ia(
+    descricao: str,
+    documento: Optional[str] = None,
+    tipo_documento: Optional[str] = None
+) -> Optional[str]:
+    """
+    Pipeline de Síntese Inteligente de Andamentos Administrativos (RF20 / ASVS Nível 2).
+    1. Se LLM_API_URL estiver configurada (ex: Ollama, vLLM ou gateway local), consulta endpoint com timeout estrito de 3s.
+    2. Fallback determinístico baseado em ontologia de compras e contratações públicas da Lei 14.133/2021.
+    """
+    texto_base = f"{tipo_documento or ''} {documento or ''} {descricao or ''}".strip()
+    if not texto_base:
+        return None
+
+    # 1. Consulta opcional a LLM local se LLM_API_URL estiver configurada
+    llm_url = os.getenv("LLM_API_URL")
+    if llm_url:
+        try:
+            prompt = (
+                "Você é um auditor especialista em contratações públicas. "
+                "Resuma o andamento processual abaixo em uma única frase técnica, factual e concisa (máximo 140 caracteres), "
+                f"sem inventar fatos:\n{texto_base[:600]}"
+            )
+            with httpx.Client(timeout=3.0) as client:
+                resp = client.post(
+                    llm_url,
+                    json={
+                        "model": os.getenv("LLM_MODEL", "llama3"),
+                        "prompt": prompt,
+                        "stream": False
+                    }
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    resumo = data.get("response") or data.get("text") or (data.get("choices", [{}])[0].get("message", {}).get("content"))
+                    if resumo and len(resumo.strip()) > 10:
+                        return resumo.strip()[:180]
+        except Exception as e:
+            logger.debug(f"[IA] LLM_API_URL indisponível ({e}). Ativando síntese determinística.")
+
+    # 2. Heurística determinística de contratações públicas (Lei 14.133/2021 / Decreto Estadual)
+    norm = texto_base.upper()
+
+    if any(k in norm for k in ["PARECER", "JURÍDICO", "JURIDICO", "PROCURADORIA", "ASJUR", "CONJUR"]):
+        return "Análise jurídica conclusiva referente à conformidade processual da contratação pública."
+    if any(k in norm for k in ["EDITAL", "AVISO DE LICITAÇÃO", "AVISO DE LICITACAO", "CONVOCATÓRIO"]):
+        return "Publicação de instrumento convocatório do certame licitatório para ampla concorrência."
+    if any(k in norm for k in ["TERMO DE REFERÊNCIA", "TERMO DE REFERENCIA", "PROJETO BÁSICO", "PROJETO BASICO"]):
+        return "Definição de especificações técnicas, quantitativos e critérios de aceitabilidade da demanda."
+    if any(k in norm for k in ["ESTUDO TÉCNICO", "ESTUDO TECNICO", "ETP"]):
+        return "Estudo Técnico Preliminar aprovado delineando a viabilidade técnica e econômica da solução."
+    if any(k in norm for k in ["HOMOLOGAÇÃO", "HOMOLOGACAO", "ADJUDICAÇÃO", "ADJUDICACAO"]):
+        return "Ato de adjudicação do objeto e homologação do resultado licitatório pela autoridade competente."
+    if any(k in norm for k in ["NOTA DE EMPENHO", "EMPENHO"]):
+        return "Emissão de nota de empenho garantindo a reserva orçamentária para a despesa."
+    if any(k in norm for k in ["CONTRATO", "ASSINATURA", "EXTRATO CONTRATUAL"]):
+        return "Celebração formal do instrumento contratual entre a SEDUC e a contratada."
+    if any(k in norm for k in ["ORDEM DE SERVIÇO", "ORDEM DE FORNECIMENTO", "ORDEM DE SERVICO"]):
+        return "Emissão de ordem de início para fornecimento de bens ou prestação de serviços."
+    if any(k in norm for k in ["LIQUIDAÇÃO", "LIQUIDACAO", "PAGAMENTO", "ATESTO"]):
+        return "Execução da liquidação e ordem de pagamento após atesto dos serviços ou fornecimento."
+    if any(k in norm for k in ["PORTARIA"]):
+        return "Designação formal ou ato normativo publicado para condução do procedimento."
+    if any(k in norm for k in ["AUTORIZAÇÃO", "AUTORIZACAO", "DESPACHO DECISÓRIO", "DESPACHO DECISORIO"]):
+        return "Autorização da autoridade competente para prosseguimento do procedimento administrativo."
+    if any(k in norm for k in ["PNCP"]):
+        return "Certame registrado e publicado no Portal Nacional de Contratações Públicas."
+
+    # Síntese extrativa de texto descritivo longo
+    if len(descricao) > 25:
+        primeira_frase = descricao.split(".")[0].strip()
+        if len(primeira_frase) > 10:
+            return f"Registro administrativo: {primeira_frase[:140]}."
+
+    return None
+
+
+# ==============================================================================
 # ADAPTADORES DAS FONTES (SEI & STARTGOV)
 # ==============================================================================
 class BaseScraperAdapter:
@@ -425,7 +505,7 @@ class StartGovScraperAdapter(BaseScraperAdapter):
                     "descricao": texto_andamento,
                     "documento": dados.get("documento"),
                     "tipo_documento": dados.get("tipo_documento"),
-                    "resumo_ia": None
+                    "resumo_ia": generate_resumo_ia(texto_andamento, dados.get("documento"), dados.get("tipo_documento"))
                 }
             }
         except Exception as e:
@@ -520,7 +600,11 @@ class PNCPScraperAdapter(BaseScraperAdapter):
                     "descricao": f"Publicação no PNCP: {modalidade} - {objeto[:120]}",
                     "documento": f"Controle {numero_controle}",
                     "tipo_documento": "EDITAL_PNCP",
-                    "resumo_ia": "Certame publicado sob a Lei 14.133/2021 no Portal Nacional de Contratações Públicas."
+                    "resumo_ia": generate_resumo_ia(
+                        f"Publicação no PNCP: {modalidade} - {objeto[:120]}",
+                        f"Controle {numero_controle}",
+                        "EDITAL_PNCP"
+                    ) or "Certame publicado sob a Lei 14.133/2021 no Portal Nacional de Contratações Públicas."
                 }
             }
         except Exception as e:
@@ -659,6 +743,12 @@ def process_delta_and_alerts(
 
     metadados_dict = {"coletado_em": agora.isoformat(), "origem_adapter": origem}
 
+    resumo_ia_final = novo_evento.get("resumo_ia") or generate_resumo_ia(
+        descricao,
+        novo_evento.get("documento"),
+        novo_evento.get("tipo_documento")
+    )
+
     rpc_params = {
         "p_processo_id": processo["id"],
         "p_origem": origem,
@@ -667,7 +757,7 @@ def process_delta_and_alerts(
         "p_descricao_andamento": descricao,
         "p_documento_anexado": novo_evento.get("documento"),
         "p_tipo_documento": novo_evento.get("tipo_documento"),
-        "p_resumo_ia": novo_evento.get("resumo_ia"),
+        "p_resumo_ia": resumo_ia_final,
         "p_hash_evento": novo_hash,
         "p_metadados": metadados_dict,
         "p_nova_unidade_sei": nova_unidade,
