@@ -85,3 +85,8 @@ jobs:
       - name: Validação de Sintaxe e Compilação
         run: |
           python -m py_compile worker/sync_engine.py
+          python -m py_compile worker/pumip_worker/*.py worker/pumip_worker/fontes/*.py
+
+      - name: Executar Testes Unitários e de Contrato (pytest)
+        run: |
+          PYTHONPATH=worker pytest worker/tests/
