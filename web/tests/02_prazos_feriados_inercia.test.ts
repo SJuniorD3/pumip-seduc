@@ -5,6 +5,11 @@ import {
   getFeriadosAno, 
   calcularPermanenciaDetelhada 
 } from '../src/lib/diasUteis';
+import { 
+  classificarInercia, 
+  isSlaEstourado, 
+  SLA_CONFIG 
+} from '../src/lib/slaConfig';
 
 describe('Cálculo de Prazos, Feriados e Inércia Processual (RF04 / Lei 14.133/2021)', () => {
   test('Algoritmo Meeus/Jones/Butcher: Cálculo astronômico exato da Páscoa', () => {
@@ -98,18 +103,19 @@ describe('Cálculo de Prazos, Feriados e Inércia Processual (RF04 / Lei 14.133/
   });
 
   test('Classificação de Inércia Processual da SEDUC (SLA e Alertas)', () => {
-    function classificarInercia(diasUteis: number): 'NORMAL' | 'ATENCAO' | 'CRITICO' {
-      if (diasUteis >= 10) return 'CRITICO'; // Vermelho: Processo Travado
-      if (diasUteis >= 5) return 'ATENCAO';  // Amarelo: Alerta de Inércia
-      return 'NORMAL';                       // Verde: Em tramitação regular
-    }
+    assert.strictEqual(SLA_CONFIG.META_DIAS_UTEIS, 5);
+    assert.strictEqual(SLA_CONFIG.LIMIAR_CRITICO, 10);
 
-    assert.strictEqual(classificarInercia(2), 'NORMAL');
-    assert.strictEqual(classificarInercia(4), 'NORMAL');
+    assert.strictEqual(classificarInercia(2), 'REGULAR');
+    assert.strictEqual(classificarInercia(4), 'REGULAR');
     assert.strictEqual(classificarInercia(5), 'ATENCAO');
     assert.strictEqual(classificarInercia(9), 'ATENCAO');
     assert.strictEqual(classificarInercia(10), 'CRITICO');
     assert.strictEqual(classificarInercia(25), 'CRITICO');
+
+    assert.strictEqual(isSlaEstourado(4), false);
+    assert.strictEqual(isSlaEstourado(5), true);
+    assert.strictEqual(isSlaEstourado(12), true);
   });
 
   test('Resiliência a Fusos Horários (America/Fortaleza UTC-3) e Validação de Entradas Inválidas (NaN)', () => {

@@ -10,6 +10,7 @@ import { Breadcrumb } from '../../../components/Breadcrumb';
 import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { useAuth } from '../../../lib/authContext';
 import { filterProcessosByRLS } from '../../../lib/rlsFilter';
+import { getSemaforoInercia, isSlaEstourado } from '../../../lib/slaConfig';
 import { 
   ArrowLeft, 
   Building, 
@@ -144,32 +145,6 @@ export default function ProcessoDetalhePage() {
     }
   };
 
-  // Semáforo de Inércia (3 Níveis)
-  const getSemaforo = (dias: number) => {
-    if (dias >= 7) {
-      return {
-        dot: 'bg-red-500 animate-pulse',
-        text: 'text-red-700',
-        bg: 'bg-red-50 border-red-200',
-        label: 'Gargalo Crítico (7+ dias sem tramitação)'
-      };
-    }
-    if (dias >= 4) {
-      return {
-        dot: 'bg-amber-500',
-        text: 'text-amber-700',
-        bg: 'bg-amber-50 border-amber-200',
-        label: 'Atenção (4 a 6 dias na unidade)'
-      };
-    }
-    return {
-      dot: 'bg-emerald-500',
-      text: 'text-emerald-700',
-      bg: 'bg-emerald-50 border-emerald-200',
-      label: 'Regular (0 a 3 dias)'
-    };
-  };
-
   // ESTADO 404: Se o processo não existe
   if (!processo) {
     return (
@@ -220,7 +195,7 @@ export default function ProcessoDetalhePage() {
     );
   }
 
-  const semaforo = getSemaforo(processo.dias_parado_na_unidade);
+  const semaforo = getSemaforoInercia(processo.dias_parado_na_unidade);
 
   return (
     <div className="space-y-5">
@@ -342,15 +317,15 @@ export default function ProcessoDetalhePage() {
           <div className="flex items-center gap-3 self-start">
             <div 
               title={`Permanência líquida na unidade atual: ${processo.dias_parado_na_unidade} dias úteis (Meta SLA da SEDUC: máx 5 dias úteis)`}
-              className={`rounded-lg p-3 text-center border ${semaforo.bg}`}
+              className={`rounded-lg p-3 text-center border ${semaforo.bgClass}`}
             >
               <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${semaforo.dot}`}></span>
+                <span className={`w-2.5 h-2.5 rounded-full ${semaforo.dotClass}`}></span>
                 <span className="text-[10px] uppercase tracking-wider font-bold text-slate-600">
                   Tempo Parado
                 </span>
               </div>
-              <span className={`text-xl font-bold ${semaforo.text}`}>
+              <span className={`text-xl font-bold ${semaforo.textClass}`}>
                 {processo.dias_parado_na_unidade} {processo.dias_parado_na_unidade === 1 ? 'dia' : 'dias'}
               </span>
               <span className="text-[9px] block text-slate-500 mt-0.5">
@@ -421,7 +396,7 @@ export default function ProcessoDetalhePage() {
             </p>
             <p className="text-xs text-slate-600 mt-1">
               Setor responsável atual: <strong className="text-blue-800">{processo.unidade_atual_sei}</strong>. 
-              {processo.dias_parado_na_unidade >= 5 && ' Cobrança de despacho recomendada devido à inércia.'}
+              {isSlaEstourado(processo.dias_parado_na_unidade) && ' Cobrança de despacho recomendada devido à inércia.'}
             </p>
           </div>
         </div>

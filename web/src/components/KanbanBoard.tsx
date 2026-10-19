@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Processo, StatusEtapaProcessual } from '../lib/types';
 import { Clock, AlertCircle, ArrowRight, Building, FileText } from 'lucide-react';
 import { Abbr, InfoTooltip } from './Tooltip';
+import { isSlaEstourado } from '../lib/slaConfig';
 
 interface KanbanBoardProps {
   processos: Processo[];
@@ -99,7 +100,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
                   </div>
                 ) : (
                   colProcessos.map((proc) => {
-                    const slaEstourado = proc.dias_parado_na_unidade >= 5;
+                    const slaEstourado = isSlaEstourado(proc.dias_parado_na_unidade);
 
                     return (
                       <div

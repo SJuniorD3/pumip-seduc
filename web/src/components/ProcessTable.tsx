@@ -6,6 +6,7 @@ import { Processo } from '../lib/types';
 import { SyncButton } from './SyncButton';
 import { exportToExcel, exportToCSV, triggerPrintPDF } from '../lib/exportUtils';
 import { KPIFilterType } from './KPICards';
+import { getSemaforoInercia, isSlaEstourado } from '../lib/slaConfig';
 import { 
   Search, 
   Filter, 
@@ -119,7 +120,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
     // Filtro inteligente do KPI selecionado
     let matchesKpi = true;
     if (kpiFilter === 'CRITICOS') {
-      matchesKpi = p.dias_parado_na_unidade >= 5 || p.prioridade === 'QUENTE';
+      matchesKpi = isSlaEstourado(p.dias_parado_na_unidade) || p.prioridade === 'QUENTE';
     } else if (kpiFilter === 'CONTRATACAO') {
       matchesKpi = p.status_etapa === 'FASE_EXTERNA_LICITACAO' || !!p.protocolo_startgov;
     } else if (kpiFilter === 'SETOR_GARGALO') {
@@ -184,29 +185,6 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
       default:
         return 'bg-slate-50 text-slate-700 border-slate-200';
     }
-  };
-
-  // Semáforo Visual de Inércia (3 Níveis)
-  const getSemaforoInercia = (dias: number) => {
-    if (dias >= 7) {
-      return {
-        dotClass: 'bg-red-500 animate-pulse',
-        badgeClass: 'bg-red-50 text-red-700 border-red-200 font-bold',
-        label: 'Gargalo Crítico (7+ dias)'
-      };
-    }
-    if (dias >= 4) {
-      return {
-        dotClass: 'bg-amber-500',
-        badgeClass: 'bg-amber-50 text-amber-800 border-amber-200 font-bold',
-        label: 'Atenção (4-6 dias)'
-      };
-    }
-    return {
-      dotClass: 'bg-emerald-500',
-      badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold',
-      label: 'Regular (0-3 dias)'
-    };
   };
 
   const getKpiFilterName = (filter: KPIFilterType) => {

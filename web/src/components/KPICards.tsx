@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Processo } from '../lib/types';
 import { Abbr, InfoTooltip } from './Tooltip';
+import { isSlaEstourado } from '../lib/slaConfig';
 
 export type KPIFilterType = 'TODOS' | 'CRITICOS' | 'CONTRATACAO' | 'SETOR_GARGALO';
 
@@ -27,7 +28,7 @@ export const KPICards: React.FC<KPICardsProps> = ({
   onSelectFilter 
 }) => {
   const total = processos.length;
-  const criticos = processos.filter(p => p.dias_parado_na_unidade >= 5 || p.prioridade === 'QUENTE').length;
+  const criticos = processos.filter(p => isSlaEstourado(p.dias_parado_na_unidade) || p.prioridade === 'QUENTE').length;
   const emLicitacao = processos.filter(p => p.status_etapa === 'FASE_EXTERNA_LICITACAO' || p.protocolo_startgov).length;
 
   // Cálculo de gargalos médios
