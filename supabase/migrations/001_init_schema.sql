@@ -382,6 +382,7 @@ USING (
         WHERE pac.processo_id = public.processos.id
           AND pac.usuario_id = auth.uid()
           AND pac.ativo = TRUE
+          AND (pac.data_inicio <= timezone('utc', now()))
           AND (pac.data_fim IS NULL OR pac.data_fim >= timezone('utc', now()))
     )
     OR EXISTS (
@@ -394,7 +395,8 @@ USING (
             OR (
                 ctx.role = 'SECRETARIO_ADJUNTO'
                 AND (
-                    u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '%'
+                    u_origem.caminho_hierarquico = ctx.caminho_hierarquico
+                    OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '.%'
                     OR processos.unidade_origem_id = ctx.unidade_id
                 )
             )
@@ -402,7 +404,8 @@ USING (
             OR (
                 ctx.role = 'SUPERINTENDENTE'
                 AND (
-                    u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '%'
+                    u_origem.caminho_hierarquico = ctx.caminho_hierarquico
+                    OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '.%'
                     OR processos.unidade_origem_id = ctx.unidade_id
                 )
             )
@@ -411,7 +414,8 @@ USING (
                 ctx.role = 'SUPERVISOR'
                 AND (
                     processos.unidade_origem_id = ctx.unidade_id
-                    OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '%'
+                    OR u_origem.caminho_hierarquico = ctx.caminho_hierarquico
+                    OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '.%'
                 )
             )
             -- 5. ASSESSOR: Vê processos de sua Assessoria/Setor ou que atualmente tramitam por ela
@@ -419,7 +423,8 @@ USING (
                 ctx.role = 'ASSESSOR'
                 AND (
                     processos.unidade_origem_id = ctx.unidade_id
-                    OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '%'
+                    OR u_origem.caminho_hierarquico = ctx.caminho_hierarquico
+                    OR u_origem.caminho_hierarquico LIKE ctx.caminho_hierarquico || '.%'
                     OR processos.unidade_atual_sei = (SELECT sigla FROM public.unidades_organizacionais WHERE id = ctx.unidade_id)
                 )
             )
@@ -472,6 +477,17 @@ WITH CHECK (TRUE);
 -- 13.6 Políticas para alertas e notificações
 CREATE POLICY "Usuário gerencia seus próprios alertas"
 ON public.alertas_configurados FOR ALL
+TO authenticated
+USING (usuario_id = auth.uid())
+WITH CHECK (usuario_id = auth.uid());
+
+CREATE POLICY "Usuário consulta suas notificações"
+ON public.notificacoes_log FOR SELECT
+TO authenticated
+USING (usuario_id = auth.uid());
+
+CREATE POLICY "Usuário atualiza leitura de suas notificações"
+ON public.notificacoes_log FOR UPDATE
 TO authenticated
 USING (usuario_id = auth.uid())
 WITH CHECK (usuario_id = auth.uid());
