@@ -1,11 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Breadcrumb } from '../../../components/Breadcrumb';
 import { AdminGuard } from '../../../components/AdminGuard';
 import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { mockProcessos, mockUnidades } from '../../../lib/mockData';
 import { UserRole } from '../../../lib/types';
+import { isSupabaseConfigured } from '../../../lib/supabase';
+import { 
+  listarUsuariosBanco, 
+  atualizarUsuarioBanco, 
+  listarConcessoesBanco, 
+  criarConcessaoBanco, 
+  revogarConcessaoBanco 
+} from '../../../lib/dados/admin';
 import { 
   Users, 
   UserPlus, 
@@ -136,12 +144,42 @@ export default function AdminUsuariosPage() {
   const [validadeConcessao, setValidadeConcessao] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState(false);
 
-  const handleConcederAcesso = (e: React.FormEvent) => {
+  // Sincronização com o Supabase
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      listarUsuariosBanco()
+        .then((bancoUsuarios) => {
+          if (bancoUsuarios.length > 0) {
+            setUsuarios(bancoUsuarios);
+          }
+        })
+        .catch(() => {});
+
+      listarConcessoesBanco()
+        .then((bancoConcessoes) => {
+          if (bancoConcessoes.length > 0) {
+            setConcessoes(bancoConcessoes);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  const handleConcederAcesso = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!motivoConcessao.trim()) return;
 
     const proc = mockProcessos.find((p) => p.id === selectedProcessoId) || mockProcessos[0];
     const usr = usuarios.find((u) => u.id === selectedUsuarioId) || usuarios[0];
+
+    if (isSupabaseConfigured() && proc.id.length === 36 && usr.id.length === 36) {
+      await criarConcessaoBanco({
+        processo_id: proc.id,
+        usuario_id: usr.id,
+        motivo: motivoConcessao.trim(),
+        data_fim: validadeConcessao ? new Date(validadeConcessao).toISOString() : undefined
+      });
+    }
 
     const nova: ConcessaoProcesso = {
       id: `conc-${Date.now()}`,
@@ -164,10 +202,16 @@ export default function AdminUsuariosPage() {
   };
 
   const handleRevogarConcessao = (id: string) => {
+    if (isSupabaseConfigured() && id.length === 36) {
+      revogarConcessaoBanco(id).catch(() => {});
+    }
     setConcessoes(concessoes.filter((c) => c.id !== id));
   };
 
   const handleRoleChange = (userId: string, newRole: UserRole) => {
+    if (isSupabaseConfigured() && userId.length === 36) {
+      atualizarUsuarioBanco(userId, { role: newRole }).catch(() => {});
+    }
     setUsuarios(usuarios.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
   };
 

@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Breadcrumb } from '../../../components/Breadcrumb';
 import { AdminGuard } from '../../../components/AdminGuard';
 import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { mockUnidades } from '../../../lib/mockData';
 import { UnidadeOrganizacional, TipoUnidade } from '../../../lib/types';
+import { isSupabaseConfigured } from '../../../lib/supabase';
+import { listarUnidadesBanco } from '../../../lib/dados/admin';
 import { 
   Network, 
   Plus, 
@@ -33,6 +35,29 @@ export default function AdminOrganogramaPage() {
   const [novaParentId, setNovaParentId] = useState('5'); // Default: STI
   const [novaTitular, setNovaTitular] = useState('');
   const [sucessoMsg, setSucessoMsg] = useState(false);
+
+  // Sincronização com o Supabase
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      listarUnidadesBanco()
+        .then((bancoUnidades) => {
+          if (bancoUnidades.length > 0) {
+            setUnidades(
+              bancoUnidades.map((u) => ({
+                id: u.id,
+                nome: u.nome,
+                sigla: u.sigla,
+                tipo: u.tipo as TipoUnidade,
+                caminho_hierarquico: u.caminho_hierarquico,
+                titular_nome: u.titular_nome || '',
+                ativo: u.ativo
+              }))
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   const filteredUnidades = unidades.filter((u) => {
     const matchesSearch =

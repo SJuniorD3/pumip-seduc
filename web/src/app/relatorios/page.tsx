@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Breadcrumb } from '../../components/Breadcrumb';
 import { Abbr, InfoTooltip } from '../../components/Tooltip';
@@ -8,6 +8,9 @@ import { exportToExcel, exportToCSV, triggerPrintPDF } from '../../lib/exportUti
 import { useAuth } from '../../lib/authContext';
 import { filterProcessosByRLS } from '../../lib/rlsFilter';
 import { mockProcessos } from '../../lib/mockData';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import { listarProcessosBanco } from '../../lib/dados/processos';
+import { Processo } from '../../lib/types';
 import { 
   BarChart3, 
   FileSpreadsheet, 
@@ -149,9 +152,23 @@ export default function RelatoriosPage() {
 
   // REMEDIAÇÃO (P2-3): Apuração Dinâmica de Tempos Médios de Permanência
   const { user } = useAuth();
+  const [processosBase, setProcessosBase] = useState<Processo[]>(mockProcessos);
+
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      listarProcessosBanco(1, 100)
+        .then(({ processos }) => {
+          if (processos.length > 0) {
+            setProcessosBase(processos);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
   const processosAutorizados = useMemo(() => {
-    return filterProcessosByRLS(mockProcessos, user);
-  }, [user]);
+    return filterProcessosByRLS(processosBase, user);
+  }, [processosBase, user]);
 
   const permanencias = useMemo<PermanenciaUnidade[]>(() => {
     const unidadesConhecidas: Record<string, string> = {
