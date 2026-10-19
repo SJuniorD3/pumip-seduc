@@ -145,7 +145,6 @@ FOR EACH ROW EXECUTE FUNCTION public.propagar_caminho_hierarquico();
 
 -- 5. Padronização de Colunas com DEFAULT now() (BD-05)
 ALTER TABLE public.processos 
-    ALTER COLUMN data_autuacao SET DEFAULT pg_catalog.now(),
     ALTER COLUMN ultima_movimentacao_em SET DEFAULT pg_catalog.now(),
     ALTER COLUMN ultima_verificacao_em SET DEFAULT pg_catalog.now(),
     ALTER COLUMN created_at SET DEFAULT pg_catalog.now(),
@@ -153,5 +152,4 @@ ALTER TABLE public.processos
 
 ALTER TABLE public.historico_tramitacoes
     ALTER COLUMN data_hora_evento SET DEFAULT pg_catalog.now(),
-    ALTER COLUMN data_coleta SET DEFAULT pg_catalog.now(),
     ALTER COLUMN created_at SET DEFAULT pg_catalog.now();

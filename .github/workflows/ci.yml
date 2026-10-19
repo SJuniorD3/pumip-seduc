@@ -7,6 +7,28 @@ on:
     branches: [ main ]
 
 jobs:
+  banco-ci:
+    name: Banco Local, Migrações & Testes pgTAP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Iniciar Supabase Local
+        run: supabase start
+
+      - name: Resetar Banco e Aplicar Migrações + Seed
+        run: supabase db reset
+
+      - name: Executar Testes pgTAP no Banco
+        run: supabase test db
+
   web-ci:
     name: Frontend Lint, Testes & Build
     runs-on: ubuntu-latest
