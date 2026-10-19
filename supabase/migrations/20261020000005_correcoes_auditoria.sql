@@ -307,3 +307,12 @@ USING (
 );
 
 GRANT SELECT, INSERT ON public.apontamentos_ia TO authenticated;
+
+
+-- 8. UNIFICAÇÃO DA POLÍTICA RLS COM A FUNÇÃO SQL ÚNICA (Achado N-14)
+-- A política RLS de processos passa a chamar a função única usuario_pode_ver_processo
+DROP POLICY IF EXISTS "Leitura de processos conforme RLS hierarquico e concessoes" ON public.processos;
+CREATE POLICY "Leitura de processos conforme RLS hierarquico e concessoes"
+ON public.processos FOR SELECT
+TO authenticated
+USING (public.usuario_pode_ver_processo(auth.uid(), id));

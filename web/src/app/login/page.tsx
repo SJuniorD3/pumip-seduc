@@ -27,7 +27,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, loginAs } = useAuth();
 
-  const [email, setEmail] = useState(isDemoMode() ? 'servulo.junior@seduc.ma.gov.br' : '');
+  const [email, setEmail] = useState(isDemoMode() ? 'supervisor.sudes@seduc.ma.gov.br' : '');
   const [password, setPassword] = useState(isDemoMode() ? '••••••••••••' : '');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -65,7 +65,7 @@ export default function LoginPage() {
     setErrorMsg('');
     if (isDemoMode()) {
       await new Promise((resolve) => setTimeout(resolve, 800));
-      await login('servulo.junior@seduc.ma.gov.br');
+      await login('supervisor.sudes@seduc.ma.gov.br');
       router.push('/');
     } else {
       setErrorMsg('O login unificado Gov.br em ambiente de produção requer habilitação do provedor OIDC junto à STI / COGETIC.');
@@ -365,7 +365,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-left">
-                  {/* 1. Sérvulo Junior (SUDES) */}
+                  {/* 1. Supervisor SUDES */}
                   <button
                     type="button"
                     onClick={() => loginAs('servulo')}
@@ -373,15 +373,15 @@ export default function LoginPage() {
                     title="Supervisor de Desenvolvimento (SUDES)"
                   >
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                      Sérvulo Junior
+                      Supervisor SUDES
                     </p>
                     <p className="text-xs text-slate-500 truncate">SUDES / STI</p>
-                    <span className="text-[9px] text-blue-700 font-semibold bg-blue-50 px-1 py-0.2 rounded mt-1 inline-block">
+                    <span className="text-xs text-blue-700 font-semibold bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block">
                       SUPERVISOR
                     </span>
                   </button>
 
-                  {/* 2. Natália Jansen (STI) */}
+                  {/* 2. Superintendente STI */}
                   <button
                     type="button"
                     onClick={() => loginAs('natalia')}
@@ -389,15 +389,15 @@ export default function LoginPage() {
                     title="Superintendente de Informática (STI)"
                   >
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                      Natália Jansen
+                      Superintendente STI
                     </p>
                     <p className="text-xs text-slate-500 truncate">Superintendente STI</p>
-                    <span className="text-[9px] text-indigo-700 font-semibold bg-indigo-50 px-1 py-0.2 rounded mt-1 inline-block">
+                    <span className="text-xs text-indigo-700 font-semibold bg-indigo-50 px-1.5 py-0.5 rounded mt-1 inline-block">
                       SUPERINTENDENTE
                     </span>
                   </button>
 
-                  {/* 3. Valter Veras (ASJUR) */}
+                  {/* 3. Assessor Jurídico (ASJUR) */}
                   <button
                     type="button"
                     onClick={() => loginAs('valter')}
@@ -405,10 +405,10 @@ export default function LoginPage() {
                     title="Assessor Jurídico Chefe (ASJUR)"
                   >
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
-                      Valter Veras
+                      Assessor ASJUR
                     </p>
                     <p className="text-xs text-slate-500 truncate">Assessor ASJUR</p>
-                    <span className="text-[9px] text-purple-700 font-semibold bg-purple-50 px-1 py-0.2 rounded mt-1 inline-block">
+                    <span className="text-xs text-purple-700 font-semibold bg-purple-50 px-1.5 py-0.5 rounded mt-1 inline-block">
                       ASSESSOR
                     </span>
                   </button>

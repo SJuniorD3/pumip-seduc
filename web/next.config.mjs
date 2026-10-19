@@ -11,10 +11,10 @@ const cabecalhosSeguranca = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: https: blob:",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.githubusercontent.com",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://pncp.gov.br",
       "frame-ancestors 'none'",
       "base-uri 'self'",

@@ -53,7 +53,7 @@ export default function VinculosPage() {
       trechoOrigem: '...Aviso de Licitação PE 042/2026 oriundo do processo administrativo SEI-021001/004521/2026 da SEDUC...',
       confiancaPercent: 98,
       status: 'CONFIRMADO',
-      confirmadoPor: 'Sérvulo José Freire Junior (SUDES)',
+      confirmadoPor: 'Supervisor de Sistemas (SUDES)',
       confirmadoEm: '05/10/2026 às 11:15'
     },
     {

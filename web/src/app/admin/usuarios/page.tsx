@@ -58,34 +58,34 @@ export default function AdminUsuariosPage() {
   const [usuarios, setUsuarios] = useState<UsuarioItem[]>([
     {
       id: 'usr-1',
-      nome: 'Jandira Dias Araújo Silva',
+      nome: 'Secretário(a) Exemplo',
       email: 'secretaria@seduc.ma.gov.br',
       role: 'SECRETARIO',
-      cargo_titulo: 'Secretária de Estado da Educação',
+      cargo_titulo: 'Secretário(a) de Estado da Educação',
       unidadeSigla: 'SEDUC',
       ativo: true
     },
     {
       id: 'usr-2',
-      nome: 'José Antônio Barros Heluy',
+      nome: 'Subsecretário(a) Exemplo',
       email: 'subsecretario@seduc.ma.gov.br',
       role: 'SUBSECRETARIO',
-      cargo_titulo: 'Subsecretário de Educação',
+      cargo_titulo: 'Subsecretário(a) de Educação',
       unidadeSigla: 'SUBSEDUC',
       ativo: true
     },
     {
       id: 'usr-3',
-      nome: 'Luzivete Botelho da Silva Rodrigues',
+      nome: 'Secretário(a) Adjunto(a) Exemplo',
       email: 'saad@seduc.ma.gov.br',
       role: 'SECRETARIO_ADJUNTO',
-      cargo_titulo: 'Secretária Adjunta de Administração',
+      cargo_titulo: 'Secretário(a) Adjunto(a) de Administração',
       unidadeSigla: 'SAAD',
       ativo: true
     },
     {
       id: 'usr-4',
-      nome: 'Roberto Max Louzeiro Pimentel',
+      nome: 'Superintendente de TI',
       email: 'sti@seduc.ma.gov.br',
       role: 'SUPERINTENDENTE',
       cargo_titulo: 'Superintendente de Tecnologia da Informação',
@@ -94,8 +94,8 @@ export default function AdminUsuariosPage() {
     },
     {
       id: 'usr-5',
-      nome: 'Sérvulo José Freire Junior',
-      email: 'servulo.junior@seduc.ma.gov.br',
+      nome: 'Supervisor(a) de Sistemas',
+      email: 'supervisor.sudes@seduc.ma.gov.br',
       role: 'SUPERVISOR',
       cargo_titulo: 'Supervisor de Desenvolvimento e Manutenção de Sistemas',
       unidadeSigla: 'SUDES',
@@ -103,16 +103,16 @@ export default function AdminUsuariosPage() {
     },
     {
       id: 'usr-6',
-      nome: 'Valter Pereira Veras Neto',
+      nome: 'Assessor(a) Jurídico(a) Chefe',
       email: 'asjur@seduc.ma.gov.br',
       role: 'ASSESSOR',
-      cargo_titulo: 'Assessor Jurídico Chefe',
+      cargo_titulo: 'Assessor(a) Jurídico(a) Chefe',
       unidadeSigla: 'ASJUR',
       ativo: true
     },
     {
       id: 'usr-7',
-      nome: 'Igor Manuel Sousa Rocha',
+      nome: 'Presidente CSL Exemplo',
       email: 'csl@seduc.ma.gov.br',
       role: 'ASSESSOR',
       cargo_titulo: 'Presidente da Comissão Setorial de Licitação',
@@ -128,7 +128,7 @@ export default function AdminUsuariosPage() {
       processoId: '10000000-0000-0000-0000-000000000002',
       protocoloSei: 'SEI-021001/007812/2026',
       objeto: 'Contratação de Serviços Especializados de Nuvem Governamental e Supabase',
-      usuarioNome: 'Valter Pereira Veras Neto',
+      usuarioNome: 'Assessor(a) Jurídico(a) Chefe',
       usuarioEmail: 'asjur@seduc.ma.gov.br',
       motivo: 'Acompanhamento prioritário de parecer do Art. 53 por determinação do Gabinete',
       dataConcessao: '10/10/2026',

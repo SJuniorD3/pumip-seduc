@@ -7,7 +7,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     sigla: 'SEDUC', 
     tipo: 'SECRETARIA', 
     caminho_hierarquico: 'SEDUC',
-    titular_nome: 'Jandira Dias Araújo Silva'
+    titular_nome: 'Secretário(a) Exemplo 01'
   },
   { 
     id: '2', 
@@ -16,7 +16,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SUBSECRETARIA', 
     parent_id: '1', 
     caminho_hierarquico: 'SEDUC.SUBSEDUC',
-    titular_nome: 'José Antônio Barros Heluy'
+    titular_nome: 'Subsecretário(a) Exemplo 02'
   },
   { 
     id: '3', 
@@ -25,7 +25,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SECRETARIA_ADJUNTA', 
     parent_id: '1', 
     caminho_hierarquico: 'SEDUC.SAAD',
-    titular_nome: 'Luzivete Botelho da Silva Rodrigues'
+    titular_nome: 'Secretário(a) Adjunto(a) Exemplo 03'
   },
   { 
     id: '4', 
@@ -34,7 +34,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SECRETARIA_ADJUNTA', 
     parent_id: '1', 
     caminho_hierarquico: 'SEDUC.SAOFC',
-    titular_nome: 'Igor de Souza Carneiro da Costa'
+    titular_nome: 'Secretário(a) Adjunto(a) Exemplo 04'
   },
   { 
     id: '5', 
@@ -43,7 +43,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SUPERINTENDENCIA', 
     parent_id: '3', 
     caminho_hierarquico: 'SEDUC.SAAD.STI',
-    titular_nome: 'Roberto Max Louzeiro Pimentel'
+    titular_nome: 'Superintendente Exemplo 05'
   },
   { 
     id: '6', 
@@ -52,7 +52,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SUPERVISAO', 
     parent_id: '5', 
     caminho_hierarquico: 'SEDUC.SAAD.STI.SUDES',
-    titular_nome: 'Sérvulo José Freire Junior'
+    titular_nome: 'Supervisor(a) Exemplo 40'
   },
   { 
     id: '7', 
@@ -61,7 +61,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SUPERVISAO', 
     parent_id: '5', 
     caminho_hierarquico: 'SEDUC.SAAD.STI.SUPREDES',
-    titular_nome: 'Marcos Camilo Freitas'
+    titular_nome: 'Supervisor(a) Exemplo 41'
   },
   { 
     id: '8', 
@@ -70,7 +70,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SUPERVISAO', 
     parent_id: '5', 
     caminho_hierarquico: 'SEDUC.SAAD.STI.SUGEC',
-    titular_nome: 'Daniela Etsuko Miwa Ramos'
+    titular_nome: 'Supervisor(a) Exemplo 42'
   },
   { 
     id: '9', 
@@ -79,7 +79,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'SUPERINTENDENCIA', 
     parent_id: '3', 
     caminho_hierarquico: 'SEDUC.SAAD.SUINFRA',
-    titular_nome: 'Núbia Cristina Furtado Theodoro'
+    titular_nome: 'Superintendente Exemplo 09'
   },
   { 
     id: '10', 
@@ -88,7 +88,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'COMISSAO', 
     parent_id: '1', 
     caminho_hierarquico: 'SEDUC.CSL',
-    titular_nome: 'Igor Manuel Sousa Rocha'
+    titular_nome: 'Presidente CSL Exemplo'
   },
   { 
     id: '11', 
@@ -97,7 +97,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'ASSESSORIA', 
     parent_id: '1', 
     caminho_hierarquico: 'SEDUC.ASJUR',
-    titular_nome: 'Valter Pereira Veras Neto'
+    titular_nome: 'Assessor(a) Jurídico(a) Exemplo'
   },
   { 
     id: '12', 
@@ -106,7 +106,7 @@ export const mockUnidades: UnidadeOrganizacional[] = [
     tipo: 'ASSESSORIA', 
     parent_id: '1', 
     caminho_hierarquico: 'SEDUC.ASPLAN',
-    titular_nome: 'Fabiane Cristine Froz Sousa'
+    titular_nome: 'Assessor(a) de Planejamento Exemplo'
   }
 ];
 
@@ -118,7 +118,7 @@ export const mockProcessos: Processo[] = [
     numero_contrato_pncp: '12345678000199-1-000045/2026',
     objeto: 'Aquisição de Switches Gerenciáveis e Roteadores para Expansão da Conectividade nas Escolas Estaduais',
     unidade_origem_id: '6',
-    unidade_origem: mockUnidades[5], // SUDES (Sérvulo José Freire Junior)
+    unidade_origem: mockUnidades[5], // SUDES
     unidade_atual_sei: 'CSL',
     fase_atual_startgov: 'Fase de Lances / Pregão Eletrônico',
     status_etapa: 'FASE_EXTERNA_LICITACAO',
@@ -140,7 +140,7 @@ export const mockProcessos: Processo[] = [
     numero_contrato_pncp: null,
     objeto: 'Contratação de Serviços Especializados de Nuvem Governamental e Banco de Dados Supabase/PostgreSQL',
     unidade_origem_id: '6',
-    unidade_origem: mockUnidades[5], // SUDES (Sérvulo José Freire Junior)
+    unidade_origem: mockUnidades[5], // SUDES
     unidade_atual_sei: 'ASJUR',
     fase_atual_startgov: 'Elaboração de Parecer Jurídico Conclusivo do Art. 53',
     status_etapa: 'ANALISE_JURIDICA',
@@ -297,7 +297,7 @@ export const mockTramitacoes: Record<string, HistoricoTramitacao[]> = {
       origem_sistema: 'SEI',
       data_hora_evento: '2026-09-20T10:00:00Z',
       unidade_setor: 'SUDES',
-      descricao_andamento: 'Autuação do processo administrativo e emissão do DFD nº 12/2026 por Sérvulo José Freire Junior.',
+      descricao_andamento: 'Autuação do processo administrativo e emissão do DFD nº 12/2026 pelo Supervisor Técnico.',
       documento_anexado: 'DFD-2026-SUDES.pdf',
       tipo_documento: 'Documento de Formalização da Demanda (DFD)',
       resumo_ia: 'Abertura formal da demanda com justificativa técnica e alinhamento estratégico ao PCA 2026.',
@@ -310,7 +310,7 @@ export const mockTramitacoes: Record<string, HistoricoTramitacao[]> = {
       origem_sistema: 'SEI',
       data_hora_evento: '2026-09-28T15:30:00Z',
       unidade_setor: 'STI',
-      descricao_andamento: 'Aprovação do ETP e Termo de Referência pela Superintendência de TI por Roberto Max Louzeiro Pimentel.',
+      descricao_andamento: 'Aprovação do ETP e Termo de Referência pela Superintendência de TI.',
       documento_anexado: 'TR-Switches-vFinal.pdf',
       tipo_documento: 'Termo de Referência',
       resumo_ia: 'Especificação técnica aprovada para 120 switches gerenciáveis com garantia on-site.',
@@ -323,7 +323,7 @@ export const mockTramitacoes: Record<string, HistoricoTramitacao[]> = {
       origem_sistema: 'STARTGOV',
       data_hora_evento: '2026-10-05T11:00:00Z',
       unidade_setor: 'CSL',
-      descricao_andamento: 'Importação da demanda no StartGov com geração do certame PE nº 042/2026 por Igor Manuel Sousa Rocha.',
+      descricao_andamento: 'Importação da demanda no StartGov com geração do certame PE nº 042/2026 pela Comissão Setorial de Licitação.',
       documento_anexado: 'Edital-PE-042-2026.pdf',
       tipo_documento: 'Edital de Pregão Eletrônico',
       resumo_ia: 'Processo cadastrado no StartGov sob identificador STARTGOV-2026/0892 e abertura de prazos.',

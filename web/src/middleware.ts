@@ -12,8 +12,8 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const mode = process.env.NEXT_PUBLIC_PUMIP_MODE;
-  const isProduction = mode === 'production';
+  const isDemo = process.env.NEXT_PUBLIC_PUMIP_MODE === 'demo';
+  const isProduction = !isDemo;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';

@@ -14,43 +14,43 @@ export interface AuthUser {
 export const DEMO_USERS: Record<string, AuthUser> = {
   servulo: {
     id: 'user-servulo',
-    nome: 'Sérvulo José Freire Junior',
-    email: 'servulo.junior@seduc.ma.gov.br',
+    nome: 'Supervisor(a) de Sistemas',
+    email: 'supervisor.sudes@seduc.ma.gov.br',
     role: 'SUPERVISOR',
     cargo_titulo: 'Supervisor de Desenvolvimento de Sistemas (SUDES)',
     unidade_sigla: 'SUDES',
     unidade_nome: 'Supervisão de Desenvolvimento de Sistemas',
     caminho_hierarquico: 'SEDUC.SAAD.STI.SUDES',
     isAdmin: false,
-    avatar_iniciais: 'SJ'
+    avatar_iniciais: 'SS'
   },
   natalia: {
     id: 'user-natalia',
-    nome: 'Natália Jansen de Carvalho',
-    email: 'natalia.jansen@seduc.ma.gov.br',
+    nome: 'Superintendente de TI',
+    email: 'superintendente.sti@seduc.ma.gov.br',
     role: 'SUPERINTENDENTE',
     cargo_titulo: 'Superintendente de Tecnologia da Informação (STI)',
     unidade_sigla: 'STI',
     unidade_nome: 'Superintendência de Tecnologia da Informação',
     caminho_hierarquico: 'SEDUC.SAAD.STI',
     isAdmin: false,
-    avatar_iniciais: 'NJ'
+    avatar_iniciais: 'ST'
   },
   valter: {
     id: 'user-valter',
-    nome: 'Valter Pereira Veras Neto',
-    email: 'valter.veras@seduc.ma.gov.br',
+    nome: 'Assessor(a) Jurídico(a) Chefe',
+    email: 'assessor.asjur@seduc.ma.gov.br',
     role: 'ASSESSOR',
     cargo_titulo: 'Assessor Chefe da Assessoria Jurídica (ASJUR)',
     unidade_sigla: 'ASJUR',
     unidade_nome: 'Assessoria Jurídica da SEDUC',
     caminho_hierarquico: 'SEDUC.ASJUR',
     isAdmin: false,
-    avatar_iniciais: 'VV'
+    avatar_iniciais: 'AJ'
   },
   secretario: {
     id: 'user-secretario',
-    nome: 'Dr. Jandir Silva Filho',
+    nome: 'Secretário(a) de Estado da Educação',
     email: 'gabinete@seduc.ma.gov.br',
     role: 'SECRETARIO',
     cargo_titulo: 'Secretário de Estado da Educação do Maranhão',
@@ -58,7 +58,7 @@ export const DEMO_USERS: Record<string, AuthUser> = {
     unidade_nome: 'Gabinete do Secretário de Estado da Educação',
     caminho_hierarquico: 'SEDUC.GAB',
     isAdmin: false,
-    avatar_iniciais: 'JS'
+    avatar_iniciais: 'SE'
   },
   admin: {
     id: 'user-admin',
