@@ -7,7 +7,7 @@ import { FeedNovidades } from '../components/FeedNovidades';
 import { SectorHierarchyDashboard } from '../components/SectorHierarchyDashboard';
 import { mockProcessos } from '../lib/mockData';
 import { Processo } from '../lib/types';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, DEFAULT_PAGE_SIZE } from '../lib/supabase';
 import { useAuth } from '../lib/authContext';
 import { filterProcessosByRLS } from '../lib/rlsFilter';
 import { 
@@ -40,9 +40,12 @@ export default function DashboardPage() {
       if (isSupabaseConfigured()) {
         try {
           setLoading(true);
+          // REMEDIAÇÃO P3-3: Limite defensivo para evitar payload desmedido em lote
           const { data, error } = await supabase
             .from('processos')
-            .select('*, unidade_origem:unidades_organizacionais(*)');
+            .select('*, unidade_origem:unidades_organizacionais(*)')
+            .order('data_autuacao', { ascending: false })
+            .limit(DEFAULT_PAGE_SIZE);
 
           if (!error && data && data.length > 0) {
             setProcessos(data as Processo[]);

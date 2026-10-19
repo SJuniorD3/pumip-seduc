@@ -267,7 +267,7 @@ export default function VinculosPage() {
                     Trecho de Origem Localizado pelo Robô:
                   </span>
                   <p className="font-mono text-[11px] text-slate-700 italic">
-                    "{sug.trechoOrigem}"
+                    &ldquo;{sug.trechoOrigem}&rdquo;
                   </p>
                 </div>
 

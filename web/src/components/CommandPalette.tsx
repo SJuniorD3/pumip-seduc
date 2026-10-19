@@ -105,7 +105,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
           {filtered.length === 0 ? (
             <div className="text-center py-10 text-xs text-slate-400">
-              Nenhum processo localizado para "{query}".
+              Nenhum processo localizado para &ldquo;{query}&rdquo;.
             </div>
           ) : (
             filtered.map((proc) => (
