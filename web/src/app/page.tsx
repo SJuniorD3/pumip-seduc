@@ -40,11 +40,11 @@ export default function DashboardPage() {
       if (isSupabaseConfigured()) {
         try {
           setLoading(true);
-          // REMEDIAÇÃO P3-3: Limite defensivo para evitar payload desmedido em lote
+          // REMEDIAÇÃO P3-3 & FE-01: Limite defensivo e ordenação por coluna real do banco
           const { data, error } = await supabase
             .from('processos')
             .select('*, unidade_origem:unidades_organizacionais(*)')
-            .order('data_autuacao', { ascending: false })
+            .order('ultima_movimentacao_em', { ascending: false })
             .limit(DEFAULT_PAGE_SIZE);
 
           if (!error && data && data.length > 0) {

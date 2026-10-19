@@ -83,6 +83,8 @@ RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "notificacoes@pumip.seduc.ma.
 
 SEI_BASE_URL = os.getenv("SEI_BASE_URL", "https://sei.ma.gov.br")
 STARTGOV_BASE_URL = os.getenv("STARTGOV_BASE_URL", "https://startgov.ma.gov.br")
+PNCP_BASE_URL = os.getenv("PNCP_BASE_URL", "https://pncp.gov.br/api/consulta/v1")
+SEDUC_CNPJ = os.getenv("SEDUC_CNPJ", "06354468000130")
 
 FORCE_MODE = os.getenv("FORCE_MODE", "false").lower() in ("true", "1", "yes")
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "25"))
@@ -193,25 +195,51 @@ class PUMIPSyncManager:
         return res.data or []
 
     def update_integration_status(self, sistema: str, status: str, error_msg: Optional[str] = None):
-        """Atualiza o status da integração no banco após tentativa de coleta."""
+        """Atualiza o status e telemetria da integração no banco após tentativa de coleta."""
         if not self.supabase:
             return
         try:
-            agora_iso = datetime.now(timezone.utc).isoformat()
-            res = self.supabase.table("sessoes_coletor").select("tentativas_falha").eq("sistema", sistema).execute()
-            tentativas_atuais = 0
-            if res.data and len(res.data) > 0:
-                tentativas_atuais = res.data[0].get("tentativas_falha") or 0
+            # Tenta via RPC da Migração 004
+            self.supabase.rpc("atualizar_telemetria_integracao", {
+                "p_sistema": sistema,
+                "p_status": status,
+                "p_erro": error_msg
+            }).execute()
+            logger.info(f"[{sistema}] Telemetria de integração atualizada: {status}")
+        except Exception:
+            # Fallback direto na tabela sessoes_coletor
+            try:
+                agora_iso = datetime.now(timezone.utc).isoformat()
+                res = self.supabase.table("sessoes_coletor").select("tentativas_falha").eq("sistema", sistema).execute()
+                tentativas_atuais = 0
+                if res.data and len(res.data) > 0:
+                    tentativas_atuais = res.data[0].get("tentativas_falha") or 0
 
-            nova_tentativa = tentativas_atuais + 1 if status != "SUCCESS" else 0
-            self.supabase.table("sessoes_coletor").update({
-                "status": status,
-                "tentativas_falha": nova_tentativa,
-                "atualizado_em": agora_iso
-            }).eq("sistema", sistema).execute()
-            logger.info(f"[{sistema}] Status de integração atualizado: {status} (falhas consecutivas: {nova_tentativa})")
+                nova_tentativa = tentativas_atuais + 1 if status != "SUCCESS" else 0
+                self.supabase.table("sessoes_coletor").update({
+                    "status": status,
+                    "tentativas_falha": nova_tentativa,
+                    "atualizado_em": agora_iso
+                }).eq("sistema", sistema).execute()
+            except Exception as e:
+                logger.error(f"[{sistema}] Erro ao atualizar status de integração: {e}")
+
+    def user_can_view_process(self, usuario_id: str, processo_id: str) -> bool:
+        """
+        Revalida se o destinatário do alerta ainda tem permissão de ver o processo (WRK-08).
+        Utiliza a função SQL unificada usuario_pode_ver_processo (Migração 004).
+        """
+        if not self.supabase:
+            return True
+        try:
+            res = self.supabase.rpc("usuario_pode_ver_processo", {
+                "p_usuario": usuario_id,
+                "p_processo": processo_id
+            }).execute()
+            return res.data is True
         except Exception as e:
-            logger.error(f"[{sistema}] Erro ao atualizar status de integração: {e}")
+            logger.warning(f"Erro ao verificar usuario_pode_ver_processo: {e}. Mantendo envio por contingência.")
+            return True
 
 
 # ==============================================================================
@@ -402,6 +430,101 @@ class StartGovScraperAdapter(BaseScraperAdapter):
             }
         except Exception as e:
             logger.error(f"[StartGov] Erro ao parsear resposta: {e}")
+            return None
+
+
+class PNCPScraperAdapter(BaseScraperAdapter):
+    """
+    Adaptador de Coleta da API Pública do PNCP (Portal Nacional de Contratações Públicas).
+    REMEDIAÇÃO (WRK-01): Coleta real contra API pública oficial da Lei 14.133/2021.
+    Não requer credenciais privadas, operando com consultas públicas sobre o CNPJ da SEDUC-MA.
+    """
+    def fetch_pncp_publications(self, protocolo_sei: str, ano: Optional[int] = None) -> FetchResult:
+        self.apply_jitter()
+        ano_busca = ano or datetime.now(timezone.utc).year
+        logger.info(f"[PNCP] Consultando contratações públicas para SEDUC-MA (CNPJ {SEDUC_CNPJ}, Ano {ano_busca})...")
+
+        try:
+            headers = self.get_headers()
+            with httpx.Client(timeout=20.0, follow_redirects=True, headers=headers) as client:
+                url = f"{PNCP_BASE_URL}/contratacoes/publicacao"
+                params = {
+                    "dataInicial": f"{ano_busca}0101",
+                    "dataFinal": f"{ano_busca}1231",
+                    "cnpjOrgao": SEDUC_CNPJ.replace(".", "").replace("/", "").replace("-", ""),
+                    "pagina": 1,
+                    "tamanhoPagina": 10
+                }
+                resp = client.get(url, params=params)
+
+                if resp.status_code == 404:
+                    return FetchResult(FetchResultType.NO_CHANGE, error="Nenhuma publicação encontrada no PNCP")
+                if resp.status_code != 200:
+                    logger.warning(f"[PNCP] Resposta HTTP {resp.status_code} na consulta pública.")
+                    return FetchResult(FetchResultType.SOURCE_UNAVAILABLE, error=f"HTTP {resp.status_code}")
+
+                try:
+                    data = resp.json()
+                except Exception:
+                    return FetchResult(FetchResultType.INVALID_RESPONSE, error="Resposta do PNCP não é JSON")
+
+                parsed = self._parse_pncp_response(data, protocolo_sei)
+                if parsed is None:
+                    return FetchResult(FetchResultType.NO_CHANGE, error="Sem novos eventos do certame")
+
+                return FetchResult(FetchResultType.SUCCESS, data=parsed)
+        except httpx.TimeoutException:
+            logger.error("[PNCP] Timeout na consulta da API pública.")
+            return FetchResult(FetchResultType.SOURCE_UNAVAILABLE, error="Timeout na conexão")
+        except Exception as e:
+            logger.error(f"[PNCP] Falha na consulta pública: {e}")
+            return FetchResult(FetchResultType.SOURCE_UNAVAILABLE, error=str(e))
+
+    def _parse_pncp_response(self, data: Any, protocolo_sei: str) -> Optional[Dict[str, Any]]:
+        try:
+            items = []
+            if isinstance(data, dict):
+                items = data.get("data") or data.get("itens") or []
+            elif isinstance(data, list):
+                items = data
+
+            if not items:
+                return None
+
+            # Procura item que corresponda ao processo ou pega a publicação mais recente
+            item_relevante = None
+            clean_sei = protocolo_sei.lower().replace("sei-", "").strip()
+            for item in items:
+                obj = str(item.get("objeto", "")).lower()
+                num_proc = str(item.get("processo", "")).lower()
+                if clean_sei in num_proc or clean_sei in obj:
+                    item_relevante = item
+                    break
+
+            if not item_relevante and items:
+                item_relevante = items[0]
+
+            if not item_relevante:
+                return None
+
+            numero_controle = item_relevante.get("numeroControlePNCP") or f"PNCP-{item_relevante.get('numeroItem', '001')}"
+            objeto = item_relevante.get("objeto") or "Contratação Pública SEDUC-MA"
+            modalidade = item_relevante.get("modalidadeNome") or item_relevante.get("tipoInstrumentoConvocatorioCodigoNome") or "Pregão Eletrônico"
+            data_pub = item_relevante.get("dataPublicacaoPncp") or item_relevante.get("dataInclusao") or datetime.now(timezone.utc).isoformat()
+
+            return {
+                "numero_controle_pncp": numero_controle,
+                "ultimo_evento": {
+                    "data_hora": data_pub,
+                    "unidade_setor": "PNCP / CSL",
+                    "descricao": f"Publicação no PNCP: {modalidade} - {objeto[:120]}",
+                    "documento": f"Controle {numero_controle}",
+                    "tipo_documento": "EDITAL_PNCP",
+                    "resumo_ia": "Certame publicado sob a Lei 14.133/2021 no Portal Nacional de Contratações Públicas."
+                }
+            }
+        except Exception as e:
+            logger.error(f"[PNCP] Erro ao parsear resposta: {e}")
             return None
 
 
@@ -633,6 +756,12 @@ def check_and_trigger_alerts(
                 logger.info(f"[Alerta {alerta['id']}] Destinatário inativo. Notificação suprimida.")
                 continue
 
+            # REMEDIAÇÃO (WRK-08): Revalida autorização vigente sobre o processo antes de disparar e-mail
+            usuario_id = alerta.get("usuario_id")
+            if usuario_id and not manager.user_can_view_process(usuario_id, processo["id"]):
+                logger.info(f"[Alerta {alerta['id']}] Usuário {usuario_id} não possui mais autorização para o processo {processo.get('protocolo_sei')}. Notificação cancelada.")
+                continue
+
             disparar = False
             # REMEDIAÇÃO P0-6: Escapa conteúdo externo no título e mensagem
             titulo = f"PUMIP: Atualização no Processo {html.escape(processo.get('protocolo_sei', ''))}"
@@ -696,6 +825,7 @@ def main():
     manager = PUMIPSyncManager()
     sei_adapter = SEIScraperAdapter(manager)
     startgov_adapter = StartGovScraperAdapter(manager)
+    pncp_adapter = PNCPScraperAdapter(manager)
 
     candidatos = manager.get_candidate_processes(limit=BATCH_SIZE)
     logger.info(f"Total de processos selecionados para esta rodada: {len(candidatos)}")
@@ -741,6 +871,23 @@ def main():
             elif startgov_result.result_type != FetchResultType.NOT_CONFIGURED:
                 logger.warning(f"[StartGov] Coleta de {prot_sei}: {startgov_result}")
                 manager.update_integration_status("STARTGOV", startgov_result.result_type.value, startgov_result.error)
+
+            # 3. Coleta dados no PNCP (Portal Nacional de Contratações Públicas - WRK-01)
+            pncp_result = pncp_adapter.fetch_pncp_publications(prot_sei)
+            if pncp_result.is_success and pncp_result.data:
+                houve_sucesso_coleta = True
+                num_pncp = pncp_result.data.get("numero_controle_pncp")
+                if num_pncp and not processo.get("numero_contrato_pncp") and manager.supabase:
+                    logger.info(f"Vinculando automaticamente {prot_sei} ao PNCP {num_pncp}")
+                    manager.supabase.table("processos").update({
+                        "numero_contrato_pncp": num_pncp
+                    }).eq("id", processo["id"]).execute()
+
+                if "ultimo_evento" in pncp_result.data:
+                    process_delta_and_alerts(manager, processo, pncp_result.data["ultimo_evento"], origem="PNCP")
+            elif pncp_result.result_type not in (FetchResultType.NOT_CONFIGURED, FetchResultType.NO_CHANGE):
+                logger.warning(f"[PNCP] Coleta de {prot_sei}: {pncp_result}")
+                manager.update_integration_status("PNCP", pncp_result.result_type.value, pncp_result.error)
 
             if houve_sucesso_coleta:
                 processados_com_sucesso += 1

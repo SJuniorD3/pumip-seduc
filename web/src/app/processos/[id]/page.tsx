@@ -11,6 +11,9 @@ import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { useAuth } from '../../../lib/authContext';
 import { filterProcessosByRLS } from '../../../lib/rlsFilter';
 import { getSemaforoInercia, isSlaEstourado } from '../../../lib/slaConfig';
+import { isSupabaseConfigured } from '../../../lib/supabase';
+import { obterProcessoPorIdBanco } from '../../../lib/dados/processos';
+import { Processo } from '../../../lib/types';
 import { 
   ArrowLeft, 
   Building, 
@@ -34,10 +37,21 @@ export default function ProcessoDetalhePage() {
   const params = useParams();
   const processoId = params.id as string;
   const { user } = useAuth();
+  const [processoBanco, setProcessoBanco] = useState<Processo | null>(null);
+
+  useEffect(() => {
+    if (isSupabaseConfigured() && processoId) {
+      obterProcessoPorIdBanco(processoId)
+        .then((p) => {
+          if (p) setProcessoBanco(p);
+        })
+        .catch(() => {});
+    }
+  }, [processoId]);
 
   // REMEDIAÇÃO P0-5: Aplica filtro RLS antes de buscar — usuário só vê processo se tiver permissão
   const processosAutorizados = filterProcessosByRLS(mockProcessos, user);
-  const processo = processosAutorizados.find((p) => p.id === processoId);
+  const processo = processoBanco || processosAutorizados.find((p) => p.id === processoId);
   const eventos = processo ? (mockTramitacoes[processo.id] || []) : [];
 
   const [favorito, setFavorito] = useState(false);
