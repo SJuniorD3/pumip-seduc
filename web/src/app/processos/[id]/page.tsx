@@ -13,8 +13,9 @@ import { filterProcessosByRLS } from '../../../lib/rlsFilter';
 import { getSemaforoInercia, isSlaEstourado } from '../../../lib/slaConfig';
 import { isSupabaseConfigured } from '../../../lib/supabase';
 import { obterProcessoPorIdBanco } from '../../../lib/dados/processos';
+import { listarTramitacoesBanco } from '../../../lib/dados/tramitacoes';
 import { listarNotasProcessoBanco, criarNotaProcessoBanco } from '../../../lib/dados/notas';
-import { Processo } from '../../../lib/types';
+import { Processo, HistoricoTramitacao } from '../../../lib/types';
 import { 
   ArrowLeft, 
   Building, 
@@ -39,21 +40,28 @@ export default function ProcessoDetalhePage() {
   const processoId = params.id as string;
   const { user } = useAuth();
   const [processoBanco, setProcessoBanco] = useState<Processo | null>(null);
+  const [eventosBanco, setEventosBanco] = useState<HistoricoTramitacao[] | null>(null);
 
   useEffect(() => {
-    if (isSupabaseConfigured() && processoId) {
+    if (processoId) {
       obterProcessoPorIdBanco(processoId)
         .then((p) => {
           if (p) setProcessoBanco(p);
+        })
+        .catch(() => {});
+
+      listarTramitacoesBanco(processoId)
+        .then((evts) => {
+          if (evts && evts.length > 0) setEventosBanco(evts);
         })
         .catch(() => {});
     }
   }, [processoId]);
 
   // REMEDIAÇÃO P0-5: Aplica filtro RLS antes de buscar — usuário só vê processo se tiver permissão
-  const processosAutorizados = filterProcessosByRLS(mockProcessos, user);
+  const processosAutorizados = filterProcessosByRLS(processoBanco ? [processoBanco] : mockProcessos, user);
   const processo = processoBanco || processosAutorizados.find((p) => p.id === processoId);
-  const eventos = processo ? (mockTramitacoes[processo.id] || []) : [];
+  const eventos = eventosBanco || (processo ? (mockTramitacoes[processo.id] || []) : []);
 
   const [favorito, setFavorito] = useState(false);
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);

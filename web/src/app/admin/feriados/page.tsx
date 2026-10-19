@@ -11,6 +11,7 @@ import {
   calcularPermanenciaDetelhada, 
   Feriado 
 } from '../../../lib/diasUteis';
+import { supabase, isSupabaseConfigured } from '../../../lib/supabase';
 import { 
   Calendar, 
   Plus, 
@@ -59,6 +60,18 @@ export default function AdminFeriadosPage() {
     const updated = [novo, ...feriadosCustom];
     setFeriadosCustom(updated);
     saveFeriadosPersonalizados(updated);
+
+    if (isSupabaseConfigured()) {
+      supabase
+        .from('feriados')
+        .upsert({
+          data: novaData,
+          descricao: novoNome,
+          abrangencia: 'MUNICIPAL'
+        })
+        .then(() => {});
+    }
+
     setNovaData('');
     setNovoNome('');
     setSucessoMsg(true);
@@ -66,9 +79,18 @@ export default function AdminFeriadosPage() {
   };
 
   const handleRemoveCustom = (id: string) => {
+    const target = feriadosCustom.find((f) => f.id === id);
     const updated = feriadosCustom.filter((f) => f.id !== id);
     setFeriadosCustom(updated);
     saveFeriadosPersonalizados(updated);
+
+    if (target && isSupabaseConfigured()) {
+      supabase
+        .from('feriados')
+        .delete()
+        .eq('data', target.data)
+        .then(() => {});
+    }
   };
 
   const handleRunTest = () => {

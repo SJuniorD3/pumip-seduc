@@ -65,7 +65,17 @@ export default function ProcessosPage() {
         </div>
       </div>
 
-      <ProcessTable processos={processosVisiveis} />
+      {processosVisiveis.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+          <FileSearch className="w-8 h-8 text-slate-400 mx-auto" />
+          <h3 className="text-sm font-bold text-slate-800">Nenhum processo encontrado para o seu perfil</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            Não há processos autuados ou em tramitação na unidade {user.unidade_sigla || 'institucional'} vinculados às suas permissões no momento.
+          </p>
+        </div>
+      ) : (
+        <ProcessTable processos={processosVisiveis} />
+      )}
     </div>
   );
 }
