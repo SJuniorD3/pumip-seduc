@@ -25,6 +25,8 @@ interface MovimentacaoRecente {
 export const FeedNovidades: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
+  // REMEDIAÇÃO P0-5: Em produção, estes dados devem vir do Supabase com filtro RLS server-side.
+  // Em modo demo, exibe dados fixos de exemplo.
   const novidades: MovimentacaoRecente[] = [
     {
       processoId: '10000000-0000-0000-0000-000000000001',

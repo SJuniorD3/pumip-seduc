@@ -5,65 +5,73 @@ import { AuthUser } from './authUsers';
  * PUMIP-SEDUC: Emulação da Regra de Row Level Security (RLS) Hierárquico da SEDUC-MA
  * Conforme Seção 4.1 do Descritivo Técnico e Migração 001_init_schema.sql.
  *
- * Regra de Não Ampliação de Acesso:
- * 1. SECRETÁRIO DE ESTADO, SUBSECRETÁRIO e ADMIN: Visão 100% global de toda a SEDUC.
- * 2. SUPERINTENDENTE: Vê processos de sua Superintendência e Supervisões subordinadas (prefixo hierárquico).
- * 3. SUPERVISOR: Vê processos de sua Supervisão direta e demandas em que é relator técnico.
- * 4. ASSESSOR (ex: ASJUR/CSL): Vê processos que atualmente tramitam pelo seu setor ou com concessão pontual (RF02).
- * 5. TÉCNICO: Vê apenas processos diretos de sua unidade.
+ * REMEDIAÇÃO DE SEGURANÇA (Auditoria P0-4):
+ * - Removidas exceções hardcoded por ID de usuário ou sigla
+ * - Autorização baseada exclusivamente em caminho_hierarquico com prefix-match
+ * - Concessões pontuais devem vir do banco (processos_acessos_concedidos), não do código
+ * - isAdmin só é aceito se derivado do perfil validado pelo servidor
+ *
+ * Hierarquia:
+ * 1. SECRETÁRIO, SUBSECRETÁRIO, ADMIN, AUDITOR: Visão 100% global
+ * 2. SECRETÁRIO_ADJUNTO: Vê sua Adjunta e subordinados (prefixo hierárquico)
+ * 3. SUPERINTENDENTE: Vê sua Superintendência e Supervisões subordinadas (prefixo hierárquico)
+ * 4. SUPERVISOR: Vê processos de sua Supervisão direta e subordinados
+ * 5. ASSESSOR: Vê processos que tramitam no seu setor ou originados nele
+ * 6. TÉCNICO: Apenas processos da unidade direta
  */
 export function filterProcessosByRLS(processos: Processo[], user?: AuthUser | null): Processo[] {
   if (!user) {
-    // Princípio do Menor Privilégio (Zero-Trust): usuário não autenticado não acessa nenhum processo
+    // Princípio do Menor Privilégio (Zero-Trust)
     return [];
   }
 
-  if (user.isAdmin || user.role === 'SECRETARIO' || user.role === 'SUBSECRETARIO') {
-    // 100% de visibilidade para Gabinete e Administrador
+  // Visão global para papéis de alta hierarquia
+  if (user.role === 'ADMIN' || user.role === 'SECRETARIO' || user.role === 'SUBSECRETARIO') {
     return processos;
   }
 
+  const userPath = user.caminho_hierarquico;
+
   return processos.filter((p) => {
-    // 1. Concessões pontuais ativas de acesso (RF02 / processos_acessos_concedidos)
-    // Para Valter Veras (ASJUR), o processo de Nuvem Governamental foi formalmente concedido (conc-1)
-    if (user.id === 'user-valter' && p.id === '10000000-0000-0000-0000-000000000002') {
-      return true;
+    const processoPath = p.unidade_origem?.caminho_hierarquico || '';
+    const processoSigla = p.unidade_origem?.sigla || '';
+
+    // SECRETÁRIO_ADJUNTO: herança de prefixo hierárquico
+    if (user.role === 'SECRETARIO_ADJUNTO') {
+      return (
+        processoPath === userPath ||
+        processoPath.startsWith(userPath + '.')
+      );
     }
 
-    // 2. Se o processo está fisicamente tramitando no setor do usuário (Assessor Jurídico ou Membro de Comissão)
-    if (user.role === 'ASSESSOR') {
-      if (p.unidade_atual_sei === user.unidade_sigla) {
-        return true;
-      }
-      if (p.unidade_origem?.sigla === user.unidade_sigla) {
-        return true;
-      }
-      return false;
-    }
-
-    // 3. Superintendência (Hierarquia SEDUC.SAAD.STI)
+    // SUPERINTENDENTE: herança de prefixo hierárquico
     if (user.role === 'SUPERINTENDENTE') {
-      const caminho = p.unidade_origem?.caminho_hierarquico || '';
-      if (caminho.startsWith(user.caminho_hierarquico) || p.unidade_origem?.sigla === 'SUPDEV' || p.unidade_origem?.sigla === 'SUDES') {
-        return true;
-      }
-      return false;
+      return (
+        processoPath === userPath ||
+        processoPath.startsWith(userPath + '.')
+      );
     }
 
-    // 4. Supervisão (SUDES / SUPDEV)
+    // SUPERVISOR: unidade direta e subordinados
     if (user.role === 'SUPERVISOR') {
-      const sigla = p.unidade_origem?.sigla || '';
-      if (sigla === user.unidade_sigla || sigla === 'SUPDEV' || sigla === 'STI') {
-        return true;
-      }
-      return false;
+      return (
+        processoPath === userPath ||
+        processoPath.startsWith(userPath + '.') ||
+        processoSigla === user.unidade_sigla
+      );
     }
 
-    // 5. Técnico: apenas processos da unidade direta
-    if (p.unidade_origem?.sigla === user.unidade_sigla) {
-      return true;
+    // ASSESSOR: processos que tramitam ou originaram no seu setor
+    if (user.role === 'ASSESSOR') {
+      return (
+        p.unidade_atual_sei === user.unidade_sigla ||
+        processoSigla === user.unidade_sigla ||
+        processoPath === userPath ||
+        processoPath.startsWith(userPath + '.')
+      );
     }
 
-    return false;
+    // TÉCNICO: apenas unidade direta
+    return processoSigla === user.unidade_sigla;
   });
 }

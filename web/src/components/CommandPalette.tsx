@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { mockProcessos } from '../lib/mockData';
 import { Processo } from '../lib/types';
+import { filterProcessosByRLS } from '../lib/rlsFilter';
+import { useAuth } from '../lib/authContext';
 import { 
   Search, 
   Command, 
@@ -24,6 +26,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   const [query, setQuery] = useState('');
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
@@ -46,9 +49,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
   if (!isOpen) return null;
 
+  // REMEDIAÇÃO P0-5: Aplica filtro RLS na busca global
+  const processosAutorizados = filterProcessosByRLS(mockProcessos, user);
   const filtered = query.trim() === '' 
-    ? mockProcessos.slice(0, 4) 
-    : mockProcessos.filter((p) => {
+    ? processosAutorizados.slice(0, 4) 
+    : processosAutorizados.filter((p) => {
         const q = query.toLowerCase();
         return (
           p.protocolo_sei.toLowerCase().includes(q) ||

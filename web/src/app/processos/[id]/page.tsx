@@ -9,6 +9,7 @@ import { SyncButton } from '../../../components/SyncButton';
 import { Breadcrumb } from '../../../components/Breadcrumb';
 import { Abbr, InfoTooltip } from '../../../components/Tooltip';
 import { useAuth } from '../../../lib/authContext';
+import { filterProcessosByRLS } from '../../../lib/rlsFilter';
 import { 
   ArrowLeft, 
   Building, 
@@ -33,8 +34,9 @@ export default function ProcessoDetalhePage() {
   const processoId = params.id as string;
   const { user } = useAuth();
 
-  // Busca o processo correspondente pelo ID
-  const processo = mockProcessos.find((p) => p.id === processoId);
+  // REMEDIAÇÃO P0-5: Aplica filtro RLS antes de buscar — usuário só vê processo se tiver permissão
+  const processosAutorizados = filterProcessosByRLS(mockProcessos, user);
+  const processo = processosAutorizados.find((p) => p.id === processoId);
   const eventos = processo ? (mockTramitacoes[processo.id] || []) : [];
 
   const [favorito, setFavorito] = useState(false);
