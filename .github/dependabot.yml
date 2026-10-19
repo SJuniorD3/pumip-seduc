@@ -1,0 +1,50 @@
+version: 2
+updates:
+  # Monitoramento de Dependências Frontend (Next.js / npm)
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "America/Fortaleza"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps-web)"
+      include: "scope"
+    labels:
+      - "dependencias"
+      - "frontend"
+      - "seguranca"
+
+  # Monitoramento de Dependências Worker (Python / pip)
+  - package-ecosystem: "pip"
+    directory: "/worker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:30"
+      timezone: "America/Fortaleza"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps-worker)"
+      include: "scope"
+    labels:
+      - "dependencias"
+      - "worker"
+      - "seguranca"
+
+  # Monitoramento de Ações do GitHub CI
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "America/Fortaleza"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - "ci"
+      - "seguranca"

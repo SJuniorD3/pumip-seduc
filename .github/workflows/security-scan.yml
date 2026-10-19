@@ -1,0 +1,37 @@
+name: PUMIP-SEDUC Segurança Estática (SAST & Secret Scanning)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1' # Toda segunda-feira às 03:00 UTC
+
+jobs:
+  secret-scan:
+    name: 1. Detecção de Segredos & Credenciais (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Executar Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sast-scan:
+    name: 2. Análise Estática de Vulnerabilidades (Semgrep SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Executar Semgrep OSS
+        run: |
+          python -m pip install --upgrade pip
+          pip install semgrep
+          semgrep scan --config auto --error --exclude "node_modules" --exclude ".next" --exclude "dist"
