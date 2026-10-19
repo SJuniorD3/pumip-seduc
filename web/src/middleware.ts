@@ -1,22 +1,43 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
 /**
- * PUMIP-SEDUC: Middleware de Proteção de Rotas e Isolamento de Sessão (SEG-02 / FE-01)
- * Em modo de produção, assegura que requisições para rotas restritas possuam
- * cookie de sessão institucional válido, redirecionando usuários não autenticados para /login.
+ * PUMIP-SEDUC: Middleware / Proxy de Proteção de Sessão e Renovação de Tokens (SEG-02)
+ * Valida a sessão Supabase Auth no servidor e renova cookies em trânsito.
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
   const mode = process.env.NEXT_PUBLIC_PUMIP_MODE;
   const isProduction = mode === 'production';
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({
+          request,
+        });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
   const { pathname } = request.nextUrl;
 
-  // Em modo demonstração, permite navegação livre para testes de usabilidade e RLS
-  if (!isProduction) {
-    return NextResponse.next();
-  }
-
-  // Rotas e assets públicos que não exigem sessão prévia
+  // Rotas estáticas e públicas isentas de checagem de autenticação
   const isPublicRoute =
     pathname.startsWith('/login') ||
     pathname.startsWith('/_next') ||
@@ -25,25 +46,21 @@ export function middleware(request: NextRequest) {
     pathname.includes('.');
 
   if (isPublicRoute) {
-    return NextResponse.next();
+    return response;
   }
 
-  // Em produção: verifica se há cookie de sessão Supabase
-  const allCookies = request.cookies.getAll();
-  const hasSupabaseSession = allCookies.some(
-    (c) =>
-      c.name.startsWith('sb-') ||
-      c.name.includes('supabase') ||
-      c.name.includes('auth-token')
-  );
+  // Em modo de produção, valida se a sessão é real no Supabase Auth
+  if (isProduction) {
+    const { data: { user } } = await supabase.auth.getUser();
 
-  if (!hasSupabaseSession) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+    if (!user) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
