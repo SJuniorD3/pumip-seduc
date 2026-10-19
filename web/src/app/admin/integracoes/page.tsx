@@ -207,7 +207,7 @@ export default function IntegracoesPage() {
             <div className="flex items-center gap-2 mb-1">
               <KeyRound className="w-6 h-6 text-red-600" />
               <h1 className="text-xl font-bold text-slate-900 tracking-tight">Gestão de Conectores, Credenciais & Resiliência</h1>
-              <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2.5 py-0.5 rounded-full border border-red-200 uppercase tracking-wider">Super Admin</span>
+              <span className="text-xs bg-red-100 text-red-800 font-bold px-2.5 py-0.5 rounded-full border border-red-200 uppercase tracking-wider">Super Admin</span>
             </div>
             <p className="text-xs text-slate-500 max-w-3xl leading-relaxed">Central de governança dos conectores de dados automatizados: SEI!, StartGov e PNCP.</p>
           </div>

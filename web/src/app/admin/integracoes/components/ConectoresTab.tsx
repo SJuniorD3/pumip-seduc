@@ -39,13 +39,13 @@ export const ConectoresTab: React.FC<ConectoresTabProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
               <span className="text-xs font-bold text-slate-800">SEI! Maranhão</span>
             </div>
-            <p className="text-[11px] text-slate-500">Última checagem: {config.sei.ultimaChecagem}</p>
+            <p className="text-xs text-slate-500">Última checagem: {config.sei.ultimaChecagem}</p>
           </div>
           <div className="text-right">
             <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
               {config.sei.latenciaMs}ms
             </span>
-            <p className="text-[10px] text-emerald-600 font-semibold mt-1">Status: Conectado</p>
+            <p className="text-xs text-emerald-600 font-semibold mt-1">Status: Conectado</p>
           </div>
         </div>
 
@@ -55,13 +55,13 @@ export const ConectoresTab: React.FC<ConectoresTabProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
               <span className="text-xs font-bold text-slate-800">StartGov Licitações</span>
             </div>
-            <p className="text-[11px] text-slate-500">Última checagem: {config.startgov.ultimaChecagem}</p>
+            <p className="text-xs text-slate-500">Última checagem: {config.startgov.ultimaChecagem}</p>
           </div>
           <div className="text-right">
             <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
               {config.startgov.latenciaMs}ms
             </span>
-            <p className="text-[10px] text-emerald-600 font-semibold mt-1">Status: Conectado</p>
+            <p className="text-xs text-emerald-600 font-semibold mt-1">Status: Conectado</p>
           </div>
         </div>
 
@@ -71,13 +71,13 @@ export const ConectoresTab: React.FC<ConectoresTabProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
               <span className="text-xs font-bold text-slate-800">PNCP Nacional</span>
             </div>
-            <p className="text-[11px] text-slate-500">Última checagem: {config.pncp.ultimaChecagem}</p>
+            <p className="text-xs text-slate-500">Última checagem: {config.pncp.ultimaChecagem}</p>
           </div>
           <div className="text-right">
             <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
               {config.pncp.latenciaMs}ms
             </span>
-            <p className="text-[10px] text-emerald-600 font-semibold mt-1">Status: Conectado</p>
+            <p className="text-xs text-emerald-600 font-semibold mt-1">Status: Conectado</p>
           </div>
         </div>
       </div>

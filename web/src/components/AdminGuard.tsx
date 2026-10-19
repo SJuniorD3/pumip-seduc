@@ -51,7 +51,7 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({ children, moduloNome }) 
         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 max-w-md mx-auto text-left text-xs space-y-2">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200 font-semibold text-slate-700">
             <span>Sua Sessão Atual:</span>
-            <span className="text-slate-500 font-mono text-[11px]">ID: {user.id}</span>
+            <span className="text-slate-500 font-mono text-xs">ID: {user.id}</span>
           </div>
           <div className="space-y-1 text-slate-600">
             <p><strong>Nome:</strong> {user.nome}</p>

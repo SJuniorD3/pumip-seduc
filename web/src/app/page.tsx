@@ -117,7 +117,7 @@ export default function DashboardPage() {
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
             Painel de Controle em Tempo Real
           </h2>
-          <span className="text-[11px] text-slate-400 italic hidden sm:inline">
+          <span className="text-xs text-slate-400 italic hidden sm:inline">
             Dica: clique em um card para filtrar a tabela automaticamente
           </span>
         </div>

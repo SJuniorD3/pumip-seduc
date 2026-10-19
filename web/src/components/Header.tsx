@@ -64,13 +64,13 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="flex items-center space-x-1.5 sm:space-x-2">
                     <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">PUMIP</span>
                     <span 
-                      className="text-[10px] sm:text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full border border-blue-200 cursor-help"
+                      className="text-xs sm:text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full border border-blue-200 cursor-help"
                       title="Secretaria de Estado da Educação do Governo do Maranhão"
                     >
                       SEDUC-MA
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 hidden sm:block">
+                  <p className="text-xs text-slate-500 hidden sm:block">
                     Plataforma Unificada de Monitoramento e Inteligência Processual
                   </p>
                 </div>
@@ -88,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition shrink-0" />
                 <span className="text-slate-600 font-medium truncate">Buscar processo, TR ou setor...</span>
               </div>
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-white text-slate-500 rounded border border-slate-300 shadow-sm shrink-0">
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-mono bg-white text-slate-500 rounded border border-slate-300 shadow-sm shrink-0">
                 <Command className="w-3 h-3" /> K
               </kbd>
             </button>
@@ -141,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-slate-500 text-[10px]">
+                  <div className="flex items-center gap-1 text-slate-500 text-xs">
                     <span className="font-semibold text-blue-700">{user.unidade_sigla}</span>
                     <span>&bull;</span>
                     <span>SEDUC-MA</span>

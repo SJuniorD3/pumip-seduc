@@ -85,7 +85,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {isVisible && content && (
         <span
           role="tooltip"
-          className={`absolute ${getPositionClasses()} z-50 pointer-events-none whitespace-normal min-w-[160px] max-w-xs bg-slate-900 text-slate-100 text-[11px] leading-relaxed font-normal px-2.5 py-1.5 rounded-lg shadow-xl border border-slate-700/80 animate-fade-in`}
+          className={`absolute ${getPositionClasses()} z-50 pointer-events-none whitespace-normal min-w-[160px] max-w-xs bg-slate-900 text-slate-100 text-xs leading-relaxed font-normal px-2.5 py-1.5 rounded-lg shadow-xl border border-slate-700/80 animate-fade-in`}
         >
           {content}
           <span className={`absolute ${getArrowClasses()}`} />

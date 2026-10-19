@@ -33,12 +33,12 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-200 space-y-1">
-            <span className="text-[11px] text-purple-800 font-bold uppercase">Status Atual do Disjuntor</span>
+            <span className="text-xs text-purple-800 font-bold uppercase">Status Atual do Disjuntor</span>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-sm font-bold text-slate-900">FECHADO (Operando Normalmente)</span>
             </div>
-            <p className="text-[10px] text-slate-500 mt-1">Nenhuma falha consecutiva detectada.</p>
+            <p className="text-xs text-slate-500 mt-1">Nenhuma falha consecutiva detectada.</p>
           </div>
 
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
@@ -56,7 +56,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
               })}
               className="w-full text-xs font-bold px-3 py-2 bg-white border border-slate-300 rounded-lg"
             />
-            <span className="text-[10px] text-slate-500 block">Padrão: 5 erros consecutivos</span>
+            <span className="text-xs text-slate-500 block">Padrão: 5 erros consecutivos</span>
           </div>
 
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
@@ -74,7 +74,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
               })}
               className="w-full text-xs font-bold px-3 py-2 bg-white border border-slate-300 rounded-lg"
             />
-            <span className="text-[10px] text-slate-500 block">Padrão: 10 minutos em repouso</span>
+            <span className="text-xs text-slate-500 block">Padrão: 10 minutos em repouso</span>
           </div>
         </div>
       </div>
@@ -110,7 +110,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
               })}
               className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
             />
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               Controla o número de chamadas ao SEI! para garantir que o coletor permaneça seguro e abaixo do limite de saturação da ATI-MA.
             </p>
           </div>
@@ -129,7 +129,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
                 />
                 <span>Espaçamento Aleatório de Conexão (<em>Jitter</em>)</span>
               </label>
-              <p className="text-[11px] text-slate-500 pl-6">
+              <p className="text-xs text-slate-500 pl-6">
                 Adiciona pequenas variações aleatórias de 2 a 7 segundos para evitar picos simultâneos (<em>thundering herd</em>).
               </p>
 
@@ -159,7 +159,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
               Webhooks Inbound: Recepção Ativa de Eventos (Push)
             </h3>
           </div>
-          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-200">
+          <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-200">
             Modo Híbrido Ativo
           </span>
         </div>
@@ -170,7 +170,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
 
         <div className="space-y-3 font-mono text-xs">
           <div>
-            <label className="block text-[11px] font-sans font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-sans font-semibold text-slate-700 mb-1">
               Endpoint de Webhook para o SEI! do Maranhão
             </label>
             <div className="flex items-center gap-2">
@@ -183,7 +183,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
               <button
                 type="button"
                 onClick={() => alert('URL copiada para a área de transferência')}
-                className="px-3 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-[11px] font-sans font-bold"
+                className="px-3 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-sans font-bold"
               >
                 Copiar
               </button>
@@ -191,7 +191,7 @@ export const ResilienciaTab: React.FC<ResilienciaTabProps> = ({
           </div>
 
           <div>
-            <label className="block text-[11px] font-sans font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-sans font-semibold text-slate-700 mb-1">
               Chave Secreta de Assinatura HMAC (Configurada no Servidor)
             </label>
             <input

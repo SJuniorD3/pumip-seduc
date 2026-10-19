@@ -92,7 +92,7 @@ export default function LoginPage() {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="text-2xl font-black tracking-tight text-white">PUMIP</span>
-                  <span className="text-[11px] bg-blue-500/30 text-blue-200 border border-blue-400/40 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-xs bg-blue-500/30 text-blue-200 border border-blue-400/40 px-2 py-0.5 rounded-full font-bold">
                     SEDUC-MA
                   </span>
                 </div>
@@ -119,7 +119,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <strong className="text-white block font-semibold">Segurança RLS Hierárquica</strong>
-                <span className="text-slate-300 text-[11px]">
+                <span className="text-slate-300 text-xs">
                   Regra de não ampliação de acesso conforme o organograma oficial da SEDUC-MA.
                 </span>
               </div>
@@ -131,7 +131,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <strong className="text-white block font-semibold">Interoperabilidade em Tempo Real</strong>
-                <span className="text-slate-300 text-[11px]">
+                <span className="text-slate-300 text-xs">
                   Cruzamento automático entre despachos no SEI, lances no StartGov e contratos do PNCP.
                 </span>
               </div>
@@ -143,7 +143,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <strong className="text-white block font-semibold">Conformidade Legal & LGPD</strong>
-                <span className="text-slate-300 text-[11px]">
+                <span className="text-slate-300 text-xs">
                   Rastreabilidade ponta a ponta e auditabilidade estrita segundo a LAI e a LGPD.
                 </span>
               </div>
@@ -151,9 +151,9 @@ export default function LoginPage() {
           </div>
 
           {/* Rodapé Institucional */}
-          <div className="relative z-10 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="relative z-10 text-xs text-slate-400 flex items-center justify-between">
             <span>Secretaria de Estado da Educação</span>
-            <span className="font-mono bg-white/10 px-2 py-0.5 rounded text-[10px] text-slate-300">
+            <span className="font-mono bg-white/10 px-2 py-0.5 rounded text-xs text-slate-300">
               v2.0 Oficial
             </span>
           </div>
@@ -168,7 +168,7 @@ export default function LoginPage() {
                 <h2 className="text-xl font-bold text-slate-900">
                   Acesso ao Sistema
                 </h2>
-                <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-semibold border border-slate-200">
+                <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-semibold border border-slate-200">
                   Terminal Autenticado
                 </span>
               </div>
@@ -211,12 +211,13 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Campo de E-mail */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  <label htmlFor="login-email" className="block text-xs font-bold text-slate-700 mb-1.5">
                     E-mail Institucional (@seduc.ma.gov.br)
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
+                      id="login-email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -230,13 +231,13 @@ export default function LoginPage() {
                 {/* Campo de Senha */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-slate-700">
+                    <label htmlFor="login-password" className="block text-xs font-bold text-slate-700">
                       Senha de Rede / SEI
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowForgotModal(true)}
-                      className="text-[11px] font-semibold text-blue-600 hover:underline hover:text-blue-800"
+                      className="text-xs font-semibold text-blue-600 hover:underline hover:text-blue-800"
                     >
                       Esqueceu a senha?
                     </button>
@@ -244,6 +245,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
+                      id="login-password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -254,8 +256,9 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded focus-visible:ring-2 focus-visible:ring-blue-600"
                       title={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+                      aria-label={showPassword ? 'Ocultar senha digitada' : 'Exibir senha digitada'}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -264,8 +267,9 @@ export default function LoginPage() {
 
                 {/* Lembrar e Segurança */}
                 <div className="flex items-center justify-between pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600">
+                  <label htmlFor="login-remember-me" className="flex items-center gap-2 cursor-pointer text-xs text-slate-600">
                     <input
+                      id="login-remember-me"
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
@@ -274,7 +278,7 @@ export default function LoginPage() {
                     <span className="font-medium">Lembrar neste computador</span>
                   </label>
 
-                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <span className="text-xs text-slate-400 flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     Sessão Criptografada
                   </span>
@@ -341,7 +345,7 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                <p className="text-[11px] text-slate-400 italic">
+                <p className="text-xs text-slate-400 italic">
                   O perfil e as permissões de acesso serão vinculados automaticamente ao seu CPF cadastrado na SEDUC.
                 </p>
               </div>
@@ -351,11 +355,11 @@ export default function LoginPage() {
             {isDemoMode() && (
               <div className="mt-6 pt-5 border-t border-slate-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
+                  <span className="text-xs uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                     <span>Acesso Rápido para Avaliação de Perfis (1-Clique)</span>
                   </span>
-                  <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.2 rounded font-semibold border border-blue-200">
+                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.2 rounded font-semibold border border-blue-200">
                     Demonstração RLS
                   </span>
                 </div>
@@ -371,7 +375,7 @@ export default function LoginPage() {
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
                       Sérvulo Junior
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">SUDES / STI</p>
+                    <p className="text-xs text-slate-500 truncate">SUDES / STI</p>
                     <span className="text-[9px] text-blue-700 font-semibold bg-blue-50 px-1 py-0.2 rounded mt-1 inline-block">
                       SUPERVISOR
                     </span>
@@ -387,7 +391,7 @@ export default function LoginPage() {
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
                       Natália Jansen
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">Superintendente STI</p>
+                    <p className="text-xs text-slate-500 truncate">Superintendente STI</p>
                     <span className="text-[9px] text-indigo-700 font-semibold bg-indigo-50 px-1 py-0.2 rounded mt-1 inline-block">
                       SUPERINTENDENTE
                     </span>
@@ -403,7 +407,7 @@ export default function LoginPage() {
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
                       Valter Veras
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">Assessor ASJUR</p>
+                    <p className="text-xs text-slate-500 truncate">Assessor ASJUR</p>
                     <span className="text-[9px] text-purple-700 font-semibold bg-purple-50 px-1 py-0.2 rounded mt-1 inline-block">
                       ASSESSOR
                     </span>
@@ -419,7 +423,7 @@ export default function LoginPage() {
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
                       Sec. de Educação
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">Gabinete SEDUC</p>
+                    <p className="text-xs text-slate-500 truncate">Gabinete SEDUC</p>
                     <span className="text-[9px] text-amber-800 font-semibold bg-amber-50 px-1 py-0.2 rounded mt-1 inline-block">
                       SECRETARIO
                     </span>
@@ -435,7 +439,7 @@ export default function LoginPage() {
                     <p className="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">
                       Administrador TI
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">Gestão & Acessos</p>
+                    <p className="text-xs text-slate-500 truncate">Gestão & Acessos</p>
                     <span className="text-[9px] text-red-700 font-bold bg-red-50 px-1 py-0.2 rounded mt-1 inline-block">
                       ADMIN TOTAL
                     </span>
@@ -446,7 +450,7 @@ export default function LoginPage() {
           </div>
 
           {/* Rodapé de Auditoria e Aviso Legal */}
-          <div className="pt-6 mt-6 border-t border-slate-200 text-[10px] text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="pt-6 mt-6 border-t border-slate-200 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>
               Conforme a Lei nº 12.527/2011 (LAI) e Lei nº 13.709/2018 (LGPD).
             </span>

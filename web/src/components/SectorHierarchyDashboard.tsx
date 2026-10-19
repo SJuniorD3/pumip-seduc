@@ -210,7 +210,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
 
         {selectedSector && (
           <div className="flex items-center gap-2">
-            <span className="bg-blue-600 text-white font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-xs text-[11px]">
+            <span className="bg-blue-600 text-white font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-xs text-xs">
               <span>Setor: {selectedSector}</span>
               <button
                 type="button"
@@ -224,7 +224,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
             <button
               type="button"
               onClick={() => onSelectSector(null)}
-              className="text-[11px] text-slate-500 hover:text-slate-800 font-semibold underline"
+              className="text-xs text-slate-500 hover:text-slate-800 font-semibold underline"
             >
               Ver todos os setores
             </button>
@@ -244,11 +244,11 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                   Onde Estão os Processos Agora? (Carga por Setor)
                 </h3>
               </div>
-              <span className="text-[10px] text-slate-400 italic hidden sm:inline">
+              <span className="text-xs text-slate-400 italic hidden sm:inline">
                 Clique em uma barra para filtrar
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed mb-3">
+            <p className="text-xs text-slate-500 leading-relaxed mb-3">
               Representação do volume de processos físicos ou digitais retidos na unidade atual segundo o SEI-MA.
             </p>
 
@@ -292,15 +292,15 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                     >
                       <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
                         <div className="flex items-center gap-2 truncate">
-                          <span className={`px-2 py-0.5 rounded font-mono font-bold text-[11px] border ${
+                          <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs border ${
                             isSelected ? 'bg-blue-600 text-white border-blue-700' : 'bg-slate-100 text-slate-800 border-slate-300'
                           }`}>
                             <Abbr sigla={setor.sigla} descricao={setor.nome} />
                           </span>
-                          <span className="text-slate-800 truncate text-[11px]">{setor.nome}</span>
+                          <span className="text-slate-800 truncate text-xs">{setor.nome}</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] text-slate-500 font-mono">
+                          <span className="text-xs text-slate-500 font-mono">
                             Média: <strong>{setor.mediaDias}d úteis</strong>
                           </span>
                           <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">
@@ -324,7 +324,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
           </div>
 
           {/* Legenda de Inércia */}
-          <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-slate-200">
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-200">
             <span className="font-semibold text-slate-600">Semáforo de Retenção:</span>
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1" title="Menos de 5 dias úteis sem movimentação: Dentro do prazo regular">
@@ -352,7 +352,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                   <InfoTooltip content="Ciclo de contratação pública conforme a Lei Federal nº 14.133/2021: desde a fase preparatória interna no SEI até a disputa no StartGov e publicação no PNCP." />
                 </h3>
               </div>
-              <span className="text-[10px] text-slate-400 font-mono">SEI + StartGov</span>
+              <span className="text-xs text-slate-400 font-mono">SEI + StartGov</span>
             </div>
 
             <div className="space-y-2.5 pt-1">
@@ -367,7 +367,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                     title={`Fase: ${fase.label}\nProcessos nesta etapa: ${fase.count} (${percent}% do total filtrado)`}
                   >
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-slate-700 text-[11px] truncate group-hover/fase:text-blue-700 transition">
+                      <span className="text-slate-700 text-xs truncate group-hover/fase:text-blue-700 transition">
                         {fase.label}
                       </span>
                       <span className="font-mono text-slate-900 font-bold shrink-0">
@@ -401,7 +401,7 @@ export const SectorHierarchyDashboard: React.FC<SectorHierarchyDashboardProps> =
                 A <strong>{setorMaiorGargalo.nome} (<Abbr sigla={setorMaiorGargalo.sigla} />)</strong> concentra a maior média de permanência da carteira: 
                 <span className="text-red-700 font-bold ml-1">{setorMaiorGargalo.mediaDias} dias úteis</span> por processo.
               </p>
-              <div className="pt-1 flex items-center justify-between text-[11px] text-amber-900 font-semibold border-t border-amber-200/80">
+              <div className="pt-1 flex items-center justify-between text-xs text-amber-900 font-semibold border-t border-amber-200/80">
                 <span>{setorMaiorGargalo.total} processos nesta unidade</span>
                 <button
                   type="button"

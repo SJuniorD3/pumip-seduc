@@ -90,12 +90,12 @@ export const KPICards: React.FC<KPICardsProps> = ({
         </div>
         <div className="mt-2 flex items-baseline justify-between">
           <p className="text-2xl font-bold text-slate-900">{total}</p>
-          <span className="text-[11px] text-emerald-700 font-bold flex items-center bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-xs text-emerald-700 font-bold flex items-center bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
             <ArrowUpRight className="w-3 h-3 mr-0.5" />
             100% integrados
           </span>
         </div>
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-xs text-slate-500">
           <span>
             <Abbr sigla="SEI" /> + <Abbr sigla="StartGov" />
           </span>
@@ -133,18 +133,18 @@ export const KPICards: React.FC<KPICardsProps> = ({
         </div>
         <div className="mt-2 flex items-baseline justify-between">
           <p className="text-2xl font-bold text-red-600">{criticos}</p>
-          <span className="text-[11px] text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
+          <span className="text-xs text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
             &gt; 5 dias úteis sem avanço
           </span>
         </div>
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-xs text-slate-500">
           <span className="text-red-700 font-medium">Exigem despacho urgente</span>
           {activeFilter === 'CRITICOS' ? (
             <span className="text-red-700 font-bold flex items-center gap-0.5">
               <Check className="w-3 h-3" /> Filtrado
             </span>
           ) : (
-            <span className="text-slate-400 group-hover:text-red-600 font-medium text-[10px]">
+            <span className="text-slate-400 group-hover:text-red-600 font-medium text-xs">
               Filtrar &rarr;
             </span>
           )}
@@ -177,18 +177,18 @@ export const KPICards: React.FC<KPICardsProps> = ({
         </div>
         <div className="mt-2 flex items-baseline justify-between">
           <p className="text-2xl font-bold text-emerald-600">{emLicitacao}</p>
-          <span className="text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-xs text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
             StartGov Ativo
           </span>
         </div>
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-xs text-slate-500">
           <span>Pregão ou Dispensa</span>
           {activeFilter === 'CONTRATACAO' ? (
             <span className="text-emerald-700 font-bold flex items-center gap-0.5">
               <Check className="w-3 h-3" /> Filtrado
             </span>
           ) : (
-            <span className="text-slate-400 group-hover:text-emerald-600 font-medium text-[10px]">
+            <span className="text-slate-400 group-hover:text-emerald-600 font-medium text-xs">
               Filtrar &rarr;
             </span>
           )}
@@ -223,18 +223,18 @@ export const KPICards: React.FC<KPICardsProps> = ({
           <p className="text-2xl font-bold text-purple-900">
             <Abbr sigla={maiorGargaloSetor} />
           </p>
-          <span className="text-[11px] text-purple-800 font-bold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+          <span className="text-xs text-purple-800 font-bold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
             Média: {maiorMediaDias.toFixed(1)}d úteis
           </span>
         </div>
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 text-xs text-slate-500">
           <span>Tempo médio de retenção</span>
           {activeFilter === 'SETOR_GARGALO' ? (
             <span className="text-purple-700 font-bold flex items-center gap-0.5">
               <Check className="w-3 h-3" /> Filtrado
             </span>
           ) : (
-            <span className="text-slate-400 group-hover:text-purple-600 font-medium text-[10px]">
+            <span className="text-slate-400 group-hover:text-purple-600 font-medium text-xs">
               Filtrar &rarr;
             </span>
           )}

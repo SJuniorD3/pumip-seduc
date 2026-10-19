@@ -89,7 +89,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
                     {colProcessos.length}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">{col.description}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{col.description}</p>
               </div>
 
               {/* Lista de Cards da Coluna */}
@@ -110,7 +110,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
                         <div className="flex items-center justify-between mb-2">
                           <span
                             title={`Prioridade ${proc.prioridade}: ${proc.prioridade === 'QUENTE' ? 'Risco iminente de desabastecimento ou prazo fatal' : proc.prioridade === 'MORNO' ? 'Instrução regular em andamento' : 'Planejamento ou baixa urgência'}`}
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getPriorityBadge(
+                            className={`text-xs font-bold px-2 py-0.5 rounded border ${getPriorityBadge(
                               proc.prioridade
                             )}`}
                           >
@@ -119,7 +119,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
 
                           <div
                             title={`Permanência líquida na unidade atual: ${proc.dias_parado_na_unidade} dias úteis (Meta de SLA SEDUC: máx 5 dias)`}
-                            className={`flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded ${
+                            className={`flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded ${
                               slaEstourado
                                 ? 'bg-red-50 text-red-700 border border-red-200'
                                 : 'bg-slate-50 text-slate-600'
@@ -154,7 +154,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ processos }) => {
                         </p>
 
                         {/* Rodapé do Card */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
                           <span 
                             title={`Unidade de lotação atual do processo: ${proc.unidade_atual_sei}`}
                             className="flex items-center gap-1 font-semibold text-slate-600"

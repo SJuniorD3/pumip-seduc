@@ -168,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
         {/* Botão de Alternância de Recolhimento da Sidebar no Desktop */}
         <div className="hidden lg:flex items-center justify-between pb-2 border-b border-slate-800/80">
           {!isCollapsed && (
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
               Menu Principal
             </span>
           )}
@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
             ) : (
               <div className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200">
                 <PanelLeftClose className="w-4 h-4" />
-                <span className="text-[11px]">Recolher</span>
+                <span className="text-xs">Recolher</span>
               </div>
             )}
           </button>
@@ -209,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
                 <p className="text-xs font-bold text-white truncate leading-tight">
                   {user.nome}
                 </p>
-                <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                <p className="text-xs text-slate-400 truncate mt-0.5">
                   {user.unidade_sigla} &bull; {user.role}
                 </p>
               </div>
@@ -238,7 +238,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
           <button
             type="button"
             onClick={() => setSectionOperacaoOpen(prev => !prev)}
-            className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-[11px] uppercase tracking-wider font-bold mb-1 ${
+            className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-xs uppercase tracking-wider font-bold mb-1 ${
               isCollapsed ? 'justify-center' : ''
             }`}
             title={sectionOperacaoOpen ? 'Suprimir seção de Operação' : 'Expandir seção de Operação'}
@@ -298,7 +298,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
             <button
               type="button"
               onClick={() => setSectionAdminOpen(prev => !prev)}
-              className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-[11px] uppercase tracking-wider font-bold mb-1 ${
+              className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-xs uppercase tracking-wider font-bold mb-1 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
               title={sectionAdminOpen ? 'Suprimir seção de Administração' : 'Expandir seção de Administração'}
@@ -362,7 +362,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
           <button
             type="button"
             onClick={() => setSectionFontesOpen(prev => !prev)}
-            className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-[11px] uppercase tracking-wider font-bold mb-1 ${
+            className={`w-full flex items-center justify-between text-slate-400 hover:text-white px-2 py-1 rounded-md transition text-xs uppercase tracking-wider font-bold mb-1 ${
               isCollapsed ? 'justify-center' : ''
             }`}
             title={sectionFontesOpen ? 'Suprimir fontes integradas' : 'Expandir fontes integradas'}
@@ -394,12 +394,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
                   {!isCollapsed && (
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-slate-200">SEI! GOVMA</span>
+                        <span className="text-xs font-bold text-slate-200">SEI! GOVMA</span>
                         <span className="text-[9px] bg-blue-900/60 text-blue-300 px-1.5 py-0.2 rounded font-medium border border-blue-700/50">
                           Consulta
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-mono">Hoje às 14:00</p>
+                      <p className="text-xs text-slate-400 font-mono">Hoje às 14:00</p>
                     </div>
                   )}
                 </div>
@@ -417,12 +417,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
                   {!isCollapsed && (
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-slate-200">StartGov</span>
+                        <span className="text-xs font-bold text-slate-200">StartGov</span>
                         <span className="text-[9px] bg-emerald-900/60 text-emerald-300 px-1.5 py-0.2 rounded font-medium border border-emerald-700/50">
                           API
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-mono">Hoje às 13:45</p>
+                      <p className="text-xs text-slate-400 font-mono">Hoje às 13:45</p>
                     </div>
                   )}
                 </div>
@@ -440,12 +440,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
                   {!isCollapsed && (
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-slate-200">PNCP Federal</span>
+                        <span className="text-xs font-bold text-slate-200">PNCP Federal</span>
                         <span className="text-[9px] bg-amber-900/60 text-amber-300 px-1.5 py-0.2 rounded font-medium border border-amber-700/50">
                           Lei 14.133
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-mono">Hoje às 12:30</p>
+                      <p className="text-xs text-slate-400 font-mono">Hoje às 12:30</p>
                     </div>
                   )}
                 </div>
@@ -462,18 +462,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onCloseMob
             <div className="flex items-center justify-between text-slate-300">
               <div className="flex items-center space-x-1.5">
                 <Server className="w-3.5 h-3.5 text-blue-400" />
-                <span className="font-semibold text-slate-200 text-[11px]">SEDUC-MA &bull; PUMIP</span>
+                <span className="font-semibold text-slate-200 text-xs">SEDUC-MA &bull; PUMIP</span>
               </div>
               <button
                 type="button"
                 onClick={toggleSidebarCollapse}
-                className="text-[10px] text-blue-400 hover:text-blue-300 font-semibold"
+                className="text-xs text-blue-400 hover:text-blue-300 font-semibold"
                 title="Ativar modo limpo de tela cheia"
               >
                 Clean Mode
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 leading-tight">
+            <p className="text-xs text-slate-400 leading-tight">
               Monitoramento Unificado de Processos e Inteligência.
             </p>
           </div>

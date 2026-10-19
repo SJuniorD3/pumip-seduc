@@ -243,7 +243,7 @@ export default function PcaPage() {
           title="Total de demandas de compras e serviços formalizadas e aprovadas no Plano de Contratações Anual da SEDUC-MA"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
               Itens Planejados no PCA
             </span>
             <InfoTooltip content="Itens catalogados para o exercício de 2026 conforme planejamento das unidades demandantes." />
@@ -264,7 +264,7 @@ export default function PcaPage() {
           title="Demandas que já tramitaram internamente no SEI e estão com certame aberto ou pregão em andamento no StartGov"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
               Em Licitação (StartGov)
             </span>
             <InfoTooltip content="Fase externa da contratação: certames abertos para disputa pública de propostas e lances." />
@@ -273,7 +273,7 @@ export default function PcaPage() {
             <span className="text-2xl font-bold text-emerald-600">{emLicitacao}</span>
             <span className="text-xs text-emerald-800 font-medium">Fase Externa</span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Disputa de preços em curso</p>
+          <p className="text-xs text-slate-500 mt-1">Disputa de preços em curso</p>
         </div>
 
         <div 
@@ -281,7 +281,7 @@ export default function PcaPage() {
           title="Contratos já formalizados e assinados, devidamente publicados no Portal Nacional de Contratações Públicas (PNCP)"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
               Contratados / Vigentes
             </span>
             <InfoTooltip content="Contratos formalizados e vigentes em cumprimento ao Art. 94 da Lei 14.133/2021." />
@@ -290,7 +290,7 @@ export default function PcaPage() {
             <span className="text-2xl font-bold text-purple-600">{contratados}</span>
             <span className="text-xs text-purple-800 font-medium">Publicado PNCP</span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Contrato assinado em execução</p>
+          <p className="text-xs text-slate-500 mt-1">Contrato assinado em execução</p>
         </div>
 
         <div 
@@ -298,7 +298,7 @@ export default function PcaPage() {
           title="Demandas previstas no planejamento anual que ainda não tiveram processo autuado no SEI pelas unidades demandantes"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
               Demandas Não Iniciadas
             </span>
             <InfoTooltip content="Itens que exigem provocação da unidade demandante para elaboração do DFD (Documento de Formalização da Demanda)." />
@@ -309,7 +309,7 @@ export default function PcaPage() {
               Ação Requerida
             </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Sem processo autuado no SEI</p>
+          <p className="text-xs text-slate-500 mt-1">Sem processo autuado no SEI</p>
         </div>
       </div>
 
@@ -319,6 +319,8 @@ export default function PcaPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            id="pca-search"
+            aria-label="Buscar demandas no Plano de Contratações Anual por código, objeto ou unidade"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por código PCA, objeto ou unidade..."
@@ -330,6 +332,8 @@ export default function PcaPage() {
           <Filter className="w-4 h-4 text-slate-500" />
           <span className="text-xs text-slate-600 font-medium">Status:</span>
           <select
+            id="pca-filter-status"
+            aria-label="Filtrar demandas por status do PCA"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -347,7 +351,7 @@ export default function PcaPage() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">
                   <div className="flex items-center gap-1.5">
@@ -406,7 +410,7 @@ export default function PcaPage() {
                     </p>
                     <span 
                       title={`Classificação orçamentária: ${item.categoria}`}
-                      className="text-[10px] text-slate-400 cursor-help"
+                      className="text-xs text-slate-400 cursor-help"
                     >
                       Categoria: {item.categoria}
                     </span>
@@ -442,7 +446,7 @@ export default function PcaPage() {
                     ) : (
                       <span 
                         title="A unidade demandante ainda não cadastrou o processo administrativo no SEI para formalizar este item"
-                        className="text-[11px] text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200 font-sans font-medium cursor-help"
+                        className="text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200 font-sans font-medium cursor-help"
                       >
                         Pendente de autuação
                       </span>
@@ -452,7 +456,7 @@ export default function PcaPage() {
                   <td className="py-3 px-4 text-center">
                     <span 
                       title={`Status de Execução: ${formatStatusLabel(item.statusExecucao)}`}
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full border cursor-help ${getStatusBadge(item.statusExecucao)}`}
+                      className={`text-xs font-bold px-2.5 py-1 rounded-full border cursor-help ${getStatusBadge(item.statusExecucao)}`}
                     >
                       {formatStatusLabel(item.statusExecucao)}
                     </span>

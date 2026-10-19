@@ -18,7 +18,7 @@ export const AuditTrailTable: React.FC<AuditTrailTableProps> = ({ auditLogs }) =
             Trilha de Auditoria de Acesso e Modificações (Super Admin)
           </h3>
         </div>
-        <span className="text-[11px] text-slate-500 font-mono">
+        <span className="text-xs text-slate-500 font-mono">
           Registros imutáveis &bull; LGPD Art. 37
         </span>
       </div>
@@ -47,7 +47,7 @@ export const AuditTrailTable: React.FC<AuditTrailTableProps> = ({ auditLogs }) =
                   {log.acao}
                 </td>
                 <td className="py-2.5 px-3">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                     log.sistema === 'SEI' 
                       ? 'bg-blue-50 text-blue-800 border-blue-200' 
                       : log.sistema === 'STARTGOV'
@@ -59,7 +59,7 @@ export const AuditTrailTable: React.FC<AuditTrailTableProps> = ({ auditLogs }) =
                     {log.sistema}
                   </span>
                 </td>
-                <td className="py-2.5 px-3 font-mono text-[11px] text-slate-500">
+                <td className="py-2.5 px-3 font-mono text-xs text-slate-500">
                   {log.ipOrigem}
                 </td>
               </tr>

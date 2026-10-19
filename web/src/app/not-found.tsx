@@ -24,7 +24,7 @@ export default function NotFound() {
 
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-left flex items-start gap-2.5">
           <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-slate-600 leading-relaxed">
+          <p className="text-xs text-slate-600 leading-relaxed">
             Caso este seja um processo que deveria tramitar em sua unidade, consulte a Assessoria Jurídica (ASJUR) ou o Administrador de TI para concessão formal de acesso (RF02).
           </p>
         </div>

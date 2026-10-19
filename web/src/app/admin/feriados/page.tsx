@@ -149,7 +149,7 @@ export default function AdminFeriadosPage() {
               <span>Calendário de Feriados e Cálculo de Dias Úteis (RF04)</span>
               <InfoTooltip content="Cálculo oficial de permanência e SLA processual conforme Art. 183 da Lei 14.133/2021: exclui o dia do começo e inclui o do vencimento. Aplica o algoritmo de Meeus/Jones/Butcher para feriados móveis da Páscoa." />
             </h1>
-            <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
+            <span className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
               Módulo ADMIN
             </span>
           </div>
@@ -189,10 +189,12 @@ export default function AdminFeriadosPage() {
 
           <form onSubmit={handleAddCustom} className="space-y-3 text-xs">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">
+              <label htmlFor="feriado-nova-data" className="block text-slate-700 font-semibold mb-1">
                 Data da Suspensão:
               </label>
               <input
+                id="feriado-nova-data"
+                aria-label="Data da suspensão do expediente"
                 type="date"
                 required
                 value={novaData}
@@ -202,10 +204,12 @@ export default function AdminFeriadosPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">
+              <label htmlFor="feriado-novo-nome" className="block text-slate-700 font-semibold mb-1">
                 Descrição / Portaria:
               </label>
               <input
+                id="feriado-novo-nome"
+                aria-label="Descrição ou portaria da suspensão"
                 type="text"
                 required
                 value={novoNome}
@@ -246,8 +250,10 @@ export default function AdminFeriadosPage() {
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">Entrada na Unidade:</label>
+              <label htmlFor="simulador-test-inicio" className="block text-slate-700 font-semibold mb-1">Entrada na Unidade:</label>
               <input
+                id="simulador-test-inicio"
+                aria-label="Data de entrada na unidade"
                 type="date"
                 value={testInicio}
                 onChange={(e) => setTestInicio(e.target.value)}
@@ -255,8 +261,10 @@ export default function AdminFeriadosPage() {
               />
             </div>
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">Saída / Consulta:</label>
+              <label htmlFor="simulador-test-fim" className="block text-slate-700 font-semibold mb-1">Saída / Consulta:</label>
               <input
+                id="simulador-test-fim"
+                aria-label="Data de saída ou consulta"
                 type="date"
                 value={testFim}
                 onChange={(e) => setTestFim(e.target.value)}
@@ -290,12 +298,12 @@ export default function AdminFeriadosPage() {
               </div>
               {testResult.feriadosCruzados.length > 0 && (
                 <div className="pt-2 border-t border-slate-100">
-                  <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+                  <span className="text-xs font-semibold text-slate-500 block mb-1">
                     Feriados descontados no período ({testResult.feriadosCruzados.length}):
                   </span>
                   <div className="space-y-1">
                     {testResult.feriadosCruzados.map((fc, i) => (
-                      <span key={i} className="inline-block bg-amber-50 text-amber-900 border border-amber-200 text-[10px] px-2 py-0.5 rounded mr-1 mb-1">
+                      <span key={i} className="inline-block bg-amber-50 text-amber-900 border border-amber-200 text-xs px-2 py-0.5 rounded mr-1 mb-1">
                         {fc.data}: {fc.nome}
                       </span>
                     ))}
@@ -314,11 +322,11 @@ export default function AdminFeriadosPage() {
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
               Feriados em Vigor no Calendário ({ano})
             </h3>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Total de {feriadosOficiais.length + feriadosCustom.length} datas cadastradas para o exercício.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-[10px]">
+          <div className="flex items-center gap-2 text-xs">
             <span className="flex items-center gap-1 font-semibold text-blue-900">
               <span className="w-2 h-2 rounded-full bg-blue-600"></span> Nacional
             </span>
@@ -333,7 +341,7 @@ export default function AdminFeriadosPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">
                   <span className="flex items-center gap-1">
@@ -368,12 +376,12 @@ export default function AdminFeriadosPage() {
                     {fc.nome}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-purple-100 text-purple-900 border-purple-200">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded border bg-purple-100 text-purple-900 border-purple-200">
                       Ponto Facultativo SEDUC
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center">
-                    <span className="text-[10px] text-slate-500">Administrativo</span>
+                    <span className="text-xs text-slate-500">Administrativo</span>
                   </td>
                   <td className="py-3 px-4 text-right">
                     <button
@@ -397,14 +405,14 @@ export default function AdminFeriadosPage() {
                     {fo.nome}
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getTipoBadge(fo.tipo)}`}>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded border ${getTipoBadge(fo.tipo)}`}>
                       {formatTipoLabel(fo.tipo)}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-center text-slate-500 text-[11px]">
+                  <td className="py-3 px-4 text-center text-slate-500 text-xs">
                     {fo.fixo ? 'Data Fixa' : 'Data Móvel'}
                   </td>
-                  <td className="py-3 px-4 text-right text-slate-400 text-[11px]">
+                  <td className="py-3 px-4 text-right text-slate-400 text-xs">
                     Oficial
                   </td>
                 </tr>

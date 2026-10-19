@@ -376,7 +376,7 @@ export default function ProcessoDetalhePage() {
             >
               <div className="flex items-center justify-center gap-1.5 mb-0.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${semaforo.dotClass}`}></span>
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-600">
+                <span className="text-xs uppercase tracking-wider font-bold text-slate-600">
                   Tempo Parado
                 </span>
               </div>
@@ -392,7 +392,7 @@ export default function ProcessoDetalhePage() {
               title={`Lotação atual do processo na estrutura organizacional da SEDUC: ${processo.unidade_atual_sei}`}
               className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center min-w-[120px]"
             >
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block mb-0.5">
+              <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold block mb-0.5">
                 Setor Atual
               </span>
               <span className="text-sm font-bold text-blue-800">
@@ -442,7 +442,7 @@ export default function ProcessoDetalhePage() {
                 <span>Próximo Passo Esperado</span>
                 <InfoTooltip content="Ação operacional prioritária recomendada pela inteligência de fluxo processual da SEDUC para acelerar a tramitação." />
               </span>
-              <span className="text-[10px] bg-blue-200 text-blue-800 px-2 py-0.2 rounded-full font-semibold">
+              <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.2 rounded-full font-semibold">
                 Guia Operacional
               </span>
             </div>
@@ -481,7 +481,7 @@ export default function ProcessoDetalhePage() {
               Notas Internas de Acompanhamento Setorial (RF15)
             </h2>
           </div>
-          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono font-bold">
+          <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono font-bold">
             {notas.length} notas registradas
           </span>
         </div>
@@ -504,7 +504,7 @@ export default function ProcessoDetalhePage() {
             <div key={n.id} className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1">
               <div className="flex items-center justify-between text-slate-500">
                 <span className="font-bold text-slate-800">{n.autor}</span>
-                <span className="font-mono text-[11px]">{n.data}</span>
+                <span className="font-mono text-xs">{n.data}</span>
               </div>
               <p className="text-slate-800 font-medium leading-relaxed">{n.conteudo}</p>
             </div>
@@ -514,6 +514,8 @@ export default function ProcessoDetalhePage() {
         {/* Formulário de Nova Nota */}
         <form onSubmit={handleAddNota} className="flex gap-2 pt-2">
           <input
+            id="nova-nota-input"
+            aria-label="Conteúdo da anotação interna do processo"
             type="text"
             value={novaNota}
             onChange={(e) => setNovaNota(e.target.value)}

@@ -367,7 +367,7 @@ export default function RelatoriosPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-600">
-                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4">Contrato / Processo</th>
                     <th className="py-3 px-4">Fornecedor</th>
@@ -386,7 +386,7 @@ export default function RelatoriosPage() {
                       <tr key={c.id} className="hover:bg-slate-50 transition">
                         <td className="py-3 px-4">
                           <p className="font-bold text-slate-900">{c.numeroContrato}</p>
-                          <p className="text-[11px] font-mono text-blue-700">{c.processoSei}</p>
+                          <p className="text-xs font-mono text-blue-700">{c.processoSei}</p>
                         </td>
 
                         <td className="py-3 px-4 font-medium text-slate-800">
@@ -415,12 +415,12 @@ export default function RelatoriosPage() {
 
                         <td className="py-3 px-4 text-center">
                           {c.publicadoPncp ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                            <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
                               <CheckCircle2 className="w-3 h-3" />
                               Publicado em {c.dataPublicacaoPncp}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full border border-red-200 animate-pulse">
+                            <span className="inline-flex items-center gap-1 text-xs font-bold bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full border border-red-200 animate-pulse">
                               <AlertTriangle className="w-3 h-3" />
                               Pendente! Restam {diasRestantes} dias úteis
                             </span>
@@ -441,34 +441,34 @@ export default function RelatoriosPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-red-50 p-4 rounded-xl border border-red-200">
-              <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-red-800 uppercase tracking-wider block">
                 Crítico: Vence em até 60 Dias
               </span>
               <span className="text-2xl font-bold text-red-700 mt-1 block">1 contrato</span>
-              <p className="text-[11px] text-red-600 mt-0.5">Exige prorrogação ou certame imediato</p>
+              <p className="text-xs text-red-600 mt-0.5">Exige prorrogação ou certame imediato</p>
             </div>
 
             <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-              <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">
                 Alerta: Vence entre 60 e 90 Dias
               </span>
               <span className="text-2xl font-bold text-amber-700 mt-1 block">1 contrato</span>
-              <p className="text-[11px] text-amber-600 mt-0.5">Fase de instrução do termo aditivo</p>
+              <p className="text-xs text-amber-600 mt-0.5">Fase de instrução do termo aditivo</p>
             </div>
 
             <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-              <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">
                 Atenção: Vence entre 90 e 120 Dias
               </span>
               <span className="text-2xl font-bold text-blue-700 mt-1 block">1 contrato</span>
-              <p className="text-[11px] text-blue-600 mt-0.5">Pesquisa de preços e manifestação</p>
+              <p className="text-xs text-blue-600 mt-0.5">Pesquisa de preços e manifestação</p>
             </div>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-600">
-                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4">Contrato</th>
                     <th className="py-3 px-4">Fornecedor / Objeto</th>
@@ -483,12 +483,12 @@ export default function RelatoriosPage() {
                     <tr key={cv.id} className="hover:bg-slate-50 transition">
                       <td className="py-3 px-4">
                         <p className="font-bold text-slate-900">{cv.numeroContrato}</p>
-                        <p className="text-[11px] font-mono text-blue-700">{cv.processoSei}</p>
+                        <p className="text-xs font-mono text-blue-700">{cv.processoSei}</p>
                       </td>
 
                       <td className="py-3 px-4 max-w-xs">
                         <p className="font-semibold text-slate-800">{cv.fornecedor}</p>
-                        <p className="text-[11px] text-slate-500 line-clamp-1">{cv.objeto}</p>
+                        <p className="text-xs text-slate-500 line-clamp-1">{cv.objeto}</p>
                       </td>
 
                       <td className="py-3 px-4 font-semibold text-slate-700">
@@ -505,7 +505,7 @@ export default function RelatoriosPage() {
 
                       <td className="py-3 px-4 text-center">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                             cv.diasRestantes <= 60
                               ? 'bg-red-100 text-red-800 border-red-200 animate-pulse'
                               : cv.diasRestantes <= 90
@@ -543,7 +543,7 @@ export default function RelatoriosPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-600">
-                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4">Unidade / Setor</th>
                     <th className="py-3 px-4 text-center">Processos Ativos</th>
@@ -559,7 +559,7 @@ export default function RelatoriosPage() {
                     <tr key={p.unidadeSigla} className="hover:bg-slate-50 transition">
                       <td className="py-3 px-4">
                         <span className="font-bold text-slate-900">{p.unidadeSigla}</span>
-                        <p className="text-[11px] text-slate-500">{p.unidadeNome}</p>
+                        <p className="text-xs text-slate-500">{p.unidadeNome}</p>
                       </td>
 
                       <td className="py-3 px-4 text-center font-bold text-slate-800">

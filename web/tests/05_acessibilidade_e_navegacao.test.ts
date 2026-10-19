@@ -94,4 +94,33 @@ describe('Acessibilidade Digital, e-MAG e Validação de Rotas (WCAG 2.1 AA)', (
       'ProcessTable deve possuir indicação clara de foco e estados acessíveis'
     );
   });
+
+  test('Conformidade e-MAG: Zero classes de fonte sub-12px (text-[10px] ou text-[11px])', () => {
+    const basePath = process.cwd();
+    const srcPath = path.join(basePath, 'src');
+
+    function checkDir(dir: string) {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          checkDir(fullPath);
+        } else if (entry.name.endsWith('.tsx') || entry.name.endsWith('.ts')) {
+          const content = fs.readFileSync(fullPath, 'utf-8');
+          assert.strictEqual(
+            content.includes('text-[10px]'),
+            false,
+            `Arquivo ${entry.name} contém text-[10px] (proibido por e-MAG / mínimo 12px)`
+          );
+          assert.strictEqual(
+            content.includes('text-[11px]'),
+            false,
+            `Arquivo ${entry.name} contém text-[11px] (proibido por e-MAG / mínimo 12px)`
+          );
+        }
+      }
+    }
+
+    checkDir(srcPath);
+  });
 });

@@ -235,7 +235,7 @@ export default function AdminUsuariosPage() {
             <Abbr sigla="RLS" />
             <InfoTooltip content="Controle de Acesso em Nível de Linha (RLS): Define o que cada usuário visualiza baseado em sua lotação hierárquica e regras de herança piramidal da SEDUC." />
           </h1>
-          <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
+          <span className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
             Acesso Restrito: ADMIN
           </span>
         </div>
@@ -277,7 +277,7 @@ export default function AdminUsuariosPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-600">
-                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4">Nome do Servidor</th>
                     <th className="py-3 px-4">
@@ -301,7 +301,7 @@ export default function AdminUsuariosPage() {
                     <tr key={usr.id} className="hover:bg-slate-50 transition">
                       <td className="py-3 px-4">
                         <p className="font-bold text-slate-900">{usr.nome}</p>
-                        <p className="text-[11px] text-slate-500 font-mono">{usr.email}</p>
+                        <p className="text-xs text-slate-500 font-mono">{usr.email}</p>
                       </td>
 
                       <td className="py-3 px-4 font-semibold text-slate-800">
@@ -333,7 +333,7 @@ export default function AdminUsuariosPage() {
                       </td>
 
                       <td className="py-3 px-4 text-center">
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">
+                        <span className="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">
                           Ativo
                         </span>
                       </td>
@@ -400,10 +400,12 @@ export default function AdminUsuariosPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-slate-700 font-semibold mb-1">
+                  <label htmlFor="motivo-concessao-input" className="block text-slate-700 font-semibold mb-1">
                     Motivo / Justificativa Administrativa:
                   </label>
                   <input
+                    id="motivo-concessao-input"
+                    aria-label="Motivo ou justificativa administrativa da concessão"
                     type="text"
                     required
                     value={motivoConcessao}
@@ -414,10 +416,12 @@ export default function AdminUsuariosPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">
+                  <label htmlFor="validade-concessao-input" className="block text-slate-700 font-semibold mb-1">
                     Data de Término (Opcional):
                   </label>
                   <input
+                    id="validade-concessao-input"
+                    aria-label="Data de término da concessão"
                     type="date"
                     value={validadeConcessao}
                     onChange={(e) => setValidadeConcessao(e.target.value)}
@@ -433,7 +437,7 @@ export default function AdminUsuariosPage() {
                     Permissão pontual concedida com sucesso e registrada na auditoria!
                   </span>
                 ) : (
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-xs text-slate-400">
                     O acesso pontual não altera a propriedade do processo nem o organograma de origem.
                   </span>
                 )}
@@ -457,7 +461,7 @@ export default function AdminUsuariosPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-600">
-                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4">Processo Administrativo</th>
                     <th className="py-3 px-4">Servidor Autorizado</th>
@@ -478,12 +482,12 @@ export default function AdminUsuariosPage() {
                       <tr key={conc.id} className="hover:bg-slate-50 transition">
                         <td className="py-3 px-4">
                           <p className="font-bold text-blue-700 font-mono">{conc.protocoloSei}</p>
-                          <p className="text-[11px] text-slate-500 line-clamp-1">{conc.objeto}</p>
+                          <p className="text-xs text-slate-500 line-clamp-1">{conc.objeto}</p>
                         </td>
 
                         <td className="py-3 px-4">
                           <p className="font-bold text-slate-900">{conc.usuarioNome}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">{conc.usuarioEmail}</p>
+                          <p className="text-xs text-slate-400 font-mono">{conc.usuarioEmail}</p>
                         </td>
 
                         <td className="py-3 px-4 font-medium text-slate-700 max-w-xs">
@@ -491,7 +495,7 @@ export default function AdminUsuariosPage() {
                         </td>
 
                         <td className="py-3 px-4">
-                          <span className="text-[11px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                             Até {conc.dataValidade}
                           </span>
                         </td>

@@ -66,7 +66,7 @@ export const OnDemandTab: React.FC<OnDemandTabProps> = ({
 
         {/* Atalhos Rápidos de Processos Reais da Carteira */}
         <div className="flex items-center gap-2 pt-1 flex-wrap">
-          <span className="text-[11px] text-slate-400 font-medium">Atalhos rápidos:</span>
+          <span className="text-xs text-slate-400 font-medium">Atalhos rápidos:</span>
           {[
             'SEI-021001/004521/2026',
             'SEI-021001/007812/2026',
@@ -76,7 +76,7 @@ export const OnDemandTab: React.FC<OnDemandTabProps> = ({
               key={proto}
               type="button"
               onClick={() => setProcessoSyncInput(proto)}
-              className="text-[11px] font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-300 transition"
+              className="text-xs font-mono bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-md border border-slate-300 transition"
             >
               {proto}
             </button>
@@ -99,12 +99,12 @@ export const OnDemandTab: React.FC<OnDemandTabProps> = ({
                 )}
                 <span>{syncStatus.etapa}</span>
               </span>
-              <span className="text-[11px] font-mono">{syncStatus.concluido ? '100% Concluído' : 'Processando...'}</span>
+              <span className="text-xs font-mono">{syncStatus.concluido ? '100% Concluído' : 'Processando...'}</span>
             </div>
 
             {syncStatus.concluido && syncStatus.dadosRetornados && (
               <div className="bg-white p-4 rounded-lg border border-emerald-200 text-xs text-slate-800 space-y-2 font-mono">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <div><strong>Protocolo:</strong> {syncStatus.dadosRetornados.protocolo}</div>
                   <div><strong>Unidade Atual:</strong> {syncStatus.dadosRetornados.unidadeAtual}</div>
                   <div><strong>Último Despacho:</strong> {syncStatus.dadosRetornados.ultimoDespacho}</div>
@@ -112,7 +112,7 @@ export const OnDemandTab: React.FC<OnDemandTabProps> = ({
                   <div><strong>Status StartGov:</strong> {syncStatus.dadosRetornados.startgovStatus}</div>
                   <div><strong>Publicação PNCP:</strong> {syncStatus.dadosRetornados.pncpEdital}</div>
                 </div>
-                <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-500 flex justify-between">
+                <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 flex justify-between">
                   <span>Delta Hash Calculado: {syncStatus.dadosRetornados.deltaHash}</span>
                   <span>Sincronizado em: {syncStatus.dadosRetornados.dataHora}</span>
                 </div>
@@ -152,7 +152,7 @@ export const OnDemandTab: React.FC<OnDemandTabProps> = ({
               <option value={15}>A cada 15 minutos (Padrão Recomendado)</option>
               <option value={30}>A cada 30 minutos</option>
             </select>
-            <span className="text-[11px] text-slate-500 block">
+            <span className="text-xs text-slate-500 block">
               Garante que processos tramitados em gabinete apareçam na tela em minutos.
             </span>
           </div>
@@ -173,7 +173,7 @@ export const OnDemandTab: React.FC<OnDemandTabProps> = ({
               <option value={120}>A cada 2 horas (Recomendado)</option>
               <option value={240}>A cada 4 horas</option>
             </select>
-            <span className="text-[11px] text-slate-500 block">
+            <span className="text-xs text-slate-500 block">
               Evita consultas inúteis fora do horário de expediente público estadual.
             </span>
           </div>

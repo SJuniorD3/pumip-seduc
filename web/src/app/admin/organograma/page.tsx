@@ -138,7 +138,7 @@ export default function AdminOrganogramaPage() {
               <span>Gestão do Organograma e Estrutura Setorial (<Abbr sigla="SEDUC" />)</span>
               <InfoTooltip content="Mapeamento completo da árvore de unidades administrativas da SEDUC-MA. A estrutura define as regras de subordinação e a visibilidade de processos no sistema." />
             </h1>
-            <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
+            <span className="text-xs bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded border border-red-200">
               Acesso Restrito: ADMIN
             </span>
           </div>
@@ -183,6 +183,8 @@ export default function AdminOrganogramaPage() {
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
+            id="organograma-search-input"
+            aria-label="Buscar unidades do organograma por nome, sigla, titular ou caminho"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -193,8 +195,10 @@ export default function AdminOrganogramaPage() {
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Filter className="w-4 h-4 text-slate-500" />
-          <span className="text-xs text-slate-600 font-medium">Nível:</span>
+          <label htmlFor="organograma-tipo-filtro-select" className="text-xs text-slate-600 font-medium">Nível:</label>
           <select
+            id="organograma-tipo-filtro-select"
+            aria-label="Filtrar organograma por nível hierárquico"
             value={tipoFiltro}
             onChange={(e) => setTipoFiltro(e.target.value)}
             className="text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -215,7 +219,7 @@ export default function AdminOrganogramaPage() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">
                   <span className="flex items-center gap-1">
@@ -259,7 +263,7 @@ export default function AdminOrganogramaPage() {
                       {u.nome}
                     </td>
 
-                    <td className="py-3 px-4 font-mono text-[11px] text-blue-700 bg-blue-50/50">
+                    <td className="py-3 px-4 font-mono text-xs text-blue-700 bg-blue-50/50">
                       {u.caminho_hierarquico}
                     </td>
 
@@ -304,10 +308,12 @@ export default function AdminOrganogramaPage() {
 
             <form onSubmit={handleAddUnidade} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
+                <label htmlFor="nova-unidade-nome" className="block text-slate-700 font-semibold mb-1">
                   Nome por Extenso da Unidade:
                 </label>
                 <input
+                  id="nova-unidade-nome"
+                  aria-label="Nome por extenso da unidade"
                   type="text"
                   required
                   value={novaNome}
@@ -319,10 +325,12 @@ export default function AdminOrganogramaPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">
+                  <label htmlFor="nova-unidade-sigla" className="block text-slate-700 font-semibold mb-1">
                     Sigla Oficial:
                   </label>
                   <input
+                    id="nova-unidade-sigla"
+                    aria-label="Sigla oficial da unidade"
                     type="text"
                     required
                     value={novaSigla}
@@ -333,10 +341,12 @@ export default function AdminOrganogramaPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">
+                  <label htmlFor="nova-unidade-tipo" className="block text-slate-700 font-semibold mb-1">
                     Nível / Tipo:
                   </label>
                   <select
+                    id="nova-unidade-tipo"
+                    aria-label="Nível hierárquico ou tipo da unidade"
                     value={novaTipo}
                     onChange={(e) => setNovaTipo(e.target.value as TipoUnidade)}
                     className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
@@ -351,10 +361,12 @@ export default function AdminOrganogramaPage() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
+                <label htmlFor="nova-unidade-parent" className="block text-slate-700 font-semibold mb-1">
                   Unidade Imediata Superior (Parent):
                 </label>
                 <select
+                  id="nova-unidade-parent"
+                  aria-label="Unidade imediata superior"
                   value={novaParentId}
                   onChange={(e) => setNovaParentId(e.target.value)}
                   className="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white font-mono"
@@ -370,10 +382,12 @@ export default function AdminOrganogramaPage() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
+                <label htmlFor="nova-unidade-titular" className="block text-slate-700 font-semibold mb-1">
                   Nome do Titular Responsável:
                 </label>
                 <input
+                  id="nova-unidade-titular"
+                  aria-label="Nome do servidor titular responsável"
                   type="text"
                   value={novaTitular}
                   onChange={(e) => setNovaTitular(e.target.value)}

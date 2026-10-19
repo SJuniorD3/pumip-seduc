@@ -81,17 +81,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           <input
             ref={inputRef}
             type="text"
+            id="command-palette-search"
+            aria-label="Buscar processos globalmente por protocolo SEI, StartGov, objeto ou setor"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por número do SEI, StartGov, objeto ou setor (ex: switches, CSL, 004521)..."
             className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono font-semibold bg-white border border-slate-300 px-2 py-0.5 rounded shadow-sm text-slate-500">
+          <kbd className="hidden sm:inline-flex items-center gap-1 text-xs font-mono font-semibold bg-white border border-slate-300 px-2 py-0.5 rounded shadow-sm text-slate-500">
             ESC
           </kbd>
           <button 
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded transition"
+            aria-label="Fechar busca rápida"
+            className="p-1 text-slate-400 hover:text-slate-600 rounded transition focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <X className="w-4 h-4" />
           </button>
@@ -99,7 +102,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
         {/* Lista de Resultados */}
         <div className="max-h-96 overflow-y-auto p-2 space-y-1">
-          <p className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+          <p className="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
             {query.trim() === '' ? 'Processos Recentes' : `Resultados (${filtered.length})`}
           </p>
 
@@ -120,11 +123,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                       {proc.protocolo_sei}
                     </span>
                     {proc.protocolo_startgov && (
-                      <span className="font-mono text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                      <span className="font-mono text-xs font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
                         {proc.protocolo_startgov}
                       </span>
                     )}
-                    <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                    <span className="text-xs text-slate-500 flex items-center gap-1">
                       <Building className="w-3 h-3 text-slate-400" />
                       {proc.unidade_atual_sei}
                     </span>
@@ -135,7 +138,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                     {proc.dias_parado_na_unidade}d parado
                   </span>
                   <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 flex items-center justify-center text-slate-400 transition">
@@ -148,10 +151,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         </div>
 
         {/* Rodapé da Busca */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+        <div className="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between">
           <span className="flex items-center gap-1">
             <span>Dica: Use</span>
-            <kbd className="font-mono bg-white px-1.5 py-0.2 rounded border border-slate-300 text-[10px]">Cmd + K</kbd>
+            <kbd className="font-mono bg-white px-1.5 py-0.2 rounded border border-slate-300 text-xs">Cmd + K</kbd>
             <span>em qualquer tela para abrir a busca</span>
           </span>
           <span className="text-blue-700 font-semibold">PUMIP-SEDUC</span>

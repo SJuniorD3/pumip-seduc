@@ -212,7 +212,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
             }`}
           >
             <span>Todos os Processos</span>
-            <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-bold">
+            <span className="text-xs bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-bold">
               {processos.length}
             </span>
           </button>
@@ -228,14 +228,14 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
           >
             <Star className={`w-3.5 h-3.5 ${favoritos.length > 0 ? 'text-amber-500 fill-amber-400' : 'text-slate-400'}`} />
             <span>Fixados na Minha Mesa</span>
-            <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded-full border border-amber-200">
+            <span className="text-xs bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded-full border border-amber-200">
               {favoritos.length}
             </span>
           </button>
         </div>
 
         {/* Legenda rápida de Semáforo */}
-        <div className="hidden lg:flex items-center gap-3 text-[11px] text-slate-600 pb-2">
+        <div className="hidden lg:flex items-center gap-3 text-xs text-slate-600 pb-2">
           <span className="font-semibold text-slate-700">Semáforo de Inércia:</span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span> 0-3d Regular
@@ -275,6 +275,8 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            id="process-table-search"
+            aria-label="Buscar processos por protocolo SEI, StartGov, objeto ou setor"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por SEI, StartGov, objeto ou setor..."
@@ -283,8 +285,9 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded focus-visible:ring-2 focus-visible:ring-blue-500"
               title="Limpar busca"
+              aria-label="Limpar campo de busca"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -337,7 +340,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
       {/* Tabela Responsiva com Coluna Fixada (Sticky Left) */}
       <div className="overflow-x-auto relative">
         <table className="w-full text-left text-xs text-slate-700 border-collapse">
-          <thead className="bg-slate-100/90 text-slate-800 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+          <thead className="bg-slate-100/90 text-slate-800 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
             <tr>
               <th 
                 className="py-3 px-3 w-10 text-center sticky left-0 bg-slate-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]" 
@@ -459,14 +462,14 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                       {proc.protocolo_startgov ? (
                         <div 
                           title={`Identificador do certame de compras no StartGov: ${proc.protocolo_startgov}`}
-                          className="text-[11px] text-emerald-800 font-semibold mt-0.5 flex items-center gap-1 cursor-help"
+                          className="text-xs text-emerald-800 font-semibold mt-0.5 flex items-center gap-1 cursor-help"
                         >
                           <span>{proc.protocolo_startgov}</span>
                         </div>
                       ) : (
                         <div 
                           title="Este processo ainda está em fase interna preparatória e não possui certame autuado no StartGov"
-                          className="text-[10px] text-slate-400 italic cursor-help"
+                          className="text-xs text-slate-400 italic cursor-help"
                         >
                           Aguardando StartGov
                         </div>
@@ -484,7 +487,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
 
                       <div 
                         title={`Próxima ação administrativa prevista: ${proc.proximo_passo_esperado || 'Tramitação setorial de rotina'}`}
-                        className="text-[11px] text-slate-600 font-medium flex items-center gap-1.5 mt-1 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 cursor-help"
+                        className="text-xs text-slate-600 font-medium flex items-center gap-1.5 mt-1 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 cursor-help"
                       >
                         <Compass className="w-3 h-3 text-blue-600 shrink-0" />
                         <span className="text-blue-900 font-bold shrink-0">Próximo passo:</span>
@@ -509,7 +512,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                     <td className="py-3 px-4">
                       <span
                         title={`Fase da Lei 14.133/2021: ${proc.status_etapa.replace(/_/g, ' ')}`}
-                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border cursor-help ${getStatusBadge(
+                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold border cursor-help ${getStatusBadge(
                           proc.status_etapa
                         )}`}
                       >
@@ -531,7 +534,7 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                             {proc.dias_parado_na_unidade} {proc.dias_parado_na_unidade === 1 ? 'dia' : 'dias'} úteis
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-500 font-medium">
+                        <span className="text-xs text-slate-500 font-medium">
                           {semaforo.label}
                         </span>
                       </div>
@@ -554,12 +557,12 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
                           {isCopied ? (
                             <>
                               <Check className="w-3.5 h-3.5 text-emerald-700" />
-                              <span className="text-[10px]">Copiado!</span>
+                              <span className="text-xs">Copiado!</span>
                             </>
                           ) : (
                             <>
                               <Share2 className="w-3.5 h-3.5 text-emerald-700" />
-                              <span className="text-[10px] hidden sm:inline">WhatsApp</span>
+                              <span className="text-xs hidden sm:inline">WhatsApp</span>
                             </>
                           )}
                         </button>

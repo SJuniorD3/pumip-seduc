@@ -111,7 +111,7 @@ export const SyncButton: React.FC<SyncButtonProps> = ({
       </button>
 
       {successMsg && (
-        <span className="flex items-center gap-1 text-[11px] text-emerald-600 font-semibold animate-fade-in">
+        <span className="flex items-center gap-1 text-xs text-emerald-600 font-semibold animate-fade-in">
           <CheckCircle className="w-3.5 h-3.5" />
           Sincronizado!
         </span>

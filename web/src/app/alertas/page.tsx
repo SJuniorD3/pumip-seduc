@@ -190,7 +190,7 @@ export default function AlertasPage() {
           </div>
           <span 
             title="Motores de vigilância autônomos em execução contínua"
-            className="text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 self-start sm:self-auto cursor-help"
+            className="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 self-start sm:self-auto cursor-help"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             Proteção Ativa 24/7
@@ -210,14 +210,14 @@ export default function AlertasPage() {
           >
             <div className="flex items-center justify-between">
               <span className="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse"></span>
-              <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
+              <span className="text-xs bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
                 Ativo
               </span>
             </div>
             <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
               <span>Gargalo Crítico (&ge; 7 dias úteis)</span>
             </h3>
-            <p className="text-[11px] text-slate-300 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               Detecta processos sem nenhuma movimentação há mais de 7 dias úteis em qualquer setor, acionando o semáforo vermelho pulsante.
             </p>
           </div>
@@ -229,14 +229,14 @@ export default function AlertasPage() {
           >
             <div className="flex items-center justify-between">
               <Repeat className="w-4 h-4 text-amber-400" />
-              <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
+              <span className="text-xs bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
                 Ativo
               </span>
             </div>
             <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
               <span>Retorno de Diligência (<Abbr sigla="ASJUR" /> / <Abbr sigla="CSL" />)</span>
             </h3>
-            <p className="text-[11px] text-slate-300 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               Alerta imediato quando um processo retorna da Assessoria Jurídica ou Comissões solicitando saneamento ou adequação documental.
             </p>
           </div>
@@ -248,14 +248,14 @@ export default function AlertasPage() {
           >
             <div className="flex items-center justify-between">
               <Compass className="w-4 h-4 text-cyan-400" />
-              <span className="text-[10px] bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
+              <span className="text-xs bg-emerald-400/20 text-emerald-200 px-2 py-0.2 rounded font-bold">
                 Ativo
               </span>
             </div>
             <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
               <span>Saída e Despacho Recente</span>
             </h3>
-            <p className="text-[11px] text-slate-300 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed">
               Registra no Feed de Novidades das 24h e notifica os interessados sempre que um processo avança para a próxima etapa na cadeia.
             </p>
           </div>
@@ -304,12 +304,14 @@ export default function AlertasPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">
+              <label htmlFor="alerta-parametro-input" className="block text-slate-700 font-semibold mb-1">
                 {tipoSelecionado === 'INERCIA_SLA'
                   ? 'Dias Limite (SLA):'
                   : 'Termos a Monitorar:'}
               </label>
               <input
+                id="alerta-parametro-input"
+                aria-label={tipoSelecionado === 'INERCIA_SLA' ? 'Dias limite para alerta de inércia' : 'Termos a monitorar'}
                 type="text"
                 value={parametroValor}
                 onChange={(e) => setParametroValor(e.target.value)}
@@ -323,8 +325,9 @@ export default function AlertasPage() {
             </div>
 
             <div className="pt-2">
-              <label className="flex items-center gap-2 text-slate-700 cursor-pointer">
+              <label htmlFor="alerta-notificar-email" className="flex items-center gap-2 text-slate-700 cursor-pointer">
                 <input
+                  id="alerta-notificar-email"
                   type="checkbox"
                   checked={notificarEmail}
                   onChange={(e) => setNotificarEmail(e.target.checked)}
@@ -332,7 +335,7 @@ export default function AlertasPage() {
                 />
                 <span className="font-semibold">Disparar notificação por e-mail</span>
               </label>
-              <p className="text-[10px] text-slate-400 mt-0.5 ml-5">
+              <p className="text-xs text-slate-400 mt-0.5 ml-5">
                 Enviado para seu e-mail funcional cadastrado na SEDUC.
               </p>
             </div>
@@ -373,11 +376,11 @@ export default function AlertasPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
                         {alt.tipo}
                       </span>
                       {alt.viaEmail && (
-                        <span className="text-[10px] font-medium text-slate-600 flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded">
+                        <span className="text-xs font-medium text-slate-600 flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded">
                           <Mail className="w-3 h-3 text-slate-500" />
                           E-mail Ativo
                         </span>
@@ -386,7 +389,7 @@ export default function AlertasPage() {
                     <p className="text-xs font-semibold text-slate-900">
                       {alt.descricao}
                     </p>
-                    <p className="text-[11px] font-mono text-slate-500">
+                    <p className="text-xs font-mono text-slate-500">
                       Alvo: {alt.processo}
                     </p>
                   </div>

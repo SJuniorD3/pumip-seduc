@@ -61,12 +61,12 @@ export const FeedNovidades: React.FC = () => {
               <h2 className="text-xs sm:text-sm font-bold text-slate-900">
                 Novidades Recentes na Carteira
               </h2>
-              <span className="text-[10px] bg-blue-100 text-blue-900 font-bold px-2 py-0.2 rounded-full border border-blue-200">
+              <span className="text-xs bg-blue-100 text-blue-900 font-bold px-2 py-0.2 rounded-full border border-blue-200">
                 Últimas 24h
               </span>
             </div>
             {isExpanded && (
-              <p className="text-[11px] text-slate-600 hidden sm:block">
+              <p className="text-xs text-slate-600 hidden sm:block">
                 Processos que sofreram andamento recente sem você precisar consultar o SEI ou StartGov.
               </p>
             )}
@@ -109,7 +109,7 @@ export const FeedNovidades: React.FC = () => {
                     {item.protocoloSei}
                   </span>
 
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span>{item.hora}</span>
                   </div>
@@ -119,12 +119,12 @@ export const FeedNovidades: React.FC = () => {
                   {item.objeto}
                 </p>
 
-                <p className="text-[11px] text-slate-700 line-clamp-2 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100 mb-2 font-medium">
+                <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100 mb-2 font-medium">
                   {item.descricaoMovimentacao}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
+              <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
                 <span className="inline-flex items-center gap-1 font-semibold text-slate-700">
                   <span className="text-slate-500 font-normal">Destino:</span>
                   <span className="bg-slate-100 px-1.5 py-0.2 rounded font-bold text-slate-800 border border-slate-200">
@@ -152,7 +152,7 @@ export const FeedNovidades: React.FC = () => {
           </span>
           <button
             onClick={() => setIsExpanded(true)}
-            className="text-blue-700 font-semibold hover:underline ml-auto shrink-0 text-[11px]"
+            className="text-blue-700 font-semibold hover:underline ml-auto shrink-0 text-xs"
           >
             Ver detalhes
           </button>

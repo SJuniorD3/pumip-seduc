@@ -61,7 +61,7 @@ export const MtlsAlertBanner: React.FC<MtlsAlertBannerProps> = ({ config, setCon
             <strong> Conta de Serviço institucional (*Service Account*)</strong> com usuário e senha do SEI!, 
             garantindo que todas as validações, testes de homologação e cadastros operem sem nenhum bloqueio.
           </p>
-          <p className="leading-relaxed text-amber-800/90 text-[11px]">
+          <p className="leading-relaxed text-amber-800/90 text-xs">
             <strong>Alerta para Produção Definitiva:</strong> Para o ambiente oficial no datacenter do Governo do Maranhão (ATI-MA), 
             é <strong>urgente</strong> que a chefia administrativa solicite junto à autoridade certificadora o 
             <strong> Certificado Digital A1 da SEDUC-MA (e-CNPJ 06.354.468/0001-30)</strong>. Isso garantirá autenticação mútua TLS (mTLS), 
@@ -69,7 +69,7 @@ export const MtlsAlertBanner: React.FC<MtlsAlertBannerProps> = ({ config, setCon
           </p>
         </div>
 
-        <div className="bg-white/80 p-3 rounded-xl border border-amber-200 space-y-2 text-[11px]">
+        <div className="bg-white/80 p-3 rounded-xl border border-amber-200 space-y-2 text-xs">
           <div className="flex items-center justify-between font-bold text-amber-950">
             <span>Configuração do Certificado:</span>
             <span className={config.certificadoDigital.habilitado ? 'text-emerald-700 font-bold' : 'text-amber-700'}>

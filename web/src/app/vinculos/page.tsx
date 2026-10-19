@@ -215,7 +215,7 @@ export default function VinculosPage() {
               {pendentes.length} pendentes
             </span>
           </div>
-          <span className="text-[11px] text-slate-500">
+          <span className="text-xs text-slate-500">
             Identificado automaticamente via Regex e cruzamento de metadados
           </span>
         </div>
@@ -251,7 +251,7 @@ export default function VinculosPage() {
                   <div className="flex items-center gap-2">
                     <span 
                       title="Grau de certeza do cruzamento baseado em menção expressa do número do processo nos autos do certame"
-                      className="text-[11px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded flex items-center gap-1 border border-slate-200 cursor-help"
+                      className="text-xs bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded flex items-center gap-1 border border-slate-200 cursor-help"
                     >
                       <Percent className="w-3 h-3 text-blue-600" />
                       <span>{sug.confiancaPercent}% de Confiança</span>
@@ -263,7 +263,7 @@ export default function VinculosPage() {
                   <div>
                     <span className="text-slate-400 block mb-0.5 font-semibold">Demanda no SEI:</span>
                     <p className="font-medium text-slate-900">{sug.objetoSei}</p>
-                    <span className="text-[10px] text-slate-500 mt-1 block">
+                    <span className="text-xs text-slate-500 mt-1 block">
                       Unidade de Origem: <strong><Abbr sigla={sug.unidadeOrigem} /></strong>
                     </span>
                   </div>
@@ -271,8 +271,8 @@ export default function VinculosPage() {
                   <div>
                     <span className="text-slate-400 block mb-0.5 font-semibold">Contratação no StartGov:</span>
                     <p className="font-medium text-emerald-900 font-semibold">{sug.modalidadeStartGov}</p>
-                    <p className="text-[11px] text-slate-600">Fornecedor: {sug.fornecedorSugerido}</p>
-                    <p className="text-[11px] text-slate-600">Valor Estimado: {sug.valorEstimado}</p>
+                    <p className="text-xs text-slate-600">Fornecedor: {sug.fornecedorSugerido}</p>
+                    <p className="text-xs text-slate-600">Valor Estimado: {sug.valorEstimado}</p>
                   </div>
                 </div>
 
@@ -281,10 +281,10 @@ export default function VinculosPage() {
                   title="Evidência textual capturada pelo coletor para comprovar o vínculo"
                   className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs cursor-help"
                 >
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
                     Trecho de Origem Localizado pelo Robô:
                   </span>
-                  <p className="font-mono text-[11px] text-slate-700 italic">
+                  <p className="font-mono text-xs text-slate-700 italic">
                     &ldquo;{sug.trechoOrigem}&rdquo;
                   </p>
                 </div>
@@ -321,14 +321,14 @@ export default function VinculosPage() {
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
             Vínculos Ativos e Validados ({confirmados.length})
           </h3>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-xs text-slate-500">
             Processos com linha do tempo unificada em operação entre SEI e StartGov.
           </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">Protocolo SEI</th>
                 <th className="py-3 px-4">Contratação StartGov</th>
@@ -351,7 +351,7 @@ export default function VinculosPage() {
                   </td>
                   <td className="py-3 px-4">
                     <p className="font-semibold text-slate-800">{conf.confirmadoPor}</p>
-                    <span className="text-[10px] text-slate-400">{conf.confirmadoEm}</span>
+                    <span className="text-xs text-slate-400">{conf.confirmadoEm}</span>
                   </td>
                   <td className="py-3 px-4 text-right">
                     <Link
@@ -387,10 +387,12 @@ export default function VinculosPage() {
 
             <form onSubmit={handleCriarVinculoManual} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
+                <label htmlFor="vinculo-processo-sei-select" className="block text-slate-700 font-semibold mb-1">
                   Selecione o Processo no SEI:
                 </label>
                 <select
+                  id="vinculo-processo-sei-select"
+                  aria-label="Selecione o processo SEI para vincular"
                   value={manualSeiId}
                   onChange={(e) => setManualSeiId(e.target.value)}
                   className="w-full border border-slate-300 rounded-lg p-2 font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
@@ -404,10 +406,12 @@ export default function VinculosPage() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
+                <label htmlFor="vinculo-startgov-code-input" className="block text-slate-700 font-semibold mb-1">
                   Identificador / Certame no StartGov:
                 </label>
                 <input
+                  id="vinculo-startgov-code-input"
+                  aria-label="Identificador do certame no StartGov"
                   type="text"
                   required
                   value={manualStartGovCode}
@@ -417,7 +421,7 @@ export default function VinculosPage() {
                 />
               </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-500">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-500">
                 A vinculação manual consolidará automaticamente os eventos do StartGov na Linha do Tempo Unificada do processo e registrará seu usuário na trilha de auditoria.
               </div>
 
