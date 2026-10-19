@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { DemoBanner } from './DemoBanner';
 import { AuthProvider } from '../lib/authContext';
 
 const ShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -39,6 +40,7 @@ const ShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 export const ClientShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <AuthProvider>
+      <DemoBanner />
       <ShellContent>{children}</ShellContent>
     </AuthProvider>
   );

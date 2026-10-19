@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../lib/authContext';
+import { isDemoMode } from '../lib/appMode';
 import { Breadcrumb } from './Breadcrumb';
 import { ShieldAlert, ArrowLeft, KeyRound, Lock, UserCheck } from 'lucide-react';
 
@@ -70,14 +71,16 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({ children, moduloNome }) 
             <span>Voltar ao Painel Executivo</span>
           </Link>
 
-          <button
-            type="button"
-            onClick={() => loginAs('admin')}
-            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm"
-          >
-            <KeyRound className="w-4 h-4" />
-            <span>Alternar para Perfil ADMIN (Modo de Demonstração)</span>
-          </button>
+          {isDemoMode() && (
+            <button
+              type="button"
+              onClick={() => loginAs('admin')}
+              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm"
+            >
+              <KeyRound className="w-4 h-4" />
+              <span>Alternar para Perfil ADMIN (Modo de Demonstração)</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

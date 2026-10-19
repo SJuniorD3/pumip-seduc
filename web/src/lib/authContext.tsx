@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { AuthUser, DEMO_USERS } from './authUsers';
+import { isDemoMode } from './appMode';
 export type { AuthUser };
 export { DEMO_USERS };
 
@@ -43,61 +44,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password?: string): Promise<boolean> => {
-    // Simula validação com delay realista de autenticação
+    // Simula delay realista de autenticação
     await new Promise((resolve) => setTimeout(resolve, 600));
 
-    // Busca usuário correspondente ou atribui perfil adequado
-    const foundUser = Object.values(DEMO_USERS).find(
-      (u) => u.email.toLowerCase() === email.toLowerCase().trim()
-    );
+    if (isDemoMode()) {
+      // MODO DEMO: aceita perfis de teste para homologação
+      const foundUser = Object.values(DEMO_USERS).find(
+        (u) => u.email.toLowerCase() === email.toLowerCase().trim()
+      );
 
-    if (foundUser) {
-      setUser(foundUser);
-      setIsAuthenticated(true);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(foundUser));
-      return true;
-    }
+      if (foundUser) {
+        setUser(foundUser);
+        setIsAuthenticated(true);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(foundUser));
+        return true;
+      }
 
-    // Se o email for do domínio SEDUC, cria perfil institucional dinâmico
-    if (email.endsWith('@seduc.ma.gov.br')) {
-      const username = email.split('@')[0].replace('.', ' ');
-      const nomeFormatado = username
-        .split(' ')
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-
-      const newUser: AuthUser = {
-        id: `user-${Date.now()}`,
-        nome: nomeFormatado,
-        email: email.trim().toLowerCase(),
-        role: 'TECNICO',
-        cargo_titulo: 'Servidor / Técnico Operacional',
-        unidade_sigla: 'SEDUC',
-        unidade_nome: 'Secretaria de Estado da Educação',
-        caminho_hierarquico: 'SEDUC',
-        isAdmin: false,
-        avatar_iniciais: nomeFormatado
+      // Em demo, aceita domínio SEDUC com perfil TECNICO
+      if (email.endsWith('@seduc.ma.gov.br')) {
+        const username = email.split('@')[0].replace('.', ' ');
+        const nomeFormatado = username
           .split(' ')
-          .map((n) => n[0])
-          .slice(0, 2)
-          .join('')
-      };
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
 
-      setUser(newUser);
+        const newUser: AuthUser = {
+          id: `user-${Date.now()}`,
+          nome: nomeFormatado,
+          email: email.trim().toLowerCase(),
+          role: 'TECNICO',
+          cargo_titulo: 'Servidor / Técnico Operacional',
+          unidade_sigla: 'SEDUC',
+          unidade_nome: 'Secretaria de Estado da Educação',
+          caminho_hierarquico: 'SEDUC',
+          isAdmin: false,
+          avatar_iniciais: nomeFormatado
+            .split(' ')
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join('')
+        };
+
+        setUser(newUser);
+        setIsAuthenticated(true);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+        return true;
+      }
+
+      // Em demo, padrão aceito para homologação
+      const defaultUser = DEMO_USERS.servulo;
+      setUser(defaultUser);
       setIsAuthenticated(true);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
       return true;
     }
 
-    // Padrão aceito em ambiente de homologação
-    const defaultUser = DEMO_USERS.servulo;
-    setUser(defaultUser);
-    setIsAuthenticated(true);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser));
-    return true;
+    // MODO PRODUÇÃO: autenticação real via Supabase Auth
+    // TODO: Implementar integração com Supabase Auth / Gov.br OAuth
+    console.error('[PUMIP Auth] Modo produção requer integração com Supabase Auth. Ainda não implementado.');
+    return false;
   };
 
   const loginAs = (profileKey: string) => {
+    if (!isDemoMode()) {
+      console.warn('[PUMIP Auth] loginAs desabilitado em modo produção.');
+      return;
+    }
     const selected = DEMO_USERS[profileKey] || DEMO_USERS.servulo;
     setUser(selected);
     setIsAuthenticated(true);
