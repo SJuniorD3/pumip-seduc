@@ -51,12 +51,24 @@ export const SyncButton: React.FC<SyncButtonProps> = ({
     setSuccessMsg(false);
 
     try {
-      // Simulação de chamada ao endpoint de sincronização manual do worker
-      await new Promise((resolve) => setTimeout(resolve, 1800));
-      setCooldownSeconds(15 * 60);
-      setSuccessMsg(true);
-      if (onSyncSuccess) onSyncSuccess();
-      setTimeout(() => setSuccessMsg(false), 4000);
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ processoId })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.sucesso) {
+        setCooldownSeconds(15 * 60);
+        setSuccessMsg(true);
+        if (onSyncSuccess) onSyncSuccess();
+        setTimeout(() => setSuccessMsg(false), 4000);
+      } else if (res.status === 429 && data.cooldownRestante) {
+        setCooldownSeconds(data.cooldownRestante);
+      } else {
+        console.warn('Resposta da sincronização:', data.error);
+      }
     } catch (err) {
       console.error('Erro na sincronização manual:', err);
     } finally {

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Breadcrumb } from '../../components/Breadcrumb';
 import { mockProcessos } from '../../lib/mockData';
+import { useAuth } from '../../lib/authContext';
+import { confirmarVinculoBanco, rejeitarVinculoBanco } from '../../lib/dados/vinculos';
 import { 
   GitMerge, 
   CheckCircle, 
@@ -84,19 +86,25 @@ export default function VinculosPage() {
     }
   ]);
 
+  const { user } = useAuth();
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualSeiId, setManualSeiId] = useState(mockProcessos[0].id);
   const [manualStartGovCode, setManualStartGovCode] = useState('');
   const [sucessoMsg, setSucessoMsg] = useState(false);
 
   const handleConfirmar = (id: string) => {
+    const sug = sugestoes.find((s) => s.id === id);
+    if (sug && sug.processoId) {
+      confirmarVinculoBanco(sug.processoId, sug.protocoloStartGov, sug.modalidadeStartGov).catch(() => {});
+    }
+
     setSugestoes(
       sugestoes.map((s) =>
         s.id === id
           ? {
               ...s,
               status: 'CONFIRMADO',
-              confirmadoPor: 'Sérvulo José Freire Junior (SUDES)',
+              confirmadoPor: `${user.nome} (${user.unidade_sigla})`,
               confirmadoEm: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
             }
           : s
@@ -105,6 +113,11 @@ export default function VinculosPage() {
   };
 
   const handleRejeitar = (id: string) => {
+    const sug = sugestoes.find((s) => s.id === id);
+    if (sug && sug.processoId) {
+      rejeitarVinculoBanco(sug.processoId).catch(() => {});
+    }
+
     setSugestoes(
       sugestoes.map((s) => (s.id === id ? { ...s, status: 'REJEITADO' } : s))
     );
@@ -115,6 +128,11 @@ export default function VinculosPage() {
     if (!manualStartGovCode.trim()) return;
 
     const proc = mockProcessos.find((p) => p.id === manualSeiId) || mockProcessos[0];
+    const codigoUpper = manualStartGovCode.trim().toUpperCase();
+
+    if (proc && proc.id) {
+      confirmarVinculoBanco(proc.id, codigoUpper, 'Vinculação Manual Registrada pelo Servidor').catch(() => {});
+    }
 
     const novo: SugestaoVinculo = {
       id: `manual-${Date.now()}`,
@@ -122,14 +140,14 @@ export default function VinculosPage() {
       protocoloSei: proc.protocolo_sei,
       objetoSei: proc.objeto,
       unidadeOrigem: proc.unidade_origem?.sigla || 'SEDUC',
-      protocoloStartGov: manualStartGovCode.trim().toUpperCase(),
+      protocoloStartGov: codigoUpper,
       modalidadeStartGov: 'Vinculação Manual Registrada pelo Servidor',
       fornecedorSugerido: 'A confirmar na leitura do certame',
       valorEstimado: 'A apurar',
       trechoOrigem: 'Vinculação manual direta autorizada pelo servidor responsável.',
       confiancaPercent: 100,
       status: 'CONFIRMADO',
-      confirmadoPor: 'Sérvulo José Freire Junior (SUDES)',
+      confirmadoPor: `${user.nome} (${user.unidade_sigla})`,
       confirmadoEm: new Date().toLocaleDateString('pt-BR')
     };
 

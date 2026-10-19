@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Breadcrumb } from '../../components/Breadcrumb';
 import { mockProcessos } from '../../lib/mockData';
 import { exportToExcel, exportToCSV } from '../../lib/exportUtils';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import { listarProcessosBanco } from '../../lib/dados/processos';
 import { 
   ClipboardList, 
   FileText, 
@@ -33,7 +35,7 @@ interface ItemPCA {
 }
 
 export default function PcaPage() {
-  const [itensPca] = useState<ItemPCA[]>([
+  const [itensPca, setItensPca] = useState<ItemPCA[]>([
     {
       id: 'pca-01',
       codigoPca: 'PCA-2026-TIC-001',
@@ -104,6 +106,35 @@ export default function PcaPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('TODOS');
+
+  // Sincroniza status do PCA com os processos em tramitação no Supabase
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      listarProcessosBanco(1, 50)
+        .then(({ processos }) => {
+          if (processos.length > 0) {
+            setItensPca((prev) =>
+              prev.map((item) => {
+                const proc = processos.find(
+                  (p) =>
+                    p.id === item.processoSeiId ||
+                    p.protocolo_sei === item.protocoloSei
+                );
+                if (proc) {
+                  return {
+                    ...item,
+                    protocoloSei: proc.protocolo_sei,
+                    statusExecucao: proc.status_etapa as any
+                  };
+                }
+                return item;
+              })
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   // Cálculos do Painel
   const totalItens = itensPca.length;
