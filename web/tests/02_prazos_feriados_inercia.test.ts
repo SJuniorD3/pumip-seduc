@@ -111,4 +111,22 @@ describe('Cálculo de Prazos, Feriados e Inércia Processual (RF04 / Lei 14.133/
     assert.strictEqual(classificarInercia(10), 'CRITICO');
     assert.strictEqual(classificarInercia(25), 'CRITICO');
   });
+
+  test('Resiliência a Fusos Horários (America/Fortaleza UTC-3) e Validação de Entradas Inválidas (NaN)', () => {
+    // Horário noturno no fuso UTC-3: 2026-04-08 às 22h30min (em UTC já seria 2026-04-09 01h30min)
+    // O sistema deve reconhecer como 2026-04-08 e contar a partir de 2026-04-09
+    const resTz = calcularPermanenciaDetelhada('2026-04-08T22:30:00-03:00', '2026-04-10T10:00:00-03:00');
+    assert.strictEqual(resTz.diasCorridos, 2);
+    assert.strictEqual(resTz.diasUteis, 2);
+
+    // Entradas inválidas devem retornar 0 de forma segura sem lançar exceção ou NaN
+    const resInvalida = calcularPermanenciaDetelhada('data_invalida', '2026-04-10');
+    assert.strictEqual(resInvalida.diasCorridos, 0);
+    assert.strictEqual(resInvalida.diasUteis, 0);
+    assert.strictEqual(resInvalida.feriadosCruzados.length, 0);
+
+    const resVazia = calcularPermanenciaDetelhada('', null);
+    assert.strictEqual(resVazia.diasCorridos, 0);
+    assert.strictEqual(resVazia.diasUteis, 0);
+  });
 });

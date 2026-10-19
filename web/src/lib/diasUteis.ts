@@ -135,8 +135,48 @@ export function saveFeriadosPersonalizados(feriados: Feriado[]) {
 }
 
 /**
+ * Extrai os componentes de data (ano, mês 0-indexado, dia) considerando o fuso America/Fortaleza (UTC-3).
+ * Evita desvios onde horas no fim do dia em UTC-3 viram o dia seguinte em UTC.
+ * Retorna null se a data for inválida ou NaN.
+ */
+export function parseLocalDateComponents(dateInput: string | Date | null | undefined): { year: number; month: number; day: number } | null {
+  if (!dateInput) return null;
+
+  // Se já for string pura YYYY-MM-DD
+  if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateInput.trim())) {
+    const [y, m, d] = dateInput.trim().split('-').map(Number);
+    if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+      return { year: y, month: m - 1, day: d };
+    }
+  }
+
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(date.getTime())) return null;
+
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Fortaleza',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const formatted = formatter.format(date); // Retorna "YYYY-MM-DD"
+    const [y, m, d] = formatted.split('-').map(Number);
+    return { year: y, month: m - 1, day: d };
+  } catch {
+    // Fallback caso timezone não esteja disponível
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth(),
+      day: date.getDate()
+    };
+  }
+}
+
+/**
  * Calcula com precisão a permanência em Dias Corridos e Dias Úteis (RF04).
  * Exclui sábados, domingos e todos os feriados aplicáveis.
+ * Trata timezone explicitamente em America/Fortaleza e valida contra entradas inválidas.
  */
 export function calcularPermanenciaDetelhada(
   dataEntradaIso: string,
@@ -146,12 +186,19 @@ export function calcularPermanenciaDetelhada(
   diasUteis: number;
   feriadosCruzados: Feriado[];
 } {
-  const start = new Date(dataEntradaIso);
-  const end = dataSaidaIso ? new Date(dataSaidaIso) : new Date();
+  const startComp = parseLocalDateComponents(dataEntradaIso);
+  if (!startComp) {
+    return { diasCorridos: 0, diasUteis: 0, feriadosCruzados: [] };
+  }
 
-  // Zera horários para contagem pura de calendário (Fuso America/Fortaleza / UTC)
-  const dStart = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
-  const dEnd = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+  const endComp = dataSaidaIso ? parseLocalDateComponents(dataSaidaIso) : parseLocalDateComponents(new Date());
+  if (!endComp) {
+    return { diasCorridos: 0, diasUteis: 0, feriadosCruzados: [] };
+  }
+
+  // Zera horários para contagem pura de calendário em dias discretos
+  const dStart = new Date(Date.UTC(startComp.year, startComp.month, startComp.day));
+  const dEnd = new Date(Date.UTC(endComp.year, endComp.month, endComp.day));
 
   if (dEnd < dStart) {
     return { diasCorridos: 0, diasUteis: 0, feriadosCruzados: [] };
@@ -176,7 +223,7 @@ export function calcularPermanenciaDetelhada(
   const feriadosCruzados: Feriado[] = [];
 
   const current = new Date(dStart);
-  // Conta a partir do dia seguinte ao da entrada até o dia de destino
+  // Conta a partir do dia seguinte ao da entrada até o dia de destino (Art. 183 Lei 14.133/2021)
   current.setUTCDate(current.getUTCDate() + 1);
 
   while (current <= dEnd) {
