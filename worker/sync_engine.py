@@ -25,7 +25,7 @@ import random
 import hashlib
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from enum import Enum
 
 from dotenv import load_dotenv
@@ -99,19 +99,16 @@ REGEX_SEI_PROTOCOL = re.compile(r"\b(?:SEI-)?\d{6}\/\d{6}\/\d{4}(?:-\d{2})?\b|\b
 
 
 # ==============================================================================
-# CRIPTOGRAFIA DE SESSÃO (FERNET)
+# CRIPTOGRAFIA DE SESSÃO (FERNET) - REMEDIAÇÃO SEG-05
 # ==============================================================================
 def get_fernet_cipher() -> Fernet:
-    secret_key = os.getenv("APP_SECRET_ENCRYPTION_KEY")
+    secret_key = os.getenv("APP_SECRET_ENCRYPTION_KEY", "").strip()
     if not secret_key:
-        # Chave determinística de fallback baseada na Service Role para ambientes de desenvolvimento
-        base_seed = hashlib.sha256(SUPABASE_SERVICE_ROLE_KEY.encode() if SUPABASE_SERVICE_ROLE_KEY else b"pumip_dev_fallback_key").digest()
-        # Para estabilidade, gera uma chave baseada em base64 da seed
-        import base64
-        secret_key = base64.urlsafe_b64encode(base_seed)
-    elif isinstance(secret_key, str):
-        secret_key = secret_key.encode()
-    return Fernet(secret_key)
+        raise RuntimeError(
+            "APP_SECRET_ENCRYPTION_KEY ausente. Configure a chave com: "
+            "python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
+        )
+    return Fernet(secret_key.encode() if isinstance(secret_key, str) else secret_key)
 
 
 # ==============================================================================
@@ -124,7 +121,15 @@ class PUMIPSyncManager:
             self.supabase: Optional[Client] = None
         else:
             self.supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-        self.cipher = get_fernet_cipher()
+
+        try:
+            self.cipher = get_fernet_cipher()
+        except RuntimeError as e:
+            if not self.supabase:
+                logger.warning(f"{e} (Modo dry-run: gerando chave temporária em memória).")
+                self.cipher = Fernet(Fernet.generate_key())
+            else:
+                raise
 
     def get_valid_session(self, sistema: str) -> Optional[Dict[str, Any]]:
         """Recupera cookies ou token válidos do banco para reuso sem novo login."""
@@ -192,22 +197,19 @@ class PUMIPSyncManager:
         if not self.supabase:
             return
         try:
-            payload = {
-                "sistema": sistema,
+            agora_iso = datetime.now(timezone.utc).isoformat()
+            res = self.supabase.table("sessoes_coletor").select("tentativas_falha").eq("sistema", sistema).execute()
+            tentativas_atuais = 0
+            if res.data and len(res.data) > 0:
+                tentativas_atuais = res.data[0].get("tentativas_falha") or 0
+
+            nova_tentativa = tentativas_atuais + 1 if status != "SUCCESS" else 0
+            self.supabase.table("sessoes_coletor").update({
                 "status": status,
-                "atualizado_em": datetime.now(timezone.utc).isoformat()
-            }
-            if status == "FALHA" and error_msg:
-                # Incrementa tentativas de falha
-                self.supabase.table("sessoes_coletor").update({
-                    "status": status,
-                    "tentativas_falha": self.supabase.table("sessoes_coletor")
-                        .select("tentativas_falha")
-                        .eq("sistema", sistema)
-                        .execute().data[0].get("tentativas_falha", 0) + 1 if True else 0,
-                    "atualizado_em": datetime.now(timezone.utc).isoformat()
-                }).eq("sistema", sistema).execute()
-            logger.info(f"[{sistema}] Status de integração atualizado: {status}")
+                "tentativas_falha": nova_tentativa,
+                "atualizado_em": agora_iso
+            }).eq("sistema", sistema).execute()
+            logger.info(f"[{sistema}] Status de integração atualizado: {status} (falhas consecutivas: {nova_tentativa})")
         except Exception as e:
             logger.error(f"[{sistema}] Erro ao atualizar status de integração: {e}")
 
@@ -248,7 +250,7 @@ class SEIScraperAdapter(BaseScraperAdapter):
         sei_pass = os.getenv("SEI_PASSWORD")
 
         if not sei_user or not sei_pass:
-            logger.warning(f"[SEI] Credenciais ausentes (SEI_USER/SEI_PASSWORD). Coleta não realizada.")
+            logger.warning("[SEI] Credenciais ausentes (SEI_USER/SEI_PASSWORD). Coleta não realizada.")
             return FetchResult(FetchResultType.NOT_CONFIGURED, error="Credenciais SEI_USER/SEI_PASSWORD não configuradas")
 
         try:
@@ -257,8 +259,10 @@ class SEIScraperAdapter(BaseScraperAdapter):
             cookies = session_data.get("cookies") if session_data else {}
 
             with httpx.Client(timeout=20.0, follow_redirects=True, headers=headers, cookies=cookies) as client:
-                url = f"{SEI_BASE_URL}/sei/controlador.php?acao=procedimento_consultar&protocolo={protocolo_sei}"
-                resp = client.get(url)
+                resp = client.get(
+                    f"{SEI_BASE_URL}/sei/controlador.php",
+                    params={"acao": "procedimento_consultar", "protocolo": protocolo_sei}
+                )
 
                 if resp.status_code == 401 or resp.status_code == 403:
                     logger.warning(f"[SEI] Acesso negado (HTTP {resp.status_code}) para {protocolo_sei}.")
@@ -327,8 +331,10 @@ class StartGovScraperAdapter(BaseScraperAdapter):
             with httpx.Client(timeout=20.0, follow_redirects=True, headers=headers) as client:
                 # Busca por protocolo StartGov ou por referência SEI
                 search_param = protocolo_startgov or protocolo_sei
-                url = f"{STARTGOV_BASE_URL}/api/v2/licitacoes/buscar?referencia={search_param}"
-                resp = client.get(url)
+                resp = client.get(
+                    f"{STARTGOV_BASE_URL}/api/v2/licitacoes/buscar",
+                    params={"referencia": search_param}
+                )
 
                 if resp.status_code == 401 or resp.status_code == 403:
                     return FetchResult(FetchResultType.ACCESS_DENIED, error=f"HTTP {resp.status_code}")
@@ -405,14 +411,19 @@ class StartGovScraperAdapter(BaseScraperAdapter):
 def calculate_state_hash(evento: Dict[str, Any]) -> str:
     """
     Calcula hash SHA-256 estável para garantir idempotência e detecção de delta.
-    REMEDIAÇÃO P1-1: Usa apenas campos estáveis da fonte (não timestamp de coleta).
-    O campo data_hora deve conter o timestamp ORIGINAL da fonte, não datetime.now().
+    REMEDIAÇÃO (WRK-06): Inclui a data/hora original do evento na fonte (normalizada em ISO UTC)
+    para permitir andamentos legítimos idênticos em datas distintas (ex: idas e vindas de setores).
     """
+    data_hora_fonte = evento.get('data_hora_evento') or evento.get('data_hora') or ''
+    if isinstance(data_hora_fonte, datetime):
+        data_hora_fonte = data_hora_fonte.isoformat()
+
     raw_str = (
         f"{evento.get('unidade_setor', '')}|"
         f"{evento.get('descricao', '')}|"
         f"{evento.get('documento', '')}|"
-        f"{evento.get('tipo_documento', '')}"
+        f"{evento.get('tipo_documento', '')}|"
+        f"{data_hora_fonte}"
     )
     return hashlib.sha256(raw_str.encode('utf-8')).hexdigest()
 
@@ -451,6 +462,18 @@ def send_email_alert(recipient: str, subject: str, html_body: str) -> bool:
         return False
 
 
+INTERVALO_HORAS = {"QUENTE": 1, "MORNO": 12, "FRIO": 72}
+
+def calcular_proxima_verificacao(prioridade: str, falhas_consecutivas: int = 0) -> str:
+    """Calcula próxima verificação com recuo exponencial e teto de 72h em falhas (WRK-04)."""
+    base = INTERVALO_HORAS.get(prioridade, 1)
+    if falhas_consecutivas > 0:
+        horas = min(base * (2 ** falhas_consecutivas), 72)
+    else:
+        horas = base
+    return (datetime.now(timezone.utc) + timedelta(hours=horas)).isoformat()
+
+
 def process_delta_and_alerts(
     manager: PUMIPSyncManager,
     processo: Dict[str, Any],
@@ -459,7 +482,10 @@ def process_delta_and_alerts(
 ) -> bool:
     """
     Verifica se o evento é novo (Delta), grava na linha do tempo e dispara alertas se necessário.
-    REMEDIAÇÃO P0-2: Só aceita eventos com dados reais da fonte.
+    REMEDIAÇÃO (WRK-03, WRK-07):
+    - Invoca a RPC atômica registrar_andamento_sincronizacao.
+    - Só dispara alertas e zera inércia se a RPC confirmar inserção de novo andamento (res.data is True).
+    - Elimina fallbacks não-atômicos que corrompiam integridade.
     """
     if not manager.supabase:
         logger.info(f"[Processo {processo.get('protocolo_sei')}] Supabase não disponível. Operação ignorada.")
@@ -485,10 +511,7 @@ def process_delta_and_alerts(
         else:
             dias_parado = 0
 
-        # Próxima verificação de acordo com a prioridade
-        prio = processo.get("prioridade", "QUENTE")
-        hours_interval = 1 if prio == "QUENTE" else (12 if prio == "MORNO" else 72)
-        prox_verificacao = (agora + timedelta(hours=hours_interval)).isoformat()
+        prox_verificacao = calcular_proxima_verificacao(processo.get("prioridade", "QUENTE"))
 
         manager.supabase.table("processos").update({
             "dias_parado_na_unidade": dias_parado,
@@ -502,16 +525,13 @@ def process_delta_and_alerts(
 
     agora = datetime.now(timezone.utc)
 
-    # REMEDIAÇÃO P1-1: Separa ocorrido_em (da fonte) de coletado_em (agora)
-    data_hora_fonte = novo_evento.get("data_hora")
+    # Separa ocorrido_em (da fonte) de coletado_em (agora)
+    data_hora_fonte = novo_evento.get("data_hora") or novo_evento.get("data_hora_evento")
     if not data_hora_fonte:
         data_hora_fonte = agora.isoformat()
         logger.warning(f"[Processo {processo.get('protocolo_sei')}] Evento sem data_hora da fonte. Usando timestamp de coleta.")
 
-    # 1 e 2. Gravação Atômica (Transação PL/pgSQL - REMEDIAÇÃO P1-2)
-    prio = processo.get("prioridade", "QUENTE")
-    hours_interval = 1 if prio == "QUENTE" else (12 if prio == "MORNO" else 72)
-    prox_verificacao = (agora + timedelta(hours=hours_interval)).isoformat()
+    prox_verificacao = calcular_proxima_verificacao(processo.get("prioridade", "QUENTE"))
     nova_unidade = novo_evento.get("unidade_setor") if (origem == "SEI" and novo_evento.get("unidade_setor")) else None
 
     metadados_dict = {"coletado_em": agora.isoformat(), "origem_adapter": origem}
@@ -531,50 +551,21 @@ def process_delta_and_alerts(
         "p_proxima_verificacao": prox_verificacao
     }
 
-    gravado_com_sucesso = False
     try:
-        # Tenta transação atômica via função PL/pgSQL do Supabase
-        manager.supabase.rpc("registrar_andamento_sincronizacao", rpc_params).execute()
-        gravado_com_sucesso = True
-        logger.info(f"[Processo {processo.get('protocolo_sei')}] Andamento gravado atomicamente via RPC.")
-    except Exception as rpc_err:
-        logger.warning(f"RPC registrar_andamento_sincronizacao falhou ou não existe, executando fallback sequencial: {rpc_err}")
-        # Fallback de compatibilidade
-        try:
-            payload_evento = {
-                "processo_id": processo["id"],
-                "origem_sistema": origem,
-                "data_hora_evento": data_hora_fonte,
-                "unidade_setor": novo_evento.get("unidade_setor", "NÃO INFORMADO"),
-                "descricao_andamento": descricao,
-                "documento_anexado": novo_evento.get("documento"),
-                "tipo_documento": novo_evento.get("tipo_documento"),
-                "resumo_ia": novo_evento.get("resumo_ia"),
-                "hash_evento": novo_hash,
-                "metadados": json.dumps(metadados_dict)
-            }
-            manager.supabase.table("historico_tramitacoes").insert(payload_evento).execute()
+        # Transação atômica via função PL/pgSQL do Supabase (Migração 003)
+        res = manager.supabase.rpc("registrar_andamento_sincronizacao", rpc_params).execute()
+        eh_novo = res.data is True
 
-            update_payload: Dict[str, Any] = {
-                "hash_ultimo_estado": novo_hash,
-                "dias_parado_na_unidade": 0,
-                "ultima_movimentacao_em": agora.isoformat(),
-                "ultima_verificacao_em": agora.isoformat(),
-                "proxima_verificacao_em": prox_verificacao
-            }
-            if nova_unidade:
-                update_payload["unidade_atual_sei"] = nova_unidade
-
-            manager.supabase.table("processos").update(update_payload).eq("id", processo["id"]).execute()
-            gravado_com_sucesso = True
-        except Exception as fallback_err:
-            logger.error(f"[Processo {processo.get('protocolo_sei')}] Erro fatal na gravação do andamento: {fallback_err}")
+        if eh_novo:
+            logger.info(f"[Processo {processo.get('protocolo_sei')}] Novo andamento gravado atomicamente via RPC. Disparando alertas.")
+            check_and_trigger_alerts(manager, processo, novo_evento, origem)
+            return True
+        else:
+            logger.info(f"[Processo {processo.get('protocolo_sei')}] Andamento já existente no histórico. Alertas ignorados.")
             return False
-
-    # 3. Avaliar regras de alertas configurados para este processo
-    if gravado_com_sucesso:
-        check_and_trigger_alerts(manager, processo, novo_evento, origem)
-    return True
+    except Exception as rpc_err:
+        logger.error(f"[Processo {processo.get('protocolo_sei')}] Erro na execução da RPC de sincronização: {rpc_err}")
+        return False
 
 
 def check_and_trigger_alerts(
@@ -722,9 +713,12 @@ def main():
         logger.info(f"[{idx}/{len(candidatos)}] Sincronizando Processo {prot_sei}...")
 
         try:
+            houve_sucesso_coleta = False
+
             # 1. Coleta dados no SEI
             sei_result = sei_adapter.fetch_process_data(prot_sei)
             if sei_result.is_success and sei_result.data and "ultimo_evento" in sei_result.data:
+                houve_sucesso_coleta = True
                 process_delta_and_alerts(manager, processo, sei_result.data["ultimo_evento"], origem="SEI")
             elif sei_result.result_type != FetchResultType.NOT_CONFIGURED:
                 logger.warning(f"[SEI] Coleta de {prot_sei}: {sei_result}")
@@ -733,6 +727,7 @@ def main():
             # 2. Coleta dados no StartGov
             startgov_result = startgov_adapter.fetch_contract_data(prot_startgov, prot_sei)
             if startgov_result.is_success and startgov_result.data:
+                houve_sucesso_coleta = True
                 # Verifica vinculação automática
                 if not prot_startgov and startgov_result.data.get("protocolo_startgov") and manager.supabase:
                     logger.info(f"Vinculando automaticamente {prot_sei} ao StartGov {startgov_result.data['protocolo_startgov']}")
@@ -747,12 +742,28 @@ def main():
                 logger.warning(f"[StartGov] Coleta de {prot_sei}: {startgov_result}")
                 manager.update_integration_status("STARTGOV", startgov_result.result_type.value, startgov_result.error)
 
-            processados_com_sucesso += 1
+            if houve_sucesso_coleta:
+                processados_com_sucesso += 1
+            else:
+                # REMEDIAÇÃO (WRK-04): Se ambas as fontes falharam ou não retornaram dados,
+                # reagenda o processo com backoff exponencial para desobstruir o topo da fila!
+                if manager.supabase:
+                    nova_prox = calcular_proxima_verificacao(processo.get("prioridade", "QUENTE"), falhas_consecutivas=1)
+                    manager.supabase.table("processos").update({
+                        "proxima_verificacao_em": nova_prox,
+                        "ultima_verificacao_em": datetime.now(timezone.utc).isoformat()
+                    }).eq("id", processo["id"]).execute()
+                falhas += 1
         except Exception as e:
             logger.error(f"Erro ao processar {prot_sei}: {e}", exc_info=True)
             falhas += 1
 
     logger.info(f"=== CICLO CONCLUÍDO: {processados_com_sucesso}/{len(candidatos)} PROCESSOS OK, {falhas} FALHAS ===")
+
+    # REMEDIAÇÃO (WRK-09): Se todos os candidatos falharam na coleta, sinaliza erro para o GitHub Actions
+    if len(candidatos) > 0 and processados_com_sucesso == 0 and falhas > 0:
+        logger.error("Todos os processos da rodada falharam na coleta. Encerrando com código de erro 1.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

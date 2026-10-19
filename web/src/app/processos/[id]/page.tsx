@@ -108,12 +108,13 @@ export default function ProcessoDetalhePage() {
 
   const handleCopyWhatsApp = () => {
     if (!processo) return;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://pumip.seduc.ma.gov.br');
     const texto = `📌 *Processo SEI:* ${processo.protocolo_sei}
 🏢 *Objeto:* ${processo.objeto}
 📍 *Localização Atual:* ${processo.unidade_atual_sei} (${processo.dias_parado_na_unidade} dias na unidade)
 🎯 *Próximo Passo Esperado:* ${processo.proximo_passo_esperado || 'Tramitação setorial de rotina'}
 🛒 *StartGov:* ${processo.protocolo_startgov || 'Aguardando vinculação'}
-🔗 *Acompanhar no PUMIP:* http://localhost:3000/processos/${processo.id}`;
+🔗 *Acompanhar no PUMIP:* ${siteUrl}/processos/${processo.id}`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(texto).then(() => {

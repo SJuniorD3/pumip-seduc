@@ -2,20 +2,30 @@
 
 > **Secretaria de Estado da Educação do Maranhão (SEDUC-MA)**  
 > Sistema de Acompanhamento Integrado de Processos Administrativos e Contratações Públicas.  
-> **Arquitetura 100% Online, Versionada em Git e Baseada em Infraestrutura Gratuita (Zero-Cost Stack).**
+> **Arquitetura Web Moderna, Versionada em Git e com Governança por Banco de Dados Relacional (PostgreSQL / Supabase RLS).**
 
 ---
 
-## 1. Visão Geral e Objetivo
+## 1. Visão Geral e Matriz de Situação Funcional (DOC-01)
 
-A **PUMIP** consolida em uma única tela o ciclo completo das demandas da SEDUC-MA que se iniciam no **SEI! (GOVMA)** (fase interna: DFD, ETP, TR) e prosseguem para a fase de contratação e licitação no **StartGov**, monitorando simultaneamente as publicações legais no **PNCP (Portal Nacional de Contratações Públicas)**.
+A **PUMIP** consolida em visão integrada o ciclo das demandas da SEDUC-MA que se iniciam na fase interna no **SEI! (GOVMA)** (DFD, ETP, TR) e prosseguem para contratação e licitação no **StartGov**, correlacionando dados com o **PNCP (Portal Nacional de Contratações Públicas)**.
 
-### Características Principais:
-- **Apenas Leitura / Não Invasivo:** Não altera, não assina e não tramita processos nas fontes. Opera estritamente com perfil de consulta.
-- **Regra de Não Ampliação de Acesso:** Um usuário jamais visualiza no PUMIP o que não teria acesso no sistema de origem. Aplicado com **Row Level Security (RLS)** no PostgreSQL.
-- **Linha do Tempo Híbrida ("Metrô Processual"):** Cor azul para eventos do SEI, cor verde para o StartGov e âmbar para o PNCP.
-- **Quadro Kanban Setorial:** Acompanhamento por colunas dinâmicas (Fase Interna SEI &rarr; Instrução/TR &rarr; Análise Jurídica &rarr; Licitação Externa &rarr; Contrato).
-- **Stack 100% Gratuita (Zero-Cost):** Vercel + Supabase + GitHub Actions Cron + Resend API.
+### Matriz de Maturidade dos Módulos:
+
+| Módulo / Funcionalidade | Situação Atual | Próximo Passo Planejado |
+| :--- | :---: | :--- |
+| **Painel Executivo & KPIs** | ✅ Implementado | Conexão com dados consolidados do banco |
+| **Metrô Processual (Linha do Tempo)** | ✅ Implementado | Alimentação contínua via RPC atômica |
+| **Quadro Kanban Setorial** | ✅ Implementado | Transição de colunas por evento de tramitação |
+| **Controle de SLA e Inércia Processual** | ✅ Implementado | Cálculo unificado (meta 5 dias úteis, São Luís/MA) |
+| **Exportação CSV/Excel com Proteção Anti-Injection** | ✅ Implementado | Neutralização de fórmulas maliciosas ativa |
+| **Regras de RLS Hierárquico (PostgreSQL)** | ✅ Implementado | Validação estrita por prefixo de caminho (`.`) |
+| **Sincronização Atômica via RPC (Worker)** | ✅ Implementado | RPC `registrar_andamento_sincronizacao` (`service_role`) |
+| **Automação de CI (GitHub Actions)** | ✅ Implementado | Validação de tipos, ESLint, testes e build |
+| **Coleta SEI! WebService SOAP** | ⏳ Planejado | Cadastro de Sistema Integrador junto à ATI-MA |
+| **Coleta StartGov API REST** | ⏳ Planejado | Validação de credenciais e rotas de homologação |
+| **Coleta PNCP API Pública** | ⏳ Em desenvolvimento | Implementação do coletor de editais e atas |
+| **Login Gov.br / Supabase Auth** | ⏳ Em transição | Substituição da emulação demo por `@supabase/ssr` |
 
 ---
 
@@ -25,21 +35,26 @@ A **PUMIP** consolida em uma única tela o ciclo completo das demandas da SEDUC-
 pumip-seduc/
 ├── .github/
 │   └── workflows/
-│       └── hourly_sync.yml         # Cron Job gratuito a cada hora no GitHub Actions
+│       ├── ci.yml                  # Esteira de CI: Lint, TypeScript, Testes e Build
+│       └── hourly_sync.yml         # Agendamento horário de sincronização do worker
 ├── supabase/
 │   └── migrations/
-│       └── 001_init_schema.sql     # Esquema DDL, Organograma, RLS e Seed
+│       ├── 001_init_schema.sql     # DDL, Organograma, Tabelas e RLS inicial
+│       ├── 002_atomic_sync_transaction.sql # Transação atômica inicial
+│       └── 003_seguranca_rpc_e_hierarquia.sql # RPC blindada, INVOKER e propagação
 ├── worker/
-│   ├── requirements.txt            # Dependências Python (httpx, playwright, supabase)
+│   ├── requirements.txt            # Dependências Python (httpx, pydantic, supabase, cryptography)
 │   └── sync_engine.py              # Motor de Coleta com Jitter, Sessão e Delta Hash
 ├── web/
-│   ├── package.json                # Next.js 14, Tailwind CSS, Lucide Icons
+│   ├── package.json                # Next.js 14.2.25, Tailwind CSS, Lucide Icons, ESLint
 │   ├── tsconfig.json
 │   ├── tailwind.config.ts
-│   ├── src/
-│   │   ├── app/                    # App Router (Dashboard, Processos, Kanban, Alertas)
-│   │   ├── components/             # Metrô Processual, KanbanBoard, KPICards, ProcessTable
-│   │   └── lib/                    # Supabase Client, Tipos e Dados de Homologação
+│   ├── next.config.mjs             # Cabeçalhos HTTP de segurança estritos
+│   ├── tests/                      # 27 testes automatizados de segurança, SLA e RLS
+│   └── src/
+│       ├── app/                    # App Router (Dashboard, Processos, Kanban, Admin, etc.)
+│       ├── components/             # Metrô Processual, KanbanBoard, KPICards, ProcessTable
+│       └── lib/                    # Supabase Client, Tipos e Funções de SLA
 ├── .env.example                    # Modelo documentado de variáveis
 ├── .gitignore
 └── README.md
@@ -49,45 +64,37 @@ pumip-seduc/
 
 ## 3. Guia de Inicialização do Projeto
 
-### Passo 1: Configurar o Banco no Supabase (Gratuito)
-1. Crie uma conta gratuita em [supabase.com](https://supabase.com) e crie um novo projeto (ex: `pumip-seduc-db`).
-2. Acesse a aba **SQL Editor** no painel do Supabase.
-3. Copie todo o conteúdo do arquivo [`supabase/migrations/001_init_schema.sql`](supabase/migrations/001_init_schema.sql) e execute.
-4. O esquema criará o organograma hierárquico da SEDUC-MA, as tabelas com RLS, funções de permissão e dados iniciais de demonstração.
+### Passo 1: Configurar o Banco no Supabase
+1. Crie um projeto no [supabase.com](https://supabase.com).
+2. Acesse a aba **SQL Editor** e execute sequencialmente as migrações:
+   - [`supabase/migrations/001_init_schema.sql`](supabase/migrations/001_init_schema.sql)
+   - [`supabase/migrations/002_atomic_sync_transaction.sql`](supabase/migrations/002_atomic_sync_transaction.sql)
+   - [`supabase/migrations/003_seguranca_rpc_e_hierarquia.sql`](supabase/migrations/003_seguranca_rpc_e_hierarquia.sql)
 
-### Passo 2: Executar o Frontend (Next.js 14)
+### Passo 2: Executar o Frontend (Next.js)
 ```bash
 cd web
 npm install
-# Configure o .env.local baseado no .env.example se for conectar ao Supabase real
-npm run dev
+npm run lint    # Verificação de qualidade de código
+npm test        # Suíte de 27 testes automatizados
+npm run build   # Compilação de produção
+npm start       # Inicia servidor de produção na porta 3000
 ```
-Acesse `http://localhost:3000` para visualizar o Dashboard Executivo, o Metrô Processual e o Kanban.
+Acesse `http://localhost:3000` para visualizar o Dashboard e o painel administrativo.
 
-### Passo 3: Executar o Motor de Coleta Localmente (Worker)
+### Passo 3: Executar o Motor de Coleta (Worker)
 ```bash
 cd worker
 python3 -m venv venv
 source venv/bin/activate  # No Windows: venv\Scripts\activate
 pip install -r requirements.txt
-playwright install chromium
 python sync_engine.py
 ```
 
-### Passo 4: Automação Gratuita no GitHub Actions
-1. Suba o repositório para o GitHub.
-2. Acesse **Settings > Secrets and variables > Actions** e adicione:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `APP_SECRET_ENCRYPTION_KEY`
-   - `RESEND_API_KEY`
-   - `SEI_USER` e `SEI_PASSWORD`
-   - `STARTGOV_USER` e `STARTGOV_PASSWORD`
-3. O workflow [`.github/workflows/hourly_sync.yml`](.github/workflows/hourly_sync.yml) executará automaticamente a cada 1 hora.
-
 ---
 
-## 4. Conformidade e Segurança
-- **LGPD (Lei 13.709/2018):** Coleta restrita a metadados de tramitação pública ou institucional autorizada.
-- **LAI (Lei 12.527/2011):** Notas internas registradas como informação oficial, com versão imutável e aviso obrigatório na interface.
-- **OWASP ASVS Nível 2:** Políticas RLS impedem vazamentos de processos restritos mesmo em falhas de aplicação.
+## 4. Segurança e Conformidade
+- **Proteção Anti-Injection (CSV/Excel):** Exportações neutralizam fórmulas maliciosas que iniciam com `=`, `+`, `-`, `@`.
+- **Cabeçalhos HTTP:** `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`.
+- **Row Level Security (RLS):** Consultas filtradas diretamente no PostgreSQL com base na lotação do usuário e organograma institucional.
+- **Funções de Banco Restritas:** RPC `registrar_andamento_sincronizacao` com execução restrita ao papel `service_role` e `search_path = ''`.

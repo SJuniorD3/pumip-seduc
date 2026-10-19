@@ -8,17 +8,29 @@ export interface ExportColumn<T> {
   key: keyof T | ((item: T) => string | number | null | undefined);
 }
 
+const INICIO_FORMULA = /^[=+\-@\t\r\n＝＋－＠]/;
+
+/**
+ * Sanitiza valores contra CSV/Formula Injection (OWASP) prefixando com apóstrofo
+ * células que iniciam com caracteres disparadores de fórmula.
+ */
+export function neutralizarCelula(valor: string): string {
+  if (typeof valor !== 'string') return valor;
+  return INICIO_FORMULA.test(valor) ? `'${valor}` : valor;
+}
+
 /**
  * Exporta dados para formato CSV com BOM para compatibilidade com acentuação no Excel.
  */
 export function exportToCSV<T>(
   filename: string,
   data: T[],
-  columns: ExportColumn<T>[]
+  columns: ExportColumn<T>[],
+  usuarioNome?: string
 ) {
   if (!data || data.length === 0) return;
 
-  const headerRow = columns.map((col) => `"${col.header.replace(/"/g, '""')}"`).join(';');
+  const headerRow = columns.map((col) => `"${neutralizarCelula(col.header).replace(/"/g, '""')}"`).join(';');
   
   const rows = data.map((item) =>
     columns
@@ -31,7 +43,7 @@ export function exportToCSV<T>(
         }
 
         if (val === null || val === undefined) val = '';
-        const strVal = String(val).replace(/"/g, '""');
+        const strVal = neutralizarCelula(String(val)).replace(/"/g, '""');
         return `"${strVal}"`;
       })
       .join(';')
@@ -41,7 +53,7 @@ export function exportToCSV<T>(
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   downloadBlob(blob, filename.endsWith('.csv') ? filename : `${filename}.csv`);
 
-  recordClientAuditLog('EXPORTACAO_CSV', filename, data.length);
+  recordClientAuditLog('EXPORTACAO_CSV', filename, data.length, usuarioNome);
 }
 
 /**
@@ -51,14 +63,15 @@ export function exportToExcel<T>(
   filename: string,
   sheetName: string,
   data: T[],
-  columns: ExportColumn<T>[]
+  columns: ExportColumn<T>[],
+  usuarioNome?: string
 ) {
   if (!data || data.length === 0) return;
 
   const headerCells = columns
     .map(
       (col) =>
-        `<Cell ss:StyleID="header"><Data ss:Type="String">${escapeXml(col.header)}</Data></Cell>`
+        `<Cell ss:StyleID="header"><Data ss:Type="String">${escapeXml(neutralizarCelula(col.header))}</Data></Cell>`
     )
     .join('');
 
@@ -76,7 +89,8 @@ export function exportToExcel<T>(
           if (val === null || val === undefined) val = '';
           const isNum = typeof val === 'number';
           const type = isNum ? 'Number' : 'String';
-          return `<Cell><Data ss:Type="${type}">${escapeXml(String(val))}</Data></Cell>`;
+          const cellContent = isNum ? String(val) : neutralizarCelula(String(val));
+          return `<Cell><Data ss:Type="${type}">${escapeXml(cellContent)}</Data></Cell>`;
         })
         .join('');
       return `<Row>${cells}</Row>`;
@@ -161,14 +175,28 @@ function downloadBlob(blob: Blob, filename: string) {
 export function recordClientAuditLog(
   acao: 'EXPORTACAO_CSV' | 'EXPORTACAO_EXCEL' | 'EXPORTACAO_PDF' | 'CONSULTA' | 'VINCULO_CONFIRMADO',
   entidade: string,
-  totalRegistros: number
+  totalRegistros: number,
+  usuarioNome?: string
 ) {
+  let nomeEfetivo = usuarioNome;
+  if (!nomeEfetivo && typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('pumip_auth_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u?.nome) nomeEfetivo = u.nome;
+      }
+    } catch {
+      // Ignora erro de parse
+    }
+  }
+
   const logItem = {
     acao,
     entidade,
     totalRegistros,
     dataHora: new Date().toISOString(),
-    usuario: 'Sérvulo José Freire Junior (SUDES)'
+    usuario: nomeEfetivo || 'Usuário Autenticado SEDUC'
   };
 
   try {

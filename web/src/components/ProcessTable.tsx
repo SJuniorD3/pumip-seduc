@@ -80,12 +80,13 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({
   const handleCopyWhatsApp = (proc: Processo, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://pumip.seduc.ma.gov.br');
     const texto = `📌 *Processo SEI:* ${proc.protocolo_sei}
 🏢 *Objeto:* ${proc.objeto}
 📍 *Localização Atual:* ${proc.unidade_atual_sei} (${proc.dias_parado_na_unidade} dias na unidade)
 🎯 *Próximo Passo Esperado:* ${proc.proximo_passo_esperado || 'Tramitação setorial de rotina'}
 🛒 *StartGov:* ${proc.protocolo_startgov || 'Aguardando vinculação'}
-🔗 *Acompanhar no PUMIP:* http://localhost:3000/processos/${proc.id}`;
+🔗 *Acompanhar no PUMIP:* ${siteUrl}/processos/${proc.id}`;
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(texto).then(() => {

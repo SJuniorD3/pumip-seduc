@@ -2,8 +2,8 @@ name: PUMIP Sincronização Horária (Worker)
 
 on:
   schedule:
-    # Executa no início de cada hora (cron gratuito do GitHub Actions)
-    - cron: '0 * * * *'
+    # Executa a cada hora no minuto 17 (evita congestionamento no minuto zero do GitHub Actions)
+    - cron: '17 * * * *'
   workflow_dispatch:
     inputs:
       force_mode:
@@ -20,16 +20,16 @@ jobs:
   sync:
     name: Executar Motor de Coleta e Sincronização
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
 
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
-      - name: Configurar Ambiente Python 3.11
+      - name: Configurar Ambiente Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
           cache-dependency-path: 'worker/requirements.txt'
 
@@ -37,10 +37,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r worker/requirements.txt
-
-      - name: Instalar Navegador Playwright (Headless Chromium)
-        run: |
-          playwright install --with-deps chromium
 
       - name: Executar Motor de Coleta PUMIP
         env:
@@ -54,6 +50,9 @@ jobs:
           STARTGOV_BASE_URL: ${{ secrets.STARTGOV_BASE_URL }}
           STARTGOV_USER: ${{ secrets.STARTGOV_USER }}
           STARTGOV_PASSWORD: ${{ secrets.STARTGOV_PASSWORD }}
+          STARTGOV_API_TOKEN: ${{ secrets.STARTGOV_API_TOKEN }}
+          STARTGOV_CLIENT_ID: ${{ secrets.STARTGOV_CLIENT_ID }}
+          STARTGOV_CLIENT_SECRET: ${{ secrets.STARTGOV_CLIENT_SECRET }}
           APP_SECRET_ENCRYPTION_KEY: ${{ secrets.APP_SECRET_ENCRYPTION_KEY }}
           FORCE_MODE: ${{ inputs.force_mode || false }}
         run: |

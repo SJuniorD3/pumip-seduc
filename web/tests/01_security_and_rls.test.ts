@@ -4,6 +4,7 @@ import { filterProcessosByRLS } from '../src/lib/rlsFilter';
 import { mockProcessos } from '../src/lib/mockData';
 import { DEMO_USERS, AuthUser } from '../src/lib/authUsers';
 import { Processo } from '../src/lib/types';
+import { neutralizarCelula } from '../src/lib/exportUtils';
 
 describe('Segurança de Aplicação e RLS (OWASP Top 10 - Broken Access Control)', () => {
   test('Segurança Zero-Trust: Usuário nulo ou indefinido deve receber 0 processos', () => {
@@ -113,5 +114,13 @@ describe('Segurança de Aplicação e RLS (OWASP Top 10 - Broken Access Control)
     assert.ok(!sanitized.includes('<script>'), 'Tag script deve ser neutralizada');
     assert.ok(!sanitized.includes('<img'), 'Tag img com payload deve ser neutralizada');
     assert.ok(sanitized.includes('&lt;script&gt;'), 'Caracteres devem ser convertidos em HTML entities');
+  });
+
+  test('Proteção contra Formula Injection (CSV / Excel Injection - SEG-08)', () => {
+    assert.strictEqual(neutralizarCelula('=SUM(A1:A10)'), "'=SUM(A1:A10)", 'Fórmula iniciada por = deve ser prefixada com apóstrofo');
+    assert.strictEqual(neutralizarCelula('+cmd|"/C calc"!A0'), "'+cmd|\"/C calc\"!A0", 'Comando iniciado por + deve ser neutralizado');
+    assert.strictEqual(neutralizarCelula('-2+3*cmd'), "'-2+3*cmd", 'Expressão iniciada por - deve ser neutralizada');
+    assert.strictEqual(neutralizarCelula('@SUM(1+1)'), "'@SUM(1+1)", 'Anotação iniciada por @ deve ser neutralizada');
+    assert.strictEqual(neutralizarCelula('SEI-021001/004521/2026'), 'SEI-021001/004521/2026', 'Texto comum não deve ser alterado');
   });
 });
